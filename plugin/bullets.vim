@@ -21,5 +21,5 @@ endfun
 
 inoremap <cr> <esc>:call bullets#MarkdownAutoList()<cr>
 nnoremap o <esc>:call bullets#MarkdownAutoList()<cr>
-inoremap <C-tab> <esc>>>A
-inoremap <C-S-tab> <esc><<A
+inoremap <C-.> <esc>>>A
+inoremap <C-,> <esc><<A
