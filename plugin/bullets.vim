@@ -9,25 +9,30 @@ let s:save_cpo = &cpo
 set cpo&vim
 " ------------------------------------------------------- }}}
 
-fun! bullets#MarkdownAutoList()
+" Generate bullets -------------------------------------- {{{
+fun! bullets#insert_new_bullet()
   let curr_line_num = getpos(".")[1]
   let curr_line = getline(curr_line_num)
   let matches = matchlist(curr_line, '\v^\s*(-|*) ')
   if !empty(matches)
+    " insert next bullet
     call append(curr_line_num, [matches[0]])
-    normal! j$
-    :startinsert!
   else
+    " insert an empty string so that we can start writing into line
     call append(curr_line_num, [""])
-    normal! j$
-    :startinsert
   endif
+
+  " get back to insert mode on next line
+  normal! j$
+  startinsert!
 endfun
+" --------------------------------------------------------- }}}
+
 " Keyboard mappings --------------------------------------- {{{
 augroup TextBulletsMappings
   autocmd!
-  autocmd FileType markdown,text,gitcommit inoremap <buffer> <cr> <esc>:call bullets#MarkdownAutoList()<cr>
-  autocmd FileType markdown,text,gitcommit nnoremap <buffer> o <esc>:call bullets#MarkdownAutoList()<cr>
+  autocmd FileType markdown,text,gitcommit inoremap <buffer> <cr> <esc>:call bullets#insert_new_bullet()<cr>
+  autocmd FileType markdown,text,gitcommit nnoremap <buffer> o <esc>:call bullets#insert_new_bullet()<cr>
   autocmd FileType markdown,text,gitcommit inoremap <buffer> <c-\.> <esc>>>A
   autocmd FileType markdown,text,gitcommit inoremap <buffer> <c-\,> <esc><<A
 augroup END
