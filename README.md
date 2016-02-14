@@ -23,7 +23,7 @@ to go to the next line, a new list item will be created.
 
 - [ ] eliminate trailing bullet on previous line if user pressed <cr> twice
 - [x] allow indenting while in insert mode
-- [ ] scope the keybindings and functions to markdown and perhaps text
+- [x] scope the keybindings and functions to markdown and perhaps text
 - [ ] allow checkbox auto bullet
 - [ ] prefix shortcuts and allow disabling them 
 - [ ] add numbered list
