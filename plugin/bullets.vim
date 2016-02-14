@@ -4,6 +4,11 @@
 " License: MIT
 " FileTypes: markdown, text, gitcommit
 
+" Preserve Vim compatibility and temporarily turn it on   {{{
+let s:save_cpo = &cpo
+set cpo&vim
+" ------------------------------------------------------- }}}
+
 fun! bullets#MarkdownAutoList()
   let curr_line_num = getpos(".")[1]
   let curr_line = getline(curr_line_num)
@@ -27,4 +32,9 @@ augroup TextBulletsMappings
   autocmd FileType markdown,text,gitcommit inoremap <buffer> <c-\,> <esc><<A
 augroup END
 " --------------------------------------------------------- }}}
+
+" Restore previous external compatibility options --------- {{{
+let &cpo = s:save_cpo
+" --------------------------------------------------------  }}}
+
 
