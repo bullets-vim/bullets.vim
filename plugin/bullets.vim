@@ -4,12 +4,19 @@
 " License: MIT
 " FileTypes: markdown, text, gitcommit
 
-" Preserve Vim compatibility and temporarily turn it on   {{{
+" Prevent execution if already loaded ------------------   {{{
+if exists('g:loaded_bullets_vim')
+  finish
+endif
+let g:loaded_bullets_vim = 1
+" Prevent execution if already loaded ------------------   }}}
+
+" Preserve Vim compatibility and temporarily turn it on    {{{
 let s:save_cpo = &cpo
 set cpo&vim
-" ------------------------------------------------------- }}}
+" -------------------------------------------------------  }}}
 
-" Generate bullets -------------------------------------- {{{
+" Generate bullets --------------------------------------  {{{
 fun! bullets#insert_new_bullet()
   let curr_line_num = getpos(".")[1]
   let curr_line = getline(curr_line_num)
