@@ -29,7 +29,11 @@ to go to the next line, a new list item will be created.
 - [ ] add numbered list
 - [ ] add alphabetic list
 - [ ] allow user to define a global var with custom bullets
+- [ ] check if plugin initialized and don't load if it did
 - [ ] allow <C-cr> for return without creating a bullet
+- [ ] create a text object for bullets
+- [ ] create a text object for bullet list indentation
+- [ ] create a text object for todos
 - [ ] detect lists that have multiline bullets (should have no empty lines between
   lines). (like this list 😆)
 
