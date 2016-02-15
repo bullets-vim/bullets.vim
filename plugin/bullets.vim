@@ -11,6 +11,12 @@ endif
 let g:loaded_bullets_vim = 1
 " Prevent execution if already loaded ------------------   }}}
 
+" Define file types for autocmds -----------------------   {{{
+if !exists('g:bullets_enabled_file_types')
+  let g:bullets_enabled_file_types = ['markdown', 'text', 'gitcommit']
+endif
+" ------------------------------------------------------   }}}
+
 " Preserve Vim compatibility and temporarily turn it on    {{{
 let s:save_cpo = &cpo
 set cpo&vim
@@ -36,12 +42,21 @@ endfun
 " --------------------------------------------------------- }}}
 
 " Keyboard mappings --------------------------------------- {{{
+fun! s:add_mapping(mapping_type, mapping, action)
+  let file_types = join(g:bullets_enabled_file_types, ",")
+  execute "autocmd FileType "  . file_types . " " . a:mapping_type . " <buffer> " . a:mapping . " " . a:action
+endfun
+
 augroup TextBulletsMappings
   autocmd!
-  autocmd FileType markdown,text,gitcommit inoremap <buffer> <cr> <esc>:call bullets#insert_new_bullet()<cr>
-  autocmd FileType markdown,text,gitcommit nnoremap <buffer> o <esc>:call bullets#insert_new_bullet()<cr>
-  autocmd FileType markdown,text,gitcommit inoremap <buffer> <c-\.> <esc>>>A
-  autocmd FileType markdown,text,gitcommit inoremap <buffer> <c-\,> <esc><<A
+
+  " automatic bullets
+  call s:add_mapping("inoremap", "<cr>", "<esc>:call bullets#insert_new_bullet()<cr>")
+  call s:add_mapping("nnoremap", "o", ":call bullets#insert_new_bullet()<cr>")
+
+  " indentation
+  call s:add_mapping("inoremap", "<C-l>", "<esc>>>A")
+  call s:add_mapping("inoremap", "<C-h>", "<esc><<A")
 augroup END
 " --------------------------------------------------------- }}}
 
