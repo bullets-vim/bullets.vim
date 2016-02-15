@@ -18,6 +18,16 @@ Then source your bundle file and run `:PlugInstall`.
 In markdown or a text file start a bulleted list using `-` or `*`. Press return
 to go to the next line, a new list item will be created.
 
+# Configuration
+
+You can choose which file types this plugin will work on:
+
+```vim
+let g:bullets_enabled_file_types = ['markdown', 'text', 'gitcommit']
+```
+
+Just add above to your .vimrc
+
 
 # TODO
 
