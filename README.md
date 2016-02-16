@@ -34,8 +34,8 @@ Just add above to your .vimrc
 - [ ] eliminate trailing bullet on previous line if user pressed <cr> twice
 - [x] allow indenting while in insert mode
 - [x] scope the keybindings and functions to markdown and perhaps text
-- [ ] allow checkbox auto bullet
-- [ ] prefix shortcuts and allow disabling them 
+- [x] allow checkbox auto bullet
+- [ ] prefix shortcuts and allow disabling them
 - [ ] add numbered list
 - [ ] add alphabetic list
 - [ ] allow user to define a global var with custom bullets
@@ -43,7 +43,7 @@ Just add above to your .vimrc
 - [ ] allow <C-cr> for return without creating a bullet
 - [x] create a text object for bullets
 - [ ] create a text object for bullet list indentation
-- [x] create a text object for todos
+- [x] create a text object for checkboxes
 - [ ] detect lists that have multiline bullets (should have no empty lines between
   lines).
 

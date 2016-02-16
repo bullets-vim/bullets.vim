@@ -26,7 +26,8 @@ set cpo&vim
 fun! bullets#insert_new_bullet()
   let curr_line_num = line(".")
   let curr_line = getline(curr_line_num)
-  let matches = matchlist(curr_line, '\v^\s*(-|*) ')
+  let matches = matchlist(curr_line, '\v^\s*(-|*)( \[[x ]?\])? ')
+
   if !empty(matches)
     " insert next bullet
     call append(curr_line_num, [matches[0]])
