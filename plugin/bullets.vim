@@ -17,7 +17,7 @@ if !exists('g:bullets_enabled_file_types')
 endif
 " ------------------------------------------------------   }}}
 
-" Preserve Vim compatibility and temporarily turn it on    {{{
+" Preserve Vim compatibility settings -------------------  {{{
 let s:save_cpo = &cpo
 set cpo&vim
 " -------------------------------------------------------  }}}
