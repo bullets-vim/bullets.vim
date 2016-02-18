@@ -35,7 +35,7 @@ Just add above to your .vimrc
 - [x] allow indenting while in insert mode
 - [x] scope the keybindings and functions to markdown and perhaps text
 - [x] allow checkbox auto bullet
-- [ ] prefix shortcuts and allow disabling them
+- [x] prefix shortcuts and allow disabling them
 - [ ] add numbered list
 - [ ] add alphabetic list
 - [ ] allow user to define a global var with custom bullets
@@ -46,7 +46,3 @@ Just add above to your .vimrc
 - [x] create a text object for checkboxes
 - [ ] detect lists that have multiline bullets (should have no empty lines between
   lines).
-
-
-
-

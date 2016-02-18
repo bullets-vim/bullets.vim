@@ -11,10 +11,20 @@ endif
 let g:loaded_bullets_vim = 1
 " Prevent execution if already loaded ------------------   }}}
 
-" Define file types for autocmds -----------------------   {{{
+" Read user configurable options -----------------------   {{{
 if !exists('g:bullets_enabled_file_types')
   let g:bullets_enabled_file_types = ['markdown', 'text', 'gitcommit']
 endif
+
+if !exists('g:bullets_set_mappings')
+  let g:bullets_set_mappings = 1
+end
+
+if !exists('g:bullets_mapping_leader')
+  let g:bullets_mapping_leader = ''
+end
+
+
 " ------------------------------------------------------   }}}
 
 " Preserve Vim compatibility settings -------------------  {{{
@@ -110,34 +120,35 @@ command! SelectBullet call <SID>select_bullet(0)
 " Keyboard mappings --------------------------------------- {{{
 fun! s:add_local_mapping(mapping_type, mapping, action)
   let file_types = join(g:bullets_enabled_file_types, ",")
-  execute "autocmd FileType "  . file_types . " " . a:mapping_type . " <buffer> " . a:mapping . " " . a:action
+  execute "autocmd FileType "  . file_types . " " . a:mapping_type . " <buffer> " . g:bullets_mapping_leader . a:mapping . " " . a:action
 endfun
 
 augroup TextBulletsMappings
   autocmd!
 
-  " automatic bullets
-  call s:add_local_mapping("inoremap", "<cr>", "<esc>:call bullets#insert_new_bullet()<cr>")
-  call s:add_local_mapping("nnoremap", "o", ":call bullets#insert_new_bullet()<cr>")
+  if g:bullets_set_mappings
+    " automatic bullets
+    call s:add_local_mapping("inoremap", "<cr>", "<esc>:call bullets#insert_new_bullet()<cr>")
+    call s:add_local_mapping("nnoremap", "o", ":call bullets#insert_new_bullet()<cr>")
 
-  " indentation
-  call s:add_local_mapping("inoremap", "<C-l>", "<esc>>>A")
-  call s:add_local_mapping("inoremap", "<C-h>", "<esc><<A")
+    " indentation
+    call s:add_local_mapping("inoremap", "<C-l>", "<esc>>>A")
+    call s:add_local_mapping("inoremap", "<C-h>", "<esc><<A")
 
-  " Toggle checkbox
-  call s:add_local_mapping("nnoremap", "<leader>x", ":ToggleCheckbox<cr>")
+    " Toggle checkbox
+    call s:add_local_mapping("nnoremap", "<leader>x", ":ToggleCheckbox<cr>")
 
-  " Text Objects -------------------------------------------- {{{
-  " inner bullet (just the text)
-  call s:add_local_mapping("onoremap", "ib", ":SelectBulletText<cr>")
-  " a bullet including the bullet markup
-  call s:add_local_mapping("onoremap", "ab", ":SelectBullet<cr>")
-  " inside a checkbox
-  call s:add_local_mapping("onoremap", "ic", ":SelectCheckboxInside<cr>")
-  " a checkbox
-  call s:add_local_mapping("onoremap", "ac", ":SelectCheckbox<cr>")
-  " Text Objects -------------------------------------------- }}}
-
+    " Text Objects -------------------------------------------- {{{
+    " inner bullet (just the text)
+    call s:add_local_mapping("onoremap", "ib", ":SelectBulletText<cr>")
+    " a bullet including the bullet markup
+    call s:add_local_mapping("onoremap", "ab", ":SelectBullet<cr>")
+    " inside a checkbox
+    call s:add_local_mapping("onoremap", "ic", ":SelectCheckboxInside<cr>")
+    " a checkbox
+    call s:add_local_mapping("onoremap", "ac", ":SelectCheckbox<cr>")
+    " Text Objects -------------------------------------------- }}}
+  end
 augroup END
 " --------------------------------------------------------- }}}
 
