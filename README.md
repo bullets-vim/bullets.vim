@@ -40,7 +40,8 @@ Just add above to your .vimrc
 - [ ] add alphabetic list
 - [ ] allow user to define a global var with custom bullets
 - [x] check if plugin initialized and don't load if it did
-- [ ] allow <C-cr> for return without creating a bullet
+- [x] allow <C-cr> for return without creating a bullet (only possible in GuiVim
+  unfortunately)
 - [x] create a text object for bullets
 - [ ] create a text object for bullet list indentation
 - [x] create a text object for checkboxes

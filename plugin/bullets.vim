@@ -130,6 +130,8 @@ augroup TextBulletsMappings
   if g:bullets_set_mappings
     " automatic bullets
     call s:add_local_mapping("inoremap", "<cr>", "<esc>:call bullets#insert_new_bullet()<cr>")
+    call s:add_local_mapping("inoremap", "<C-cr>", "<cr>")
+
     call s:add_local_mapping("nnoremap", "o", ":call bullets#insert_new_bullet()<cr>")
 
     " indentation
