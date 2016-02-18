@@ -31,7 +31,7 @@ Just add above to your .vimrc
 
 # TODO
 
-- [ ] eliminate trailing bullet on previous line if user pressed <cr> twice
+- [x] eliminate trailing bullet on previous line if user pressed <cr> twice
 - [x] allow indenting while in insert mode
 - [x] scope the keybindings and functions to markdown and perhaps text
 - [x] allow checkbox auto bullet

@@ -36,11 +36,21 @@ set cpo&vim
 fun! bullets#insert_new_bullet()
   let curr_line_num = line(".")
   let curr_line = getline(curr_line_num)
-  let matches = matchlist(curr_line, '\v^\s*(-|*)( \[[x ]?\])? ')
+  let matches = matchlist(curr_line, '\v(^\s*(-|*)( \[[x ]?\])? )(.*)')
 
+  " check if current line is a bullet, if it is - was text entered after the
+  " bullet? (regex group 4) We don't want to create a new bullet if the previous one was not
+  " used, instead we want to delete the empty bullet - like word processors do
   if !empty(matches)
-    " insert next bullet
-    call append(curr_line_num, [matches[0]])
+    if matches[4] == ''
+      " delete previous empty bullet
+      call setline(curr_line_num, '')
+      " still need to create the new line
+      call append(curr_line_num, [''])
+    else
+      " insert next bullet
+      call append(curr_line_num, [matches[1]])
+    endif
   else
     " insert previous indentation (what vim will normally do on new line)
     let prev_line_indentation = matchstr(curr_line, '\v\s+')
