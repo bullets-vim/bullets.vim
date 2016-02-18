@@ -42,8 +42,9 @@ fun! bullets#insert_new_bullet()
     " insert next bullet
     call append(curr_line_num, [matches[0]])
   else
-    " insert an empty string so that we can start writing into line
-    call append(curr_line_num, [""])
+    " insert previous indentation (what vim will normally do on new line)
+    let prev_line_indentation = matchstr(curr_line, '\v\s+')
+    call append(curr_line_num, [prev_line_indentation])
   endif
 
   " get back to insert mode on next line
