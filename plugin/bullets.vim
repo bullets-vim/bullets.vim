@@ -33,34 +33,49 @@ set cpo&vim
 " -------------------------------------------------------  }}}
 
 " Generate bullets --------------------------------------  {{{
-fun! bullets#insert_new_bullet()
+fun! s:insert_new_bullet()
   let curr_line_num = line(".")
   let curr_line = getline(curr_line_num)
   let matches = matchlist(curr_line, '\v(^\s*(-|*)( \[[x ]?\])? )(.*)')
+  let send_return = 1
+  let normal_mode = mode() == "n"
 
-  " check if current line is a bullet, if it is - was text entered after the
-  " bullet? (regex group 4) We don't want to create a new bullet if the previous one was not
-  " used, instead we want to delete the empty bullet - like word processors do
-  if !empty(matches)
+  if !empty(matches) && s:is_at_eol()
     if matches[4] == ''
-      " delete previous empty bullet
+      " check if current line is a bullet, if it is - was any text entered after the
+      " bullet? (regex group 4) We don't want to create a new bullet if the previous 
+      " one was not used, instead we want to delete the empty bullet - like word
+      " processors do
       call setline(curr_line_num, '')
-      " still need to create the new line
-      call append(curr_line_num, [''])
     else
       " insert next bullet
+      let next_line_num = curr_line_num + 1
       call append(curr_line_num, [matches[1]])
+      " got to next line after the new bullet
+      call setpos(".", [0, next_line_num, strlen(getline(next_line_num))+1])
+      let send_return = 0
     endif
-  else
-    " insert previous indentation (what vim will normally do on new line)
-    let prev_line_indentation = matchstr(curr_line, '\v\s+')
-    call append(curr_line_num, [prev_line_indentation])
   endif
 
-  " get back to insert mode on next line
-  normal! j$
-  startinsert!
+  if send_return || normal_mode
+    " start a new line
+    if normal_mode
+      startinsert!
+    endif
+
+    let keys = send_return ? "\<CR>" : ""
+    call feedkeys(keys, 'n')
+  endif
+
+  " need to return a string since we are in insert mode calling with <C-R>=
+  return ""
 endfun
+
+fun! s:is_at_eol()
+  return strlen(getline(".")) + 1 == col(".")
+endfun
+
+command! InsertNewBullet call <SID>insert_new_bullet()
 " --------------------------------------------------------- }}}
 
 " Checkboxes ---------------------------------------------- {{{
@@ -101,7 +116,7 @@ fun! s:toggle_checkbox()
   call setpos(".", initpos)
 endfun
 
-command! SelectCheckboxInside call <sid>select_checkbox(1)
+command! SelectCheckboxInside call <SID>select_checkbox(1)
 command! SelectCheckbox call <SID>select_checkbox(0)
 command! ToggleCheckbox call <SID>toggle_checkbox()
 " Checkboxes ---------------------------------------------- }}}
@@ -139,10 +154,10 @@ augroup TextBulletsMappings
 
   if g:bullets_set_mappings
     " automatic bullets
-    call s:add_local_mapping("inoremap", "<cr>", "<esc>:call bullets#insert_new_bullet()<cr>")
+    call s:add_local_mapping("inoremap", "<cr>", "<C-R>=<SID>insert_new_bullet()<cr>")
     call s:add_local_mapping("inoremap", "<C-cr>", "<cr>")
 
-    call s:add_local_mapping("nnoremap", "o", ":call bullets#insert_new_bullet()<cr>")
+    call s:add_local_mapping("nnoremap", "o", ":call <SID>insert_new_bullet()<cr>")
 
     " indentation
     call s:add_local_mapping("inoremap", "<C-l>", "<esc>>>A")

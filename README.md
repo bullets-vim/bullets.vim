@@ -47,6 +47,6 @@ Just add above to your .vimrc
 - [x] create a text object for checkboxes
 - [ ] detect lists that have multiline bullets (should have no empty lines between
   lines).
-- [ ] check if user is at EOL before appending auto-bullet - they may just want to
+- [x] check if user is at EOL before appending auto-bullet - they may just want to
   break the line at a certain point
 
