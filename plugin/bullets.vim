@@ -1,5 +1,5 @@
 " Vim plugin for automated bulleted lists
-" Last Change: Friday Feb 12, 2016
+" Last Change:  Fri 26 Feb 2016
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -35,22 +35,48 @@ set cpo&vim
 " Generate bullets --------------------------------------  {{{
 fun! s:insert_new_bullet()
   let curr_line_num = line(".")
+  let next_line_num = curr_line_num + 1
   let curr_line = getline(curr_line_num)
-  let matches = matchlist(curr_line, '\v(^\s*(-|*)( \[[x ]?\])? )(.*)')
+  let std_bullet_regex = '\v(^\s*(-|*)( \[[x ]?\])? )(.*)'
+  let std_bullet_matches = matchlist(curr_line, std_bullet_regex)
+  let num_bullet_regex = '\v^((\s*)(\d+)(\.|\)) )(.*)'
+  let num_bullet_matches = matchlist(curr_line, num_bullet_regex)
+  let bullet_type = ''
+  let bullet_content = ''
+  let text_after_bullet = ''
   let send_return = 1
   let normal_mode = mode() == "n"
 
-  if !empty(matches) && s:is_at_eol()
-    if matches[4] == ''
-      " check if current line is a bullet, if it is - was any text entered after the
-      " bullet? (regex group 4) We don't want to create a new bullet if the previous 
-      " one was not used, instead we want to delete the empty bullet - like word
-      " processors do
+  if !empty(std_bullet_matches)
+    let bullet_type = 'std'
+    let text_after_bullet = std_bullet_matches[4]
+  elseif !empty(num_bullet_matches)
+    let bullet_type = 'num'
+    let text_after_bullet = num_bullet_matches[5]
+  endif
+
+  " check if current line is a bullet and we are at the end of the line (for
+  " insert mode only)
+  if strlen(bullet_type) && (normal_mode || s:is_at_eol())
+    " was any text entered after the bullet?
+    if text_after_bullet == ''
+      " We don't want to create a new bullet if the previous one was not used,
+      " instead we want to delete the empty bullet - like word processors do
       call setline(curr_line_num, '')
     else
+
+      " build next bullet based on bullet type
+      if bullet_type == 'num'
+        let leading_space = num_bullet_matches[2]
+        let next_num = num_bullet_matches[3] + 1
+        let closure = num_bullet_matches[4]
+        let next_bullet_str =  leading_space . next_num . closure  . " "
+      else
+        let next_bullet_str = std_bullet_matches[1]
+      endif
+
       " insert next bullet
-      let next_line_num = curr_line_num + 1
-      call append(curr_line_num, [matches[1]])
+      call append(curr_line_num, [next_bullet_str])
       " got to next line after the new bullet
       call setpos(".", [0, next_line_num, strlen(getline(next_line_num))+1])
       let send_return = 0
@@ -124,7 +150,7 @@ command! ToggleCheckbox call <SID>toggle_checkbox()
 " Bullets ------------------------------------------------- {{{
 fun! s:find_bullet_position(lnum)
   let line_text = getline(a:lnum)
-  return matchend(line_text, '\v\s*(\*|-)')
+  return matchend(line_text, '\v^\s*(\*|-)')
 endfun
 
 fun! s:select_bullet(inner)

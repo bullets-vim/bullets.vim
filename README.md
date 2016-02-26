@@ -36,7 +36,7 @@ Just add above to your .vimrc
 - [x] scope the keybindings and functions to markdown and perhaps text
 - [x] allow checkbox auto bullet
 - [x] prefix shortcuts and allow disabling them
-- [ ] add numbered list
+- [x] add numbered list
 - [ ] add alphabetic list
 - [ ] allow user to define a global var with custom bullets
 - [x] check if plugin initialized and don't load if it did
@@ -49,4 +49,5 @@ Just add above to your .vimrc
   lines).
 - [x] check if user is at EOL before appending auto-bullet - they may just want to
   break the line at a certain point
+- [ ] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t aa.
 
