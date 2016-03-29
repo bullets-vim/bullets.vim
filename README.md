@@ -55,4 +55,5 @@ In the meantime see completed todos in the TODO section below.
 - [x] check if user is at EOL before appending auto-bullet - they may just want to
   break the line at a certain point
 - [ ] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
+- [ ] reset numbers (user selects numbered bullets 3-5 and copies to middle of document, then reselects and resets them to 1-3)
 
