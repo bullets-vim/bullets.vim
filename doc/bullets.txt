@@ -7,6 +7,7 @@ TABLE OF CONTENTS                         *bullets-toc*
 
 |bullets-intro|                    Introduction and feature summary
 |bullets-commands|                 General Commands
+|bullets-configuration|            Configuration
 |bullets-insert-new-bullet|        Inserting Bullets
 |bullets-indenting|                Indenting Bullets
 |bullets-checkboxes|               Gfm Markdown Checkboxes
@@ -65,6 +66,37 @@ GENERAL COMMANDS                            *bullets-commands*
                        bullet list item based on the one in the current line.
 
 
+CONFIGURATION                               *bullets-configuration*
+
+You can choose which file types this plugin will work on:
+
+>
+let g:bullets_enabled_file_types = ['markdown', 'text', 'gitcommit']
+>
+
+Above are the defaults, but feel free to add or modify this list to suit your
+needs. Just add above to your .vimrc.
+
+To check the type of the current file type `:set ft` into the vim command
+line.
+
+To disable default mappings add the following to your .vimrc:
+
+>
+let g:bullets_set_mappings = 0
+>
+
+Now you can use the provided |bullets-commands| to define your own mappings.
+
+To add a leader key to all mappings set the following:
+
+>
+let g:bullets_mapping_leader = "\<Space>"
+>
+
+This will set the <space> key as leader to all default mappings.
+
+
 INSERTING BULLETS                           *bullets-insert-new-bullet*
 
 When a supported file type is opened (see |bullets-configuration|) you can start
@@ -101,13 +133,15 @@ There are also |bullets-commands| that you can use to to create your own mapping
 
 MAPPINGS                                    *bullets-mappings*
 
+To disable the default mappings see |bullets-configuration|.
+
 INSERT MODE
 
 
                                             *bullets-i_<cr>*
 <CR>        Inserts a new bullet list item based on the current line bullet
             format. This a local mapping and will only affect the current buffer
-            if it has a supported file type (see |configuration|).
+            if it has a supported file type (see |bullets-configuration|).
 
                                             *bullets-i_<C-cr>*
 <C-CR>      Same as <CR>, in case you want to unmap <CR> in INSERT MODE.
