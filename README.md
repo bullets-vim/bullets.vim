@@ -30,8 +30,9 @@ Just add above to your .vimrc
 
 # Documentation
 
-Apologies, coming soon!
-In the meantime see completed todos in the TODO section below.
+```
+:h bullets
+```
 
 
 # TODO
