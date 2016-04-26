@@ -7,5 +7,4 @@ group :test do
   gem 'vimrunner'
   gem 'pry'
   gem 'pry-byebug'
-  gem 'byebug'
 end
