@@ -34,6 +34,19 @@ Just add above to your .vimrc
 :h bullets
 ```
 
+# Testing
+
+The test suite is only known to be working on OS X with MacVim installed. I
+tried running it on Circle CI but had no success.
+
+On your mac run:
+
+```sh
+rspec spec
+```
+
+You should see a Vim window open which will run each test, same general idea as
+Capybara integration testing. ❤️
 
 # TODO
 
