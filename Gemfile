@@ -6,5 +6,4 @@ group :test do
   gem 'rspec'
   gem 'vimrunner'
   gem 'pry'
-  gem 'pry-byebug'
 end
