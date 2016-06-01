@@ -23,7 +23,13 @@ to go to the next line, a new list item will be created.
 You can choose which file types this plugin will work on:
 
 ```vim
-let g:bullets_enabled_file_types = ['markdown', 'text', 'gitcommit']
+" Bullets.vim
+let g:bullets_enabled_file_types = [
+    \ 'markdown',
+    \ 'text',
+    \ 'gitcommit',
+    \ 'scratch'
+    \]
 ```
 
 Just add above to your .vimrc
