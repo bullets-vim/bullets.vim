@@ -185,10 +185,6 @@ augroup TextBulletsMappings
 
     call s:add_local_mapping("nnoremap", "o", ":call <SID>insert_new_bullet()<cr>")
 
-    " indentation
-    call s:add_local_mapping("inoremap", "<C-l>", "<esc>>>A")
-    call s:add_local_mapping("inoremap", "<C-h>", "<esc><<A")
-
     " Toggle checkbox
     call s:add_local_mapping("nnoremap", "<leader>x", ":ToggleCheckbox<cr>")
 

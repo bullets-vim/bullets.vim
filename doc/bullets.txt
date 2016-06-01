@@ -115,11 +115,14 @@ next bullet list item and put the cursor right after it.
 
 INDENTING BULLETS                           *bullets-indenting*
 
-Bullets.vim comes built in with support for indenting and de-indenting
-bullets.
+Vim comes built in with support for indenting and de-indenting in INSERT mode.
 
-To indent the current bullet to the right: from insert mode press <CTRL-l>.
-To indent the current bullet to the left: from insert mode press <CTRL-h>.
+To indent the current bullet to the right: from insert mode press <CTRL-t>.
+To indent the current bullet to the left: from insert mode press <CTRL-d>.
+
+Note: For <CTRL-d> to work properly you have to be at the end of the line.
+
+For more information `:h i_CTRL-T` and `:h i_CTRL-D`
 
 
 GFM MARKDOWN CHECKBOXES                     *bullets-checkboxes*
