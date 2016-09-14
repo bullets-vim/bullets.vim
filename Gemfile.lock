@@ -12,6 +12,7 @@ GEM
     pry-byebug (3.3.0)
       byebug (~> 8.0)
       pry (~> 0.10)
+    rake (10.3.2)
     rspec (3.4.0)
       rspec-core (~> 3.4.0)
       rspec-expectations (~> 3.4.0)
@@ -32,11 +33,11 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  byebug
   pry
   pry-byebug
+  rake (~> 10.3.2)
   rspec
   vimrunner
 
 BUNDLED WITH
-   1.11.2
+   1.12.5

@@ -9,21 +9,30 @@ Vimrunner::RSpec.configure do |config|
   # Decide how to start a Vim instance. In this block, an instance should be
   # spawned and set up with anything project-specific.
   config.start_vim do
-    vim = Vimrunner.start
+    vim = VIM = Vimrunner.start
 
     # Or, start a GUI instance:
-    # vim = Vimrunner.start_gvim
+    # VIM = Vimrunner.start_gvim
 
     # Setup your plugin in the Vim instance
     plugin_path = File.expand_path('../..', __FILE__)
-    vim.add_plugin(plugin_path, 'plugin/bullets.vim')
+    VIM.add_plugin(plugin_path, 'plugin/bullets.vim')
 
     # The returned value is the Client available in the tests.
-    vim
+    VIM
   end
 end
 
 RSpec.configure do |config|
+  config.around do |example|
+    Dir.mktmpdir do |dir|
+      Dir.chdir(dir) do
+        VIM.command("cd #{dir}")
+        example.call
+      end
+    end
+  end
+
   config.expect_with :rspec do |expectations|
     # This option will default to `true` in RSpec 4. It makes the `description`
     # and `failure_message` of custom matchers include text for helper methods
