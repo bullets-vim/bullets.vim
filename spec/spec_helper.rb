@@ -9,17 +9,17 @@ Vimrunner::RSpec.configure do |config|
   # Decide how to start a Vim instance. In this block, an instance should be
   # spawned and set up with anything project-specific.
   config.start_vim do
-    vim = VIM = Vimrunner.start
+    vim = Vimrunner.start
 
     # Or, start a GUI instance:
     # VIM = Vimrunner.start_gvim
 
     # Setup your plugin in the Vim instance
     plugin_path = File.expand_path('../..', __FILE__)
-    VIM.add_plugin(plugin_path, 'plugin/bullets.vim')
+    vim.add_plugin(plugin_path, 'plugin/bullets.vim')
 
     # The returned value is the Client available in the tests.
-    VIM
+    vim
   end
 end
 
@@ -27,7 +27,7 @@ RSpec.configure do |config|
   config.around do |example|
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
-        VIM.command("cd #{dir}")
+        vim.command("cd #{dir}")
         example.call
       end
     end
