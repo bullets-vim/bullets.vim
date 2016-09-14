@@ -1,3 +1,5 @@
+![Bullets.vim](bullets.vim.png)
+
 # Description
 
 Bullets.vim is a Vim plugin for automated bullet lists.
