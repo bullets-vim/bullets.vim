@@ -1,5 +1,5 @@
 " Vim plugin for automated bulleted lists
-" Last Change:  Fri 26 Feb 2016
+" Last Change: Fri 6 Jan 2017
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -27,78 +27,138 @@ end
 
 " ------------------------------------------------------   }}}
 
+
+" Helper methods ----------------------------------------  {{{
+fun! s:match_numeric_list_item(input_text)
+  let l:num_bullet_regex  = '\v^((\s*)(\d+)(\.|\))(\s*))(.*)'
+  let l:matches           = matchlist(a:input_text, l:num_bullet_regex)
+
+  if empty(l:matches)
+    return {}
+  endif
+
+  let l:leading_space     = l:matches[2]
+  let l:num               = l:matches[3]
+  let l:closure           = l:matches[4]
+  let l:trailing_space    = l:matches[5]
+  let l:text_after_bullet = l:matches[6]
+
+  return {
+        \ 'leading_space':     l:leading_space,
+        \ 'trailing_space':    l:trailing_space,
+        \ 'bullet':            l:num,
+        \ 'closure':           l:closure,
+        \ 'text_after_bullet': l:text_after_bullet
+        \ }
+endfun
+
+fun! s:match_bullet_list_item(input_text)
+  let l:std_bullet_regex  = '\v(^\s*(-|*)( \[[x ]?\])? )(.*)'
+  let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
+
+  if empty(l:matches)
+    return {}
+  endif
+
+  let l:whole_bullet      = l:matches[1]
+  let l:bullet            = l:matches[2]
+  let l:text_after_bullet = l:matches[4]
+
+  return {
+        \ 'whole_bullet':      l:whole_bullet,
+        \ 'bullet':            l:bullet,
+        \ 'text_after_bullet': l:text_after_bullet
+        \ }
+endfun
+
+fun! s:get_visual_selection_lines()
+  let [l:lnum1, l:col1] = getpos("'<")[1:2]
+  let [l:lnum2, l:col2] = getpos("'>")[1:2]
+  let l:lines = getline(l:lnum1, l:lnum2)
+  let l:lines[-1] = l:lines[-1][: l:col2 - (&selection ==# 'inclusive' ? 1 : 2)]
+  let l:lines[0] = l:lines[0][l:col1 - 1:]
+  let l:index = l:lnum1
+  let l:lines_with_index = []
+  for l:line in l:lines
+    let l:lines_with_index += [{'text': l:line, 'nr': l:index}]
+    let l:index += 1
+  endfor
+  return l:lines_with_index
+endfun
+" -------------------------------------------------------  }}}
+
 " Preserve Vim compatibility settings -------------------  {{{
-let s:save_cpo = &cpo
-set cpo&vim
+let s:save_cpo = &cpoptions
+set cpoptions&vim
 " -------------------------------------------------------  }}}
 
 " Generate bullets --------------------------------------  {{{
-fun! s:insert_new_bullet()
-  let curr_line_num = line(".")
-  let next_line_num = curr_line_num + 1
-  let curr_line = getline(curr_line_num)
-  let std_bullet_regex = '\v(^\s*(-|*)( \[[x ]?\])? )(.*)'
-  let std_bullet_matches = matchlist(curr_line, std_bullet_regex)
-  let num_bullet_regex = '\v^((\s*)(\d+)(\.|\)) )(.*)'
-  let num_bullet_matches = matchlist(curr_line, num_bullet_regex)
-  let bullet_type = ''
-  let bullet_content = ''
-  let text_after_bullet = ''
-  let send_return = 1
-  let normal_mode = mode() == "n"
+fun! s:next_bullet_str(bullet_type, line_data)
+  if a:bullet_type ==# 'num'
+    let l:next_num = a:line_data.bullet + 1
+    return a:line_data.leading_space . l:next_num . a:line_data.closure  . ' '
+  else
+    return a:line_data.whole_bullet
+  endif
+endfun
 
-  if !empty(std_bullet_matches)
-    let bullet_type = 'std'
-    let text_after_bullet = std_bullet_matches[4]
-  elseif !empty(num_bullet_matches)
-    let bullet_type = 'num'
-    let text_after_bullet = num_bullet_matches[5]
+fun! s:insert_new_bullet()
+  let l:curr_line_num = line('.')
+  let l:next_line_num = l:curr_line_num + 1
+  let l:curr_line = getline(l:curr_line_num)
+  let l:std_bullet_matches = s:match_bullet_list_item(l:curr_line)
+  let l:num_bullet_matches = s:match_numeric_list_item(l:curr_line)
+  let l:bullet_type = ''
+  let l:bullet = ''
+  let l:bullet_content = ''
+  let l:text_after_bullet = ''
+  let l:send_return = 1
+  let l:normal_mode = mode() ==# 'n'
+
+  if !empty(l:std_bullet_matches)
+    let l:bullet_type = 'std'
+    let l:bullet = l:std_bullet_matches
+  elseif !empty(l:num_bullet_matches)
+    let l:bullet_type = 'num'
+    let l:bullet = l:num_bullet_matches
   endif
 
   " check if current line is a bullet and we are at the end of the line (for
   " insert mode only)
-  if strlen(bullet_type) && (normal_mode || s:is_at_eol())
+  if strlen(l:bullet_type) && (l:normal_mode || s:is_at_eol())
     " was any text entered after the bullet?
-    if text_after_bullet == ''
+    if l:bullet.text_after_bullet ==# ''
       " We don't want to create a new bullet if the previous one was not used,
       " instead we want to delete the empty bullet - like word processors do
-      call setline(curr_line_num, '')
+      call setline(l:curr_line_num, '')
     else
 
-      " build next bullet based on bullet type
-      if bullet_type == 'num'
-        let leading_space = num_bullet_matches[2]
-        let next_num = num_bullet_matches[3] + 1
-        let closure = num_bullet_matches[4]
-        let next_bullet_str =  leading_space . next_num . closure  . " "
-      else
-        let next_bullet_str = std_bullet_matches[1]
-      endif
+      let l:next_bullet_str = s:next_bullet_str(l:bullet_type, l:bullet)
 
       " insert next bullet
-      call append(curr_line_num, [next_bullet_str])
+      call append(l:curr_line_num, [l:next_bullet_str])
       " got to next line after the new bullet
-      call setpos(".", [0, next_line_num, strlen(getline(next_line_num))+1])
-      let send_return = 0
+      call setpos('.', [0, l:next_line_num, strlen(getline(l:next_line_num))+1])
+      let l:send_return = 0
     endif
   endif
 
-  if send_return || normal_mode
+  if l:send_return || l:normal_mode
     " start a new line
-    if normal_mode
+    if l:normal_mode
       startinsert!
     endif
 
-    let keys = send_return ? "\<CR>" : ""
-    call feedkeys(keys, 'n')
+    let l:keys = l:send_return ? "\<CR>" : ''
+    call feedkeys(l:keys, 'n')
   endif
 
   " need to return a string since we are in insert mode calling with <C-R>=
-  return ""
+  return ''
 endfun
 
 fun! s:is_at_eol()
-  return strlen(getline(".")) + 1 == col(".")
+  return strlen(getline('.')) + 1 ==# col('.')
 endfun
 
 command! InsertNewBullet call <SID>insert_new_bullet()
@@ -106,16 +166,16 @@ command! InsertNewBullet call <SID>insert_new_bullet()
 
 " Checkboxes ---------------------------------------------- {{{
 fun! s:find_checkbox_position(lnum)
-  let line_text = getline(a:lnum)
-  return matchend(line_text, '\v\s*(\*|-) \[')
+  let l:line_text = getline(a:lnum)
+  return matchend(l:line_text, '\v\s*(\*|-) \[')
 endfun
 
 fun! s:select_checkbox(inner)
-  let lnum = line(".")
-  let checkbox_col = s:find_checkbox_position(lnum)
+  let l:lnum = line('.')
+  let l:checkbox_col = s:find_checkbox_position(l:lnum)
 
-  if checkbox_col
-    call setpos(".", [0, lnum, checkbox_col])
+  if l:checkbox_col
+    call setpos('.', [0, l:lnum, l:checkbox_col])
 
     " decide if we need to select the whole checkbox with brackets or just the
     " inside of it
@@ -128,24 +188,51 @@ fun! s:select_checkbox(inner)
 endfun
 
 fun! s:toggle_checkbox()
-  let initpos = getpos(".")
-  let lnum = line(".")
-  let pos = s:find_checkbox_position(lnum)
-  let checkbox_content = getline(lnum)[pos]
+  let l:initpos = getpos('.')
+  let l:lnum = line('.')
+  let l:pos = s:find_checkbox_position(l:lnum)
+  let l:checkbox_content = getline(l:lnum)[l:pos]
   " select inside checkbox
-  call setpos(".", [0, lnum, pos])
-  if checkbox_content == "x"
+  call setpos('.', [0, l:lnum, l:pos])
+  if l:checkbox_content ==? 'x'
     execute "normal! ci[\<Space>"
   else
     normal! ci[x
   endif
-  call setpos(".", initpos)
+  call setpos('.', l:initpos)
 endfun
 
 command! SelectCheckboxInside call <SID>select_checkbox(1)
 command! SelectCheckbox call <SID>select_checkbox(0)
 command! ToggleCheckbox call <SID>toggle_checkbox()
 " Checkboxes ---------------------------------------------- }}}
+
+" Renumbering --------------------------------------------- {{{
+fun! s:renumber_selection()
+  let l:selection_lines = s:get_visual_selection_lines()
+  let l:index = 0
+
+  for l:line in l:selection_lines
+    let l:bullet = s:match_numeric_list_item(l:line.text)
+
+    if !empty(l:bullet)
+      let l:index += 1
+      let l:renumbered_line =
+            \ l:bullet.leading_space
+            \ . l:index
+            \ . l:bullet.closure
+            \ . l:bullet.trailing_space
+            \ . l:bullet.text_after_bullet
+      call setline(l:line.nr, l:renumbered_line)
+    else
+      call setline(l:line.nr, l:line.text)
+    endif
+  endfor
+endfun
+
+
+command! -range=% RenumberSelection call <SID>renumber_selection()
+" --------------------------------------------------------- }}}
 
 " Bullets ------------------------------------------------- {{{
 fun! s:find_bullet_position(lnum)
@@ -171,8 +258,16 @@ command! SelectBullet call <SID>select_bullet(0)
 
 " Keyboard mappings --------------------------------------- {{{
 fun! s:add_local_mapping(mapping_type, mapping, action)
-  let file_types = join(g:bullets_enabled_file_types, ",")
-  execute "autocmd FileType "  . file_types . " " . a:mapping_type . " <buffer> " . g:bullets_mapping_leader . a:mapping . " " . a:action
+  let l:file_types = join(g:bullets_enabled_file_types, ',')
+  execute 'autocmd FileType ' .
+        \ l:file_types .
+        \ ' ' .
+        \ a:mapping_type .
+        \ ' <silent> <buffer> ' .
+        \ g:bullets_mapping_leader .
+        \ a:mapping .
+        \ ' ' .
+        \ a:action
 endfun
 
 augroup TextBulletsMappings
@@ -180,23 +275,26 @@ augroup TextBulletsMappings
 
   if g:bullets_set_mappings
     " automatic bullets
-    call s:add_local_mapping("inoremap", "<cr>", "<C-R>=<SID>insert_new_bullet()<cr>")
-    call s:add_local_mapping("inoremap", "<C-cr>", "<cr>")
+    call s:add_local_mapping('inoremap', '<cr>', '<C-R>=<SID>insert_new_bullet()<cr>')
+    call s:add_local_mapping('inoremap', '<C-cr>', '<cr>')
 
-    call s:add_local_mapping("nnoremap", "o", ":call <SID>insert_new_bullet()<cr>")
+    call s:add_local_mapping('nnoremap', 'o', ':call <SID>insert_new_bullet()<cr>')
+
+    " Renumber bullet list
+    call s:add_local_mapping('vnoremap', 'gN', ':RenumberSelection<cr>')
 
     " Toggle checkbox
-    call s:add_local_mapping("nnoremap", "<leader>x", ":ToggleCheckbox<cr>")
+    call s:add_local_mapping('nnoremap', '<leader>x', ':ToggleCheckbox<cr>')
 
     " Text Objects -------------------------------------------- {{{
     " inner bullet (just the text)
-    call s:add_local_mapping("onoremap", "ib", ":SelectBulletText<cr>")
+    call s:add_local_mapping('onoremap', 'ib', ':SelectBulletText<cr>')
     " a bullet including the bullet markup
-    call s:add_local_mapping("onoremap", "ab", ":SelectBullet<cr>")
+    call s:add_local_mapping('onoremap', 'ab', ':SelectBullet<cr>')
     " inside a checkbox
-    call s:add_local_mapping("onoremap", "ic", ":SelectCheckboxInside<cr>")
+    call s:add_local_mapping('onoremap', 'ic', ':SelectCheckboxInside<cr>')
     " a checkbox
-    call s:add_local_mapping("onoremap", "ac", ":SelectCheckbox<cr>")
+    call s:add_local_mapping('onoremap', 'ac', ':SelectCheckbox<cr>')
     " Text Objects -------------------------------------------- }}}
   end
 augroup END

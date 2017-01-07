@@ -64,18 +64,18 @@ Capybara integration testing. ❤️
 - [x] allow GFM-style checkbox auto bullet
 - [x] prefix shortcuts and allow disabling them
 - [x] add numbered list
-- [ ] add alphabetic list
-- [ ] allow user to define a global var with custom bullets
+- [x] reset numbers (user selects numbered bullets 3-5 and copies to middle of document, then reselects and resets them to 1-3)
 - [x] check if plugin initialized and don't load if it did
 - [x] allow <C-cr> for return without creating a bullet (only possible in GuiVim
   unfortunately)
 - [x] create a text object for bullets
-- [ ] create a text object for bullet list indentation
 - [x] create a text object for GFM-style checkboxes
+- [x] check if user is at EOL before appending auto-bullet - they may just want to
+- [ ] add alphabetic list
+- [ ] allow user to define a global var with custom bullets
+- [ ] create a text object for bullet list indentation
 - [ ] detect lists that have multiline bullets (should have no empty lines between
   lines).
-- [x] check if user is at EOL before appending auto-bullet - they may just want to
   break the line at a certain point
 - [ ] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
-- [ ] reset numbers (user selects numbered bullets 3-5 and copies to middle of document, then reselects and resets them to 1-3)
 
