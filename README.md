@@ -4,6 +4,10 @@
 
 Bullets.vim is a Vim plugin for automated bullet lists.
 
+![demo](img/bullets.gif)
+
+![renumber demo](img/renumber.gif)
+
 # Installation
 
 With VimPlug:

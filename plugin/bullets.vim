@@ -27,7 +27,6 @@ end
 
 " ------------------------------------------------------   }}}
 
-
 " Helper methods ----------------------------------------  {{{
 fun! s:match_numeric_list_item(input_text)
   let l:num_bullet_regex  = '\v^((\s*)(\d+)(\.|\))(\s*))(.*)'
