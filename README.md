@@ -83,3 +83,13 @@ Capybara integration testing. ❤️
   break the line at a certain point
 - [ ] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
 
+---
+
+### About
+
+[![Hashrocket logo](https://hashrocket.com/hashrocket_logo.svg)](https://hashrocket.com)
+
+Bullets.vim is kindly supported by [Hashrocket, a multidisciplinary design and
+development consultancy](https://hashrocket.com). If you'd like to [work with
+us](https://hashrocket.com/contact-us/hire-us) or [join our
+team](https://hashrocket.com/contact-us/jobs), don't hesitate to get in touch.
