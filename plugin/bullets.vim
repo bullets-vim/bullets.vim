@@ -1,5 +1,5 @@
 " Vim plugin for automated bulleted lists
-" Last Change: Fri 6 Jan 2017
+" Last Change: Fri 17 Feb 2017
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -108,7 +108,7 @@ fun! s:insert_new_bullet()
   let l:std_bullet_matches = s:match_bullet_list_item(l:curr_line)
   let l:num_bullet_matches = s:match_numeric_list_item(l:curr_line)
   let l:bullet_type = ''
-  let l:bullet = ''
+  let l:bullet = {}
   let l:bullet_content = ''
   let l:text_after_bullet = ''
   let l:send_return = 1
