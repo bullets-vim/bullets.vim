@@ -24,6 +24,50 @@ RSpec.describe 'Bullets.vim' do
           - second bullet\n
         EOF
       end
+
+      it 'deletes the last bullet if it is empty' do
+        filename = "#{SecureRandom.hex(6)}.md"
+        write_file(filename, <<-EOF)
+          # Hello there
+          - this is the first bullet
+        EOF
+
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.feedkeys '\<cr>'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents.strip).to eq normalize_string_indent(<<-EOF)
+          # Hello there
+          - this is the first bullet
+        EOF
+      end
+
+      it 'does not delete the last bullet when configured not to' do
+        filename = "#{SecureRandom.hex(6)}.md"
+        write_file(filename, <<-EOF)
+          # Hello there
+          - this is the first bullet
+        EOF
+
+        vim.command 'let g:bullets_delete_last_bullet_if_empty = 0'
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.feedkeys '\<cr>'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents.strip).to eq normalize_string_indent(<<-EOF)
+          # Hello there
+          - this is the first bullet
+          -
+        EOF
+      end
     end
 
     context 'on return key when cursor is not at EOL' do

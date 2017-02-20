@@ -1,8 +1,13 @@
 " Vim plugin for automated bulleted lists
-" Last Change: Fri 17 Feb 2017
+" Last Change: Mon 20 Feb 2017
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
+
+" Preserve Vim compatibility settings -------------------  {{{
+let s:save_cpo = &cpoptions
+set cpoptions&vim
+" -------------------------------------------------------  }}}
 
 " Prevent execution if already loaded ------------------   {{{
 if exists('g:loaded_bullets_vim')
@@ -24,6 +29,9 @@ if !exists('g:bullets_mapping_leader')
   let g:bullets_mapping_leader = ''
 end
 
+if !exists('g:bullets_delete_last_bullet_if_empty')
+  let g:bullets_delete_last_bullet_if_empty = 1
+end
 
 " ------------------------------------------------------   }}}
 
@@ -86,11 +94,6 @@ fun! s:get_visual_selection_lines()
 endfun
 " -------------------------------------------------------  }}}
 
-" Preserve Vim compatibility settings -------------------  {{{
-let s:save_cpo = &cpoptions
-set cpoptions&vim
-" -------------------------------------------------------  }}}
-
 " Generate bullets --------------------------------------  {{{
 fun! s:next_bullet_str(bullet_type, line_data)
   if a:bullet_type ==# 'num'
@@ -98,6 +101,13 @@ fun! s:next_bullet_str(bullet_type, line_data)
     return a:line_data.leading_space . l:next_num . a:line_data.closure  . ' '
   else
     return a:line_data.whole_bullet
+  endif
+endfun
+
+fun! s:delete_empty_bullet(line_num)
+  if g:bullets_delete_last_bullet_if_empty
+    echom 'delete line'
+    call setline(a:line_num, '')
   endif
 endfun
 
@@ -129,7 +139,7 @@ fun! s:insert_new_bullet()
     if l:bullet.text_after_bullet ==# ''
       " We don't want to create a new bullet if the previous one was not used,
       " instead we want to delete the empty bullet - like word processors do
-      call setline(l:curr_line_num, '')
+      call s:delete_empty_bullet(l:curr_line_num)
     else
 
       let l:next_bullet_str = s:next_bullet_str(l:bullet_type, l:bullet)

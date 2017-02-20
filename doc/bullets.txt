@@ -68,10 +68,12 @@ GENERAL COMMANDS                            *bullets-commands*
 
 CONFIGURATION                               *bullets-configuration*
 
+File types
+----------
 You can choose which file types this plugin will work on:
 
 >
-let g:bullets_enabled_file_types = ['markdown', 'text', 'gitcommit']
+  let g:bullets_enabled_file_types = ['markdown', 'text', 'gitcommit']
 >
 
 Above are the defaults, but feel free to add or modify this list to suit your
@@ -80,21 +82,35 @@ needs. Just add above to your .vimrc.
 To check the type of the current file type `:set ft` into the vim command
 line.
 
+Disable mappings
+----------------
 To disable default mappings add the following to your .vimrc:
 
 >
-let g:bullets_set_mappings = 0
+  let g:bullets_set_mappings = 0
 >
 
 Now you can use the provided |bullets-commands| to define your own mappings.
 
+Leader key prefix
+-----------------
 To add a leader key to all mappings set the following:
 
 >
-let g:bullets_mapping_leader = "\<Space>"
+  let g:bullets_mapping_leader = "\<Space>"
 >
 
 This will set the <space> key as leader to all default mappings.
+
+Disabling empty bullet deletion
+--------------------------------
+
+By default bullets.vim will delete trailing empty bullets when the return key
+is pressed, just like modern word processors.
+
+If you would like to turn this feature off add the following to your .vimrc
+
+  let g:bullets_delete_last_bullet_if_empty = 0
 
 
 INSERTING BULLETS                           *bullets-insert-new-bullet*
