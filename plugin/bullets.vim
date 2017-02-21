@@ -21,6 +21,10 @@ if !exists('g:bullets_enabled_file_types')
   let g:bullets_enabled_file_types = ['markdown', 'text', 'gitcommit']
 endif
 
+if !exists('g:bullets_enable_in_empty_buffers')
+  let g:bullets_enable_in_empty_buffers = 1
+end
+
 if !exists('g:bullets_set_mappings')
   let g:bullets_set_mappings = 1
 end
@@ -32,7 +36,6 @@ end
 if !exists('g:bullets_delete_last_bullet_if_empty')
   let g:bullets_delete_last_bullet_if_empty = 1
 end
-
 " ------------------------------------------------------   }}}
 
 " Helper methods ----------------------------------------  {{{
@@ -106,7 +109,6 @@ endfun
 
 fun! s:delete_empty_bullet(line_num)
   if g:bullets_delete_last_bullet_if_empty
-    echom 'delete line'
     call setline(a:line_num, '')
   endif
 endfun
@@ -277,6 +279,17 @@ fun! s:add_local_mapping(mapping_type, mapping, action)
         \ a:mapping .
         \ ' ' .
         \ a:action
+
+  if g:bullets_enable_in_empty_buffers
+    execute 'autocmd BufEnter * if bufname("") == "" | ' .
+          \ a:mapping_type .
+          \ ' <silent> <buffer> ' .
+          \ g:bullets_mapping_leader .
+          \ a:mapping .
+          \ ' ' .
+          \ a:action .
+          \ '| endif'
+  endif
 endfun
 
 augroup TextBulletsMappings

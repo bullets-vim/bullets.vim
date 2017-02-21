@@ -82,6 +82,15 @@ needs. Just add above to your .vimrc.
 To check the type of the current file type `:set ft` into the vim command
 line.
 
+
+Enable in empty buffers
+-----------------------
+bullets.vim is enabled in new empty buffers by default (buffers created with
+`:new` for example) to disable this feature add the following to your .vimrc:
+
+  `let g:bullets_enable_in_empty_buffers = 1`
+
+
 Disable mappings
 ----------------
 To disable default mappings add the following to your .vimrc:
@@ -92,25 +101,25 @@ To disable default mappings add the following to your .vimrc:
 
 Now you can use the provided |bullets-commands| to define your own mappings.
 
+
 Leader key prefix
 -----------------
 To add a leader key to all mappings set the following:
 
 >
   let g:bullets_mapping_leader = "\<Space>"
->
 
 This will set the <space> key as leader to all default mappings.
 
+
 Disabling empty bullet deletion
 --------------------------------
-
 By default bullets.vim will delete trailing empty bullets when the return key
 is pressed, just like modern word processors.
 
 If you would like to turn this feature off add the following to your .vimrc
 
-  let g:bullets_delete_last_bullet_if_empty = 0
+  `let g:bullets_delete_last_bullet_if_empty = 0`
 
 
 INSERTING BULLETS                           *bullets-insert-new-bullet*

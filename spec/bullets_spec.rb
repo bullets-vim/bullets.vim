@@ -25,6 +25,28 @@ RSpec.describe 'Bullets.vim' do
         EOF
       end
 
+      it 'adds a new numeric bullet if the previous line had numeric bullet' do
+        filename = "#{SecureRandom.hex(6)}.md"
+        write_file(filename, <<-EOF)
+          # Hello there
+          1) this is the first bullet
+        EOF
+
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'second bullet'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+          # Hello there
+          1) this is the first bullet
+          2) second bullet\n
+        EOF
+      end
+
       it 'deletes the last bullet if it is empty' do
         filename = "#{SecureRandom.hex(6)}.md"
         write_file(filename, <<-EOF)
@@ -92,6 +114,25 @@ RSpec.describe 'Bullets.vim' do
           second bullett\n
         EOF
       end
+    end
+  end
+
+  describe 'filetypes' do
+    it 'creates mapping for bullets on empty buffer if configured' do
+      vim.command 'new'
+      vim.insert '# Hello there'
+      vim.feedkeys '\<cr>'
+      vim.type '- this is the first bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'this is the second bullet'
+
+      buffer_content = vim.echo("join(getbufline(bufname(''), 1, '$'), '\n')")
+
+      expect(buffer_content).to eq normalize_string_indent(<<-EOF)
+        # Hello there
+        - this is the first bullet
+        - this is the second bullet
+      EOF
     end
   end
 
