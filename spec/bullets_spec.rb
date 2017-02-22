@@ -25,6 +25,34 @@ RSpec.describe 'Bullets.vim' do
         EOF
       end
 
+      it 'adds a new latex bullet' do
+        filename = "#{SecureRandom.hex(6)}.md"
+        write_file(filename, <<-EOF)
+        \\documentclass{article}
+          \\begin{document}
+
+          \\begin{itemize}
+            \\item First item
+        EOF
+
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'Second item'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+        \\documentclass{article}
+          \\begin{document}
+
+          \\begin{itemize}
+            \\item First item
+            \\item Second item\n
+        EOF
+      end
+
       it 'adds a new numeric bullet if the previous line had numeric bullet' do
         filename = "#{SecureRandom.hex(6)}.md"
         write_file(filename, <<-EOF)

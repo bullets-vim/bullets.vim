@@ -30,6 +30,7 @@ types:
 - [ ] GFM markdown checkbox lists
 1. Numeric lists
 2) or this style of numeric lists
+\item latex item lists
 
 Future versions aim to support the following:
 
