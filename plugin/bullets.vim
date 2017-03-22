@@ -63,7 +63,7 @@ fun! s:match_numeric_list_item(input_text)
 endfun
 
 fun! s:match_roman_list_item(input_text)
-    let l:rom_bullet_regex  = '\v^((\s*)([ivxlcdmIVXLCDM]+)(\.|\))(\s*))(.*)'
+    let l:rom_bullet_regex  = '\v^((\s*)([IVXLCDM]+)(\.|\))(\s*))(.*)'
   let l:matches           = matchlist(a:input_text, l:rom_bullet_regex)
   if empty(l:matches)
     return {}
