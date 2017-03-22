@@ -62,6 +62,28 @@ fun! s:match_numeric_list_item(input_text)
         \ }
 endfun
 
+fun! s:match_roman_list_item(input_text)
+    let l:rom_bullet_regex  = '\v^((\s*)([ivxlcdmIVXLCDM]+)(\.|\))(\s*))(.*)'
+  let l:matches           = matchlist(a:input_text, l:rom_bullet_regex)
+  if empty(l:matches)
+    return {}
+  endif
+
+  let l:leading_space     = l:matches[2]
+  let l:rom               = l:matches[3]
+  let l:closure           = l:matches[4]
+  let l:trailing_space    = l:matches[5]
+  let l:text_after_bullet = l:matches[6]
+
+  return {
+        \ 'leading_space':     l:leading_space,
+        \ 'trailing_space':    l:trailing_space,
+        \ 'bullet':            l:rom,
+        \ 'closure':           l:closure,
+        \ 'text_after_bullet': l:text_after_bullet
+        \ }
+endfun
+
 fun! s:match_bullet_list_item(input_text)
   let l:std_bullet_regex  = '\v(^\s*(-|*|\\item)( \[[x ]?\])? )(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
@@ -99,7 +121,10 @@ endfun
 
 " Generate bullets --------------------------------------  {{{
 fun! s:next_bullet_str(bullet_type, line_data)
-  if a:bullet_type ==# 'num'
+  if a:bullet_type ==# 'rom'
+    let l:next_num = s:arabic2roman(s:roman2arabic(a:line_data.bullet) + 1)
+    return a:line_data.leading_space . l:next_num . a:line_data.closure  . ' '
+  elseif a:bullet_type ==# 'num'
     let l:next_num = a:line_data.bullet + 1
     return a:line_data.leading_space . l:next_num . a:line_data.closure  . ' '
   else
@@ -119,6 +144,7 @@ fun! s:insert_new_bullet()
   let l:curr_line = getline(l:curr_line_num)
   let l:std_bullet_matches = s:match_bullet_list_item(l:curr_line)
   let l:num_bullet_matches = s:match_numeric_list_item(l:curr_line)
+  let l:rom_bullet_matches = s:match_roman_list_item(l:curr_line)
   let l:bullet_type = ''
   let l:bullet = {}
   let l:bullet_content = ''
@@ -132,6 +158,9 @@ fun! s:insert_new_bullet()
   elseif !empty(l:num_bullet_matches)
     let l:bullet_type = 'num'
     let l:bullet = l:num_bullet_matches
+  elseif !empty(l:rom_bullet_matches)
+    let l:bullet_type = 'rom'
+    let l:bullet = l:rom_bullet_matches
   endif
 
   " check if current line is a bullet and we are at the end of the line (for
@@ -217,6 +246,53 @@ command! SelectCheckboxInside call <SID>select_checkbox(1)
 command! SelectCheckbox call <SID>select_checkbox(0)
 command! ToggleCheckbox call <SID>toggle_checkbox()
 " Checkboxes ---------------------------------------------- }}}
+
+" Roman numerals --------------------------------------------- {{{
+
+" Roman numeral functions lifted from tpope's speeddating.vim
+" where they are in turn
+" based on similar functions from VisIncr.vim
+"
+let s:a2r = [[1000, 'm'], [900, 'cm'], [500, 'd'], [400, 'cd'], [100, 'c'],
+      \             [90 , 'xc'], [50 , 'l'], [40 , 'xl'], [10 , 'x'],
+      \             [9  , 'ix'], [5  , 'v'], [4  , 'iv'], [1  , 'i']]
+
+function! s:roman2arabic(roman)
+  let roman  = tolower(a:roman)
+  let sign   = 1
+  let arabic = 0
+  while roman != ''
+    if roman =~ '^[-n]'
+      let sign = -sign
+    endif
+    for [numbers,letters] in s:a2r
+      if roman =~ '^'.letters
+        let arabic += sign * numbers
+        let roman = strpart(roman,strlen(letters)-1)
+        break
+      endif
+    endfor
+    let roman = strpart(roman,1)
+  endwhile
+  return arabic
+endfunction
+
+function! s:arabic2roman(arabic)
+  if a:arabic <= 0
+    let arabic = -a:arabic
+    let roman = "n"
+  else
+    let arabic = a:arabic
+    let roman = ""
+  endif
+  for [numbers, letters] in s:a2r
+    let roman .= repeat(letters,arabic/numbers)
+    let arabic = arabic % numbers
+  endfor
+  return toupper(roman)
+endfunction
+
+" Roman numerals ---------------------------------------------- }}}
 
 " Renumbering --------------------------------------------- {{{
 fun! s:renumber_selection()
