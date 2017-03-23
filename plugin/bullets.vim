@@ -36,6 +36,10 @@ end
 if !exists('g:bullets_delete_last_bullet_if_empty')
   let g:bullets_delete_last_bullet_if_empty = 1
 end
+
+if !exists('g:bullets_bullet_styles')
+  let g:bullets_bullet_styles = '-|*|\\item'
+end
 " ------------------------------------------------------   }}}
 
 " Helper methods ----------------------------------------  {{{
@@ -63,7 +67,7 @@ fun! s:match_numeric_list_item(input_text)
 endfun
 
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^\s*(-|*|\\item)( \[[x ]?\])? )(.*)'
+  let l:std_bullet_regex  = '\v(^\s*(' . g:bullets_bullet_styles . ')( \[[x ]?\])? )(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
 
   if empty(l:matches)

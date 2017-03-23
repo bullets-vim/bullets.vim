@@ -118,6 +118,29 @@ RSpec.describe 'Bullets.vim' do
           -
         EOF
       end
+
+      it 'inserts custom bullet styles' do
+        filename = "#{SecureRandom.hex(6)}.md"
+        write_file(filename, <<-EOF)
+          # Hello there
+          # this is the first bullet
+        EOF
+
+        vim.command 'let g:bullets_bullet_styles = \'-|*|\\\\item\'|#'
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'second bullet'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents.strip).to eq normalize_string_indent(<<-EOF)
+          # Hello there
+          # this is the first bullet
+          # second bullet
+        EOF
+      end
     end
 
     context 'on return key when cursor is not at EOL' do

@@ -122,6 +122,26 @@ If you would like to turn this feature off add the following to your .vimrc
 
   `let g:bullets_delete_last_bullet_if_empty = 0`
 
+Custom bullet types
+-------------------
+Out of the box bullets.vim supports the bullet types described in |bullets|.
+If you need to extend that list you can do so by modifying this parameter:
+
+  `let g:bullets_bullet_styles = '-|*|\\item'`
+
+You would need to set it to the above string to maintain existing
+functionality. To add a new bullet style (for example `+`), add a pipe followed
+by the bullet style string. E.g.
+
+  `let g:bullets_bullet_styles = '-|*|\\item|+'`
+
+This string is interpolated into a regular expression with "very magic" (see
+|/magic|) and as such some strings would need to be escaped. The table at
+|/magic| can be used as guide for which strings can be escaped with a forward
+slash.
+
+**Warning**: setting this value can inadvertently break bullets and cause Vim to
+act weird for the defined supported file types.
 
 INSERTING BULLETS                           *bullets-insert-new-bullet*
 
