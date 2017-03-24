@@ -253,43 +253,46 @@ command! ToggleCheckbox call <SID>toggle_checkbox()
 " where they are in turn
 " based on similar functions from VisIncr.vim
 "
-let s:a2r = [[1000, 'm'], [900, 'cm'], [500, 'd'], [400, 'cd'], [100, 'c'],
-      \             [90 , 'xc'], [50 , 'l'], [40 , 'xl'], [10 , 'x'],
-      \             [9  , 'ix'], [5  , 'v'], [4  , 'iv'], [1  , 'i']]
+let s:a2r = [
+           \ [1000, 'm'], [900, 'cm'], [500, 'd'], [400, 'cd'],
+           \ [100, 'c'], [90 , 'xc'], [50 , 'l'], [40 , 'xl'],
+           \ [10 , 'x'], [9  , 'ix'], [5  , 'v'], [4  , 'iv'],
+           \ [1  , 'i']
+           \ ]
 
 function! s:roman2arabic(roman)
-  let roman  = tolower(a:roman)
-  let sign   = 1
-  let arabic = 0
-  while roman != ''
-    if roman =~ '^[-n]'
-      let sign = -sign
+  let l:roman  = tolower(a:roman)
+  let l:sign   = 1
+  let l:arabic = 0
+  while l:roman !=# ''
+    if l:roman =~# '^[-n]'
+      let l:sign = -l:sign
     endif
-    for [numbers,letters] in s:a2r
-      if roman =~ '^'.letters
-        let arabic += sign * numbers
-        let roman = strpart(roman,strlen(letters)-1)
+    for [l:numbers, l:letters] in s:a2r
+      if l:roman =~ '^' . l:letters
+        let l:arabic += l:sign * l:numbers
+        let l:roman = strpart(l:roman,strlen(l:letters)-1)
         break
       endif
     endfor
-    let roman = strpart(roman,1)
+    let l:roman = strpart(l:roman,1)
   endwhile
-  return arabic
+  return l:arabic
 endfunction
 
 function! s:arabic2roman(arabic)
   if a:arabic <= 0
-    let arabic = -a:arabic
-    let roman = "n"
+    let l:arabic = -a:arabic
+    let l:roman = 'n'
   else
-    let arabic = a:arabic
-    let roman = ""
+    let l:arabic = a:arabic
+    let l:roman = ''
   endif
-  for [numbers, letters] in s:a2r
-    let roman .= repeat(letters,arabic/numbers)
-    let arabic = arabic % numbers
+  for [l:numbers, l:letters] in s:a2r
+    let l:roman .= repeat(l:letters, l:arabic / l:numbers)
+    let l:arabic = l:arabic % l:numbers
   endfor
-  return toupper(roman)
+  return toupper(l:roman)
 endfunction
 
 " Roman numerals ---------------------------------------------- }}}
