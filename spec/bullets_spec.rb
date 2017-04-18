@@ -75,6 +75,27 @@ RSpec.describe 'Bullets.vim' do
         EOF
       end
 
+      it 'does not insert a new numeric bullet for decimal numbers' do
+        filename = "#{SecureRandom.hex(6)}.md"
+        write_file(filename, <<-EOF)
+          # Hello there
+          3.14159 is an approximation of pi.
+        EOF
+
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'second line'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+          # Hello there
+          3.14159 is an approximation of pi.
+          second line\n
+        EOF
+      end
       it 'adds a new roman numeral bullet' do
         filename = "#{SecureRandom.hex(6)}.md"
         write_file(filename, <<-EOF)

@@ -40,7 +40,7 @@ end
 
 " Helper methods ----------------------------------------  {{{
 fun! s:match_numeric_list_item(input_text)
-  let l:num_bullet_regex  = '\v^((\s*)(\d+)(\.|\))(\s*))(.*)'
+  let l:num_bullet_regex  = '\v^((\s*)(\d+)(\.|\))(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:num_bullet_regex)
 
   if empty(l:matches)
