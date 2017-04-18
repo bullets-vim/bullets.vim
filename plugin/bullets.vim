@@ -376,7 +376,7 @@ augroup TextBulletsMappings
 
   if g:bullets_set_mappings
     " automatic bullets
-    call s:add_local_mapping('inoremap', '<cr>', '<C-R>=<SID>insert_new_bullet()<cr>')
+    call s:add_local_mapping('inoremap', '<cr>', '<C-]><C-R>=<SID>insert_new_bullet()<cr>')
     call s:add_local_mapping('inoremap', '<C-cr>', '<cr>')
 
     call s:add_local_mapping('nnoremap', 'o', ':call <SID>insert_new_bullet()<cr>')
