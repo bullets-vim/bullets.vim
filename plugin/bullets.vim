@@ -36,6 +36,11 @@ end
 if !exists('g:bullets_delete_last_bullet_if_empty')
   let g:bullets_delete_last_bullet_if_empty = 1
 end
+
+if !exists('g:bullets_line_spacing')
+  let g:bullets_line_spacing = 1
+end
+
 " ------------------------------------------------------   }}}
 
 " Helper methods ----------------------------------------  {{{
@@ -140,7 +145,7 @@ endfun
 
 fun! s:insert_new_bullet()
   let l:curr_line_num = line('.')
-  let l:next_line_num = l:curr_line_num + 1
+  let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
   let l:curr_line = getline(l:curr_line_num)
   let l:std_bullet_matches = s:match_bullet_list_item(l:curr_line)
   let l:num_bullet_matches = s:match_numeric_list_item(l:curr_line)
@@ -173,10 +178,17 @@ fun! s:insert_new_bullet()
       call s:delete_empty_bullet(l:curr_line_num)
     else
 
-      let l:next_bullet_str = s:next_bullet_str(l:bullet_type, l:bullet)
+      let l:next_bullet_list = [s:next_bullet_str(l:bullet_type, l:bullet)]
+
+      " prepend blank lines if desired
+      if g:bullets_line_spacing > 1
+        let l:next_bullet_list += map(range(g:bullets_line_spacing - 1),'""')
+        call reverse(l:next_bullet_list)
+      endif
+
 
       " insert next bullet
-      call append(l:curr_line_num, [l:next_bullet_str])
+      call append(l:curr_line_num, l:next_bullet_list)
       " got to next line after the new bullet
       call setpos('.', [0, l:next_line_num, strlen(getline(l:next_line_num))+1])
       let l:send_return = 0
