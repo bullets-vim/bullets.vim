@@ -1,5 +1,5 @@
 " Vim plugin for automated bulleted lists
-" Last Change: Tue 18 Apr 2017
+" Last Change: Sun 15 Oct 2017
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -85,7 +85,7 @@ fun! s:match_roman_list_item(input_text)
 endfun
 
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^\s*(-|*|\\item)( \[[x ]?\])? )(.*)'
+  let l:std_bullet_regex  = '\v(^\s*(-|*|#.|\\item)( \[[x ]?\])? )(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
 
   if empty(l:matches)
