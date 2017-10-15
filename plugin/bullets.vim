@@ -103,6 +103,30 @@ fun! s:match_bullet_list_item(input_text)
         \ }
 endfun
 
+fun! s:match_multiline_list_item(line_text)
+  " if line starts with leading space and prev line starts with leading space
+  " search all the way up until we find either a change in indentation or a
+  " bullet. If it is a bullet run the the correct match function on it.
+  " Otherwise don't return anything.
+  let l:curr_line_num = line('.')
+
+  if l:curr_line_num > 1
+    while l:curr_line_num > 1
+      let l:curr_line_num -= 1
+      let l:curr_line = getline(l:curr_line_num)
+      let l:indent = match(l:curr_line, '\v(\s+)')
+      echom l:curr_line
+      echom l:indent
+      "is the current line a bullet?
+      " echo 'found bullet'
+    endwhile
+  endif
+
+  return {
+        \ 'bullet_type': '',
+        \ }
+endfun
+
 fun! s:get_visual_selection_lines()
   let [l:lnum1, l:col1] = getpos("'<")[1:2]
   let [l:lnum2, l:col2] = getpos("'>")[1:2]
@@ -161,6 +185,10 @@ fun! s:insert_new_bullet()
   elseif !empty(l:rom_bullet_matches)
     let l:bullet_type = 'rom'
     let l:bullet = l:rom_bullet_matches
+  else
+    let l:multiline_bullet_matches = s:match_multiline_list_item(l:curr_line)
+    let l:bullet_type = l:multiline_bullet_matches.bullet_type
+    let l:bullet = l:multiline_bullet_matches
   endif
 
   " check if current line is a bullet and we are at the end of the line (for
