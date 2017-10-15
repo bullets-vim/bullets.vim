@@ -53,6 +53,28 @@ RSpec.describe 'Bullets.vim' do
         EOF
       end
 
+      it 'adds a pandoc bullet if the prev line had one' do
+        filename = "#{SecureRandom.hex(6)}.md"
+        write_file(filename, <<-EOF)
+          Hello there
+          #. this is the first bullet
+        EOF
+
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'second bullet'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+          Hello there
+          #. this is the first bullet
+          #. second bullet\n
+        EOF
+      end
+
       it 'adds a new numeric bullet if the previous line had numeric bullet' do
         filename = "#{SecureRandom.hex(6)}.md"
         write_file(filename, <<-EOF)
@@ -96,6 +118,7 @@ RSpec.describe 'Bullets.vim' do
           second line\n
         EOF
       end
+
       it 'adds a new roman numeral bullet' do
         filename = "#{SecureRandom.hex(6)}.md"
         write_file(filename, <<-EOF)

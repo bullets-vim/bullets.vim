@@ -1,5 +1,6 @@
 require 'vimrunner'
 require 'vimrunner/rspec'
+require 'securerandom'
 
 Vimrunner::RSpec.configure do |config|
   # Use a single Vim instance for the test suite. Set to false to use an
