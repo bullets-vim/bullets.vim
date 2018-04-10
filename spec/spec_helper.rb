@@ -103,17 +103,17 @@ RSpec.configure do |config|
   Kernel.srand config.seed
 end
 
-def test_bullet_inserted(initial_text, expected_text)
+def test_bullet_inserted(second_bullet_text, initial_text, expected_text)
   filename = "#{SecureRandom.hex(6)}.md"
   write_file(filename, initial_text)
 
-  vim.edit filename
-  vim.type 'GA'
-  vim.feedkeys '\<cr>'
-  vim.type 'do that'
+  vim.edit(filename)
+  vim.type('GA')
+  vim.feedkeys('\<cr>')
+  vim.type(second_bullet_text)
   vim.write
 
   file_contents = IO.read(filename)
 
-  expect(file_contents).to eq normalize_string_indent(expected_text)
+  expect(file_contents).to eq normalize_string_indent("#{expected_text}\n")
 end

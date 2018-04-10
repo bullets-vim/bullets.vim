@@ -30,141 +30,75 @@ RSpec.describe 'Bullets.vim' do
 
     context 'on return key when cursor is at EOL' do
       it 'adds a new bullet if the previous line had a known bullet type' do
-        filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-TEXT)
+        test_bullet_inserted('do that', <<-INIT, <<-EXPECTED)
           # Hello there
-          - this is the first bullet
-        TEXT
-
-        vim.edit filename
-        vim.type 'GA'
-        vim.feedkeys '\<cr>'
-        vim.type 'second bullet'
-        vim.write
-
-        file_contents = IO.read(filename)
-
-        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          - do this
+        INIT
           # Hello there
-          - this is the first bullet
-          - second bullet\n
-        TEXT
+          - do this
+          - do that
+        EXPECTED
       end
 
       it 'adds a new latex bullet' do
-        filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-TEXT)
+        test_bullet_inserted('Second item', <<-INIT, <<-EXPECTED)
         \\documentclass{article}
           \\begin{document}
 
           \\begin{itemize}
             \\item First item
-        TEXT
-
-        vim.edit filename
-        vim.type 'GA'
-        vim.feedkeys '\<cr>'
-        vim.type 'Second item'
-        vim.write
-
-        file_contents = IO.read(filename)
-
-        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+        INIT
         \\documentclass{article}
           \\begin{document}
 
           \\begin{itemize}
             \\item First item
-            \\item Second item\n
-        TEXT
+            \\item Second item
+        EXPECTED
       end
 
       it 'adds a pandoc bullet if the prev line had one' do
-        filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-TEXT)
+        test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
           Hello there
           #. this is the first bullet
-        TEXT
-
-        vim.edit filename
-        vim.type 'GA'
-        vim.feedkeys '\<cr>'
-        vim.type 'second bullet'
-        vim.write
-
-        file_contents = IO.read(filename)
-
-        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+        INIT
           Hello there
           #. this is the first bullet
-          #. second bullet\n
-        TEXT
+          #. second bullet
+        EXPECTED
       end
 
       it 'adds an Org mode bullet if the prev line had one' do
-        filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-TEXT)
+        test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
           Hello there
           **** this is the first bullet
-        TEXT
-
-        vim.edit filename
-        vim.type 'GA'
-        vim.feedkeys '\<cr>'
-        vim.type 'second bullet'
-        vim.write
-
-        file_contents = IO.read(filename)
-
-        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+        INIT
           Hello there
           **** this is the first bullet
-          **** second bullet\n
-        TEXT
+          **** second bullet
+        EXPECTED
       end
 
       it 'adds a new numeric bullet if the previous line had numeric bullet' do
-        filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-TEXT)
+        test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
           # Hello there
           1) this is the first bullet
-        TEXT
-
-        vim.edit filename
-        vim.type 'GA'
-        vim.feedkeys '\<cr>'
-        vim.type 'second bullet'
-        vim.write
-
-        file_contents = IO.read(filename)
-
-        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+        INIT
           # Hello there
           1) this is the first bullet
-          2) second bullet\n
-        TEXT
+          2) second bullet
+        EXPECTED
       end
 
       it 'does not insert a new numeric bullet for decimal numbers' do
-        filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-TEXT)
+        test_bullet_inserted('second line', <<-INIT, <<-EXPECTED)
           # Hello there
           3.14159 is an approximation of pi.
-        TEXT
-
-        vim.edit filename
-        vim.type 'GA'
-        vim.feedkeys '\<cr>'
-        vim.type 'second line'
-        vim.write
-
-        file_contents = IO.read(filename)
-
-        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+        INIT
           # Hello there
           3.14159 is an approximation of pi.
-          second line\n
-        TEXT
+          second line
+        EXPECTED
       end
 
       it 'adds a new roman numeral bullet' do
