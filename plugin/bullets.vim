@@ -1,5 +1,5 @@
 " Vim plugin for automated bulleted lists
-" Last Change: Sun 15 Oct 2017
+" Last Change: Mon  9 Apr 2018
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
