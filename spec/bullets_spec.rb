@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe 'Bullets.vim' do
@@ -5,10 +7,10 @@ RSpec.describe 'Bullets.vim' do
     context 'on return key when cursor is at EOL' do
       it 'adds a new bullet if the previous line had a known bullet type' do
         filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-EOF)
+        write_file(filename, <<-TEXT)
           # Hello there
           - this is the first bullet
-        EOF
+        TEXT
 
         vim.edit filename
         vim.type 'GA'
@@ -18,22 +20,22 @@ RSpec.describe 'Bullets.vim' do
 
         file_contents = IO.read(filename)
 
-        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           - this is the first bullet
           - second bullet\n
-        EOF
+        TEXT
       end
 
       it 'adds a new latex bullet' do
         filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-EOF)
+        write_file(filename, <<-TEXT)
         \\documentclass{article}
           \\begin{document}
 
           \\begin{itemize}
             \\item First item
-        EOF
+        TEXT
 
         vim.edit filename
         vim.type 'GA'
@@ -43,22 +45,22 @@ RSpec.describe 'Bullets.vim' do
 
         file_contents = IO.read(filename)
 
-        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
         \\documentclass{article}
           \\begin{document}
 
           \\begin{itemize}
             \\item First item
             \\item Second item\n
-        EOF
+        TEXT
       end
 
       it 'adds a pandoc bullet if the prev line had one' do
         filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-EOF)
+        write_file(filename, <<-TEXT)
           Hello there
           #. this is the first bullet
-        EOF
+        TEXT
 
         vim.edit filename
         vim.type 'GA'
@@ -68,19 +70,41 @@ RSpec.describe 'Bullets.vim' do
 
         file_contents = IO.read(filename)
 
-        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
           Hello there
           #. this is the first bullet
           #. second bullet\n
-        EOF
+        TEXT
+      end
+
+      it 'adds an Org mode bullet if the prev line had one' do
+        filename = "#{SecureRandom.hex(6)}.md"
+        write_file(filename, <<-TEXT)
+          Hello there
+          **** this is the first bullet
+        TEXT
+
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'second bullet'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          Hello there
+          **** this is the first bullet
+          **** second bullet\n
+        TEXT
       end
 
       it 'adds a new numeric bullet if the previous line had numeric bullet' do
         filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-EOF)
+        write_file(filename, <<-TEXT)
           # Hello there
           1) this is the first bullet
-        EOF
+        TEXT
 
         vim.edit filename
         vim.type 'GA'
@@ -90,19 +114,19 @@ RSpec.describe 'Bullets.vim' do
 
         file_contents = IO.read(filename)
 
-        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           1) this is the first bullet
           2) second bullet\n
-        EOF
+        TEXT
       end
 
       it 'does not insert a new numeric bullet for decimal numbers' do
         filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-EOF)
+        write_file(filename, <<-TEXT)
           # Hello there
           3.14159 is an approximation of pi.
-        EOF
+        TEXT
 
         vim.edit filename
         vim.type 'GA'
@@ -112,19 +136,19 @@ RSpec.describe 'Bullets.vim' do
 
         file_contents = IO.read(filename)
 
-        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           3.14159 is an approximation of pi.
           second line\n
-        EOF
+        TEXT
       end
 
       it 'adds a new roman numeral bullet' do
         filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-EOF)
+        write_file(filename, <<-TEXT)
           # Hello there
           I. this is the first bullet
-        EOF
+        TEXT
 
         vim.edit filename
         vim.type 'GA'
@@ -140,22 +164,22 @@ RSpec.describe 'Bullets.vim' do
 
         file_contents = IO.read(filename)
 
-        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           I. this is the first bullet
           II. second bullet
           III. third bullet
           IV. fourth bullet
           V. fifth bullet\n
-        EOF
+        TEXT
       end
 
       it 'deletes the last bullet if it is empty' do
         filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-EOF)
+        write_file(filename, <<-TEXT)
           # Hello there
           - this is the first bullet
-        EOF
+        TEXT
 
         vim.edit filename
         vim.type 'GA'
@@ -165,18 +189,18 @@ RSpec.describe 'Bullets.vim' do
 
         file_contents = IO.read(filename)
 
-        expect(file_contents.strip).to eq normalize_string_indent(<<-EOF)
+        expect(file_contents.strip).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           - this is the first bullet
-        EOF
+        TEXT
       end
 
       it 'does not delete the last bullet when configured not to' do
         filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-EOF)
+        write_file(filename, <<-TEXT)
           # Hello there
           - this is the first bullet
-        EOF
+        TEXT
 
         vim.command 'let g:bullets_delete_last_bullet_if_empty = 0'
         vim.edit filename
@@ -187,21 +211,21 @@ RSpec.describe 'Bullets.vim' do
 
         file_contents = IO.read(filename)
 
-        expect(file_contents.strip).to eq normalize_string_indent(<<-EOF)
+        expect(file_contents.strip).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           - this is the first bullet
           -
-        EOF
+        TEXT
       end
     end
 
     context 'on return key when cursor is not at EOL' do
       it 'splits the line and does not add a bullet' do
         filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-EOF)
+        write_file(filename, <<-TEXT)
           # Hello there
           - this is the first bullet
-        EOF
+        TEXT
 
         vim.edit filename
         vim.type 'G$i'
@@ -211,11 +235,11 @@ RSpec.describe 'Bullets.vim' do
 
         file_contents = IO.read(filename)
 
-        expect(file_contents).to eq normalize_string_indent(<<-EOF)
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           - this is the first bulle
           second bullett\n
-        EOF
+        TEXT
       end
     end
   end
@@ -231,24 +255,24 @@ RSpec.describe 'Bullets.vim' do
 
       buffer_content = vim.echo("join(getbufline(bufname(''), 1, '$'), '\n')")
 
-      expect(buffer_content).to eq normalize_string_indent(<<-EOF)
+      expect(buffer_content).to eq normalize_string_indent(<<-TEXT)
         # Hello there
         - this is the first bullet
         - this is the second bullet
-      EOF
+      TEXT
     end
   end
 
   describe 're-numbering' do
     it 'renumbers a selected list correctly' do
       filename = "#{SecureRandom.hex(6)}.md"
-      write_file(filename, <<-EOF)
+      write_file(filename, <<-TEXT)
         # Hello there
         3. this is the first bullet
         2. this is the second bullet
         1. this is the third bullet
         4. this is the fourth bullet
-      EOF
+      TEXT
 
       vim.edit filename
       vim.type 'ggVG'
@@ -257,13 +281,13 @@ RSpec.describe 'Bullets.vim' do
 
       file_contents = IO.read(filename)
 
-      expect(file_contents).to eq normalize_string_indent(<<-EOF)
+      expect(file_contents).to eq normalize_string_indent(<<-TEXT)
         # Hello there
         1. this is the first bullet
         2. this is the second bullet
         3. this is the third bullet
         4. this is the fourth bullet\n
-      EOF
+      TEXT
     end
   end
 end
