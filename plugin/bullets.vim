@@ -58,6 +58,7 @@ fun! s:match_numeric_list_item(input_text)
   let l:text_after_bullet = l:matches[6]
 
   return {
+        \ 'bullet_type':       'num',
         \ 'leading_space':     l:leading_space,
         \ 'trailing_space':    l:trailing_space,
         \ 'bullet':            l:num,
@@ -80,6 +81,7 @@ fun! s:match_roman_list_item(input_text)
   let l:text_after_bullet = l:matches[6]
 
   return {
+        \ 'bullet_type':       'rom',
         \ 'leading_space':     l:leading_space,
         \ 'trailing_space':    l:trailing_space,
         \ 'bullet':            l:rom,
@@ -100,6 +102,7 @@ fun! s:match_checkbox_bullet_item(input_text)
   let l:text_after_bullet = l:matches[3]
 
   return {
+        \ 'bullet_type':       'chk',
         \ 'leading_space':     l:leading_space,
         \ 'text_after_bullet': l:text_after_bullet
         \ }
@@ -117,9 +120,29 @@ fun! s:match_bullet_list_item(input_text)
   let l:text_after_bullet = l:matches[3]
 
   return {
+        \ 'bullet_type':       'std',
         \ 'whole_bullet':      l:whole_bullet,
         \ 'text_after_bullet': l:text_after_bullet
         \ }
+endfun
+
+fun! s:parse_bullet(line_text)
+  let l:std_bullet_matches = s:match_bullet_list_item(a:line_text)
+  let l:chk_bullet_matches = s:match_checkbox_bullet_item(a:line_text)
+  let l:num_bullet_matches = s:match_numeric_list_item(a:line_text)
+  let l:rom_bullet_matches = s:match_roman_list_item(a:line_text)
+
+  if !empty(l:chk_bullet_matches)
+    return l:chk_bullet_matches
+  elseif !empty(l:std_bullet_matches)
+    return l:std_bullet_matches
+  elseif !empty(l:num_bullet_matches)
+    return l:num_bullet_matches
+  elseif !empty(l:rom_bullet_matches)
+    return l:rom_bullet_matches
+  else
+    return {}
+  endif
 endfun
 " -------------------------------------------------------  }}}
 
@@ -141,17 +164,17 @@ endfun
 " -------------------------------------------------------  }}}
 
 " Generate bullets --------------------------------------  {{{
-fun! s:next_bullet_str(bullet_type, line_data)
-  if a:bullet_type ==# 'rom'
-    let l:next_num = s:arabic2roman(s:roman2arabic(a:line_data.bullet) + 1)
-    return a:line_data.leading_space . l:next_num . a:line_data.closure  . ' '
-  elseif a:bullet_type ==# 'num'
-    let l:next_num = a:line_data.bullet + 1
-    return a:line_data.leading_space . l:next_num . a:line_data.closure  . ' '
-  elseif a:bullet_type ==# 'chk'
-    return a:line_data.leading_space . '- [ ] '
+fun! s:next_bullet_str(bullet)
+  if a:bullet.bullet_type ==# 'rom'
+    let l:next_num = s:arabic2roman(s:roman2arabic(a:bullet.bullet) + 1)
+    return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
+  elseif a:bullet.bullet_type ==# 'num'
+    let l:next_num = a:bullet.bullet + 1
+    return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
+  elseif a:bullet.bullet_type ==# 'chk'
+    return a:bullet.leading_space . '- [ ] '
   else
-    return a:line_data.whole_bullet
+    return a:bullet.whole_bullet
   endif
 endfun
 
@@ -165,34 +188,15 @@ fun! s:insert_new_bullet()
   let l:curr_line_num = line('.')
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
   let l:curr_line = getline(l:curr_line_num)
-  let l:std_bullet_matches = s:match_bullet_list_item(l:curr_line)
-  let l:chk_bullet_matches = s:match_checkbox_bullet_item(l:curr_line)
-  let l:num_bullet_matches = s:match_numeric_list_item(l:curr_line)
-  let l:rom_bullet_matches = s:match_roman_list_item(l:curr_line)
-  let l:bullet_type = ''
-  let l:bullet = {}
+  let l:bullet = s:parse_bullet(l:curr_line)
   let l:bullet_content = ''
   let l:text_after_bullet = ''
   let l:send_return = 1
   let l:normal_mode = mode() ==# 'n'
 
-  if !empty(l:chk_bullet_matches)
-    let l:bullet_type = 'chk'
-    let l:bullet = l:chk_bullet_matches
-  elseif !empty(l:std_bullet_matches)
-    let l:bullet_type = 'std'
-    let l:bullet = l:std_bullet_matches
-  elseif !empty(l:num_bullet_matches)
-    let l:bullet_type = 'num'
-    let l:bullet = l:num_bullet_matches
-  elseif !empty(l:rom_bullet_matches)
-    let l:bullet_type = 'rom'
-    let l:bullet = l:rom_bullet_matches
-  endif
-
   " check if current line is a bullet and we are at the end of the line (for
   " insert mode only)
-  if strlen(l:bullet_type) && (l:normal_mode || s:is_at_eol())
+  if l:bullet != {} && (l:normal_mode || s:is_at_eol())
     " was any text entered after the bullet?
     if l:bullet.text_after_bullet ==# ''
       " We don't want to create a new bullet if the previous one was not used,
@@ -200,7 +204,7 @@ fun! s:insert_new_bullet()
       call s:delete_empty_bullet(l:curr_line_num)
     else
 
-      let l:next_bullet_list = [s:next_bullet_str(l:bullet_type, l:bullet)]
+      let l:next_bullet_list = [s:next_bullet_str(l:bullet)]
 
       " prepend blank lines if desired
       if g:bullets_line_spacing > 1
