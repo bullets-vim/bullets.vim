@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'vimrunner'
 require 'vimrunner/rspec'
 require 'securerandom'
@@ -16,7 +18,7 @@ Vimrunner::RSpec.configure do |config|
     # VIM = Vimrunner.start_gvim
 
     # Setup your plugin in the Vim instance
-    plugin_path = File.expand_path('../..', __FILE__)
+    plugin_path = File.expand_path('..', __dir__)
     vim.add_plugin(plugin_path, 'plugin/bullets.vim')
 
     # The returned value is the Client available in the tests.
@@ -60,7 +62,7 @@ RSpec.configure do |config|
   # Allows RSpec to persist some state between runs in order to support
   # the `--only-failures` and `--next-failure` CLI options. We recommend
   # you configure your source control system to ignore this file.
-  config.example_status_persistence_file_path = "spec/examples.txt"
+  config.example_status_persistence_file_path = 'spec/examples.txt'
 
   # Limits the available syntax to the non-monkey patched syntax that is
   # recommended. For more details, see:
@@ -99,4 +101,19 @@ RSpec.configure do |config|
   # test failures related to randomization by passing the same `--seed` value
   # as the one that triggered the failure.
   Kernel.srand config.seed
+end
+
+def test_bullet_inserted(initial_text, expected_text)
+  filename = "#{SecureRandom.hex(6)}.md"
+  write_file(filename, initial_text)
+
+  vim.edit filename
+  vim.type 'GA'
+  vim.feedkeys '\<cr>'
+  vim.type 'do that'
+  vim.write
+
+  file_contents = IO.read(filename)
+
+  expect(file_contents).to eq normalize_string_indent(expected_text)
 end
