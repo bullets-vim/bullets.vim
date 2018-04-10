@@ -4,6 +4,30 @@ require 'spec_helper'
 
 RSpec.describe 'Bullets.vim' do
   describe 'inserting new bullets' do
+    context 'on return key when cursor is not at EOL' do
+      it 'splits the line and does not add a bullet' do
+        filename = "#{SecureRandom.hex(6)}.md"
+        write_file(filename, <<-TEXT)
+          # Hello there
+          - this is the first bullet
+        TEXT
+
+        vim.edit filename
+        vim.type 'G$i'
+        vim.feedkeys '\<cr>'
+        vim.type 'second bullet'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          - this is the first bulle
+          second bullett\n
+        TEXT
+      end
+    end
+
     context 'on return key when cursor is at EOL' do
       it 'adds a new bullet if the previous line had a known bullet type' do
         filename = "#{SecureRandom.hex(6)}.md"
@@ -217,77 +241,6 @@ RSpec.describe 'Bullets.vim' do
           -
         TEXT
       end
-    end
-
-    context 'on return key when cursor is not at EOL' do
-      it 'splits the line and does not add a bullet' do
-        filename = "#{SecureRandom.hex(6)}.md"
-        write_file(filename, <<-TEXT)
-          # Hello there
-          - this is the first bullet
-        TEXT
-
-        vim.edit filename
-        vim.type 'G$i'
-        vim.feedkeys '\<cr>'
-        vim.type 'second bullet'
-        vim.write
-
-        file_contents = IO.read(filename)
-
-        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
-          # Hello there
-          - this is the first bulle
-          second bullett\n
-        TEXT
-      end
-    end
-  end
-
-  describe 'filetypes' do
-    it 'creates mapping for bullets on empty buffer if configured' do
-      vim.command 'new'
-      vim.insert '# Hello there'
-      vim.feedkeys '\<cr>'
-      vim.type '- this is the first bullet'
-      vim.feedkeys '\<cr>'
-      vim.type 'this is the second bullet'
-
-      buffer_content = vim.echo("join(getbufline(bufname(''), 1, '$'), '\n')")
-
-      expect(buffer_content).to eq normalize_string_indent(<<-TEXT)
-        # Hello there
-        - this is the first bullet
-        - this is the second bullet
-      TEXT
-    end
-  end
-
-  describe 're-numbering' do
-    it 'renumbers a selected list correctly' do
-      filename = "#{SecureRandom.hex(6)}.md"
-      write_file(filename, <<-TEXT)
-        # Hello there
-        3. this is the first bullet
-        2. this is the second bullet
-        1. this is the third bullet
-        4. this is the fourth bullet
-      TEXT
-
-      vim.edit filename
-      vim.type 'ggVG'
-      vim.feedkeys 'gN'
-      vim.write
-
-      file_contents = IO.read(filename)
-
-      expect(file_contents).to eq normalize_string_indent(<<-TEXT)
-        # Hello there
-        1. this is the first bullet
-        2. this is the second bullet
-        3. this is the third bullet
-        4. this is the fourth bullet\n
-      TEXT
     end
   end
 end
