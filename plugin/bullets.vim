@@ -1,5 +1,5 @@
 " Vim plugin for automated bulleted lists
-" Last Change: Mon  9 Apr 2018
+" Last Change: 10 Apr 2018
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -42,7 +42,7 @@ if !exists('g:bullets_line_spacing')
 end
 " ------------------------------------------------------   }}}
 
-" Helper methods ----------------------------------------  {{{
+" Bullet type detection ----------------------------------------  {{{
 fun! s:match_numeric_list_item(input_text)
   let l:num_bullet_regex  = '\v^((\s*)(\d+)(\.|\))(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:num_bullet_regex)
@@ -88,8 +88,25 @@ fun! s:match_roman_list_item(input_text)
         \ }
 endfun
 
+fun! s:match_checkbox_bullet_item(input_text)
+  let l:checkbox_bullet_regex = '\v(^(\s*)- \[[x ]?\] )(.*)'
+  let l:matches               = matchlist(a:input_text, l:checkbox_bullet_regex)
+
+  if empty(l:matches)
+    return {}
+  endif
+
+  let l:leading_space     = l:matches[2]
+  let l:text_after_bullet = l:matches[3]
+
+  return {
+        \ 'leading_space':     l:leading_space,
+        \ 'text_after_bullet': l:text_after_bullet
+        \ }
+endfun
+
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^\s*(-|\*+|#\.|\\item)( \[[x ]?\])? )(.*)'
+  let l:std_bullet_regex  = '\v(^\s*(-|\*+|#\.|\\item) )(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
 
   if empty(l:matches)
@@ -97,16 +114,16 @@ fun! s:match_bullet_list_item(input_text)
   endif
 
   let l:whole_bullet      = l:matches[1]
-  let l:bullet            = l:matches[2]
-  let l:text_after_bullet = l:matches[4]
+  let l:text_after_bullet = l:matches[3]
 
   return {
         \ 'whole_bullet':      l:whole_bullet,
-        \ 'bullet':            l:bullet,
         \ 'text_after_bullet': l:text_after_bullet
         \ }
 endfun
+" -------------------------------------------------------  }}}
 
+" Helper methods ----------------------------------------  {{{
 fun! s:get_visual_selection_lines()
   let [l:lnum1, l:col1] = getpos("'<")[1:2]
   let [l:lnum2, l:col2] = getpos("'>")[1:2]
@@ -131,6 +148,8 @@ fun! s:next_bullet_str(bullet_type, line_data)
   elseif a:bullet_type ==# 'num'
     let l:next_num = a:line_data.bullet + 1
     return a:line_data.leading_space . l:next_num . a:line_data.closure  . ' '
+  elseif a:bullet_type ==# 'chk'
+    return a:line_data.leading_space . '- [ ] '
   else
     return a:line_data.whole_bullet
   endif
@@ -147,6 +166,7 @@ fun! s:insert_new_bullet()
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
   let l:curr_line = getline(l:curr_line_num)
   let l:std_bullet_matches = s:match_bullet_list_item(l:curr_line)
+  let l:chk_bullet_matches = s:match_checkbox_bullet_item(l:curr_line)
   let l:num_bullet_matches = s:match_numeric_list_item(l:curr_line)
   let l:rom_bullet_matches = s:match_roman_list_item(l:curr_line)
   let l:bullet_type = ''
@@ -156,7 +176,10 @@ fun! s:insert_new_bullet()
   let l:send_return = 1
   let l:normal_mode = mode() ==# 'n'
 
-  if !empty(l:std_bullet_matches)
+  if !empty(l:chk_bullet_matches)
+    let l:bullet_type = 'chk'
+    let l:bullet = l:chk_bullet_matches
+  elseif !empty(l:std_bullet_matches)
     let l:bullet_type = 'std'
     let l:bullet = l:std_bullet_matches
   elseif !empty(l:num_bullet_matches)
