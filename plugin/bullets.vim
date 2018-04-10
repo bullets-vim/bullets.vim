@@ -40,7 +40,6 @@ end
 if !exists('g:bullets_line_spacing')
   let g:bullets_line_spacing = 1
 end
-
 " ------------------------------------------------------   }}}
 
 " Helper methods ----------------------------------------  {{{
@@ -421,5 +420,3 @@ augroup END
 " Restore previous external compatibility options --------- {{{
 let &cpo = s:save_cpo
 " --------------------------------------------------------  }}}
-
-
