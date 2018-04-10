@@ -89,13 +89,8 @@ fun! s:match_roman_list_item(input_text)
 endfun
 
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^\s*(-|*|#\.|\\item)( \[[x ]?\])? )(.*)'
+  let l:std_bullet_regex  = '\v(^\s*(-|\*+|#\.|\\item)( \[[x ]?\])? )(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
-
-  if empty(l:matches)
-    let l:orgmode_header_regex = '\v(^(\*+)() )(.*)'
-    let l:matches              = matchlist(a:input_text, l:orgmode_header_regex)
-  endif
 
   if empty(l:matches)
     return {}
