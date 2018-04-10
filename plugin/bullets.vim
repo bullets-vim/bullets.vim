@@ -187,10 +187,7 @@ endfun
 fun! s:insert_new_bullet()
   let l:curr_line_num = line('.')
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
-  let l:curr_line = getline(l:curr_line_num)
-  let l:bullet = s:parse_bullet(l:curr_line)
-  let l:bullet_content = ''
-  let l:text_after_bullet = ''
+  let l:bullet = s:parse_bullet(getline(l:curr_line_num))
   let l:send_return = 1
   let l:normal_mode = mode() ==# 'n'
 
