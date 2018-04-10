@@ -31,6 +31,7 @@ types:
 1. Numeric lists
 2) or this style of numeric lists
 \item latex item lists
+**** Org mode headers
 
 Future versions aim to support the following:
 
