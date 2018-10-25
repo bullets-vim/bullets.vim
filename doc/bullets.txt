@@ -115,13 +115,33 @@ This will set the <space> key as leader to all default mappings.
 
 
 Disabling empty bullet deletion
---------------------------------
+-------------------------------
 By default bullets.vim will delete trailing empty bullets when the return key
 is pressed, just like modern word processors.
 
 If you would like to turn this feature off add the following to your .vimrc
 
   `let g:bullets_delete_last_bullet_if_empty = 0`
+
+
+Maintain right padding on bullets
+---------------------------------
+By default bullets.vim will try to pad bullets with enough spaces to align a
+new bullet's _text_ part with the previous line.
+
+  `let g:bullets_pad_right = 0`
+  1.  two spaces after the bullet
+  2.  same here
+  ...
+  9.  and here
+  10. text stays aligned
+  ...
+  99. and here
+  100. shifts over a column
+
+This tends to be fine even if you don't use it, but it can be disabled with:
+
+  `let g:bullets_pad_right = 0`
 
 
 INSERTING BULLETS                           *bullets-insert-new-bullet*
