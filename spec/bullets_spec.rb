@@ -101,6 +101,17 @@ RSpec.describe 'Bullets.vim' do
         EXPECTED
       end
 
+      it 'maintains total bullet width from 9. to 10. with reduced padding' do
+        test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
+          # Hello there
+          9.  this is the first bullet
+        INIT
+          # Hello there
+          9.  this is the first bullet
+          10. second bullet
+        EXPECTED
+      end
+
       it 'adds a new - bullet with right padding' do
         test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
           # Hello there
