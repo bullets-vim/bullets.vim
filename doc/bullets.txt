@@ -67,6 +67,10 @@ GENERAL COMMANDS                            *bullets-commands*
                        INSERT mode or `o` in normal mode. It adds the next
                        bullet list item based on the one in the current line.
 
+                                            *bullets-:RenumberSelection*
+:RenumberSelection     Renumbers all the arabic/numeric bullets lines in the
+                       visual selection. Right padding is initalized to the
+                       first found bullet.
 
 CONFIGURATION                               *bullets-configuration*
 
