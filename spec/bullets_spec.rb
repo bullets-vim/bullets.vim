@@ -90,6 +90,28 @@ RSpec.describe 'Bullets.vim' do
         EXPECTED
       end
 
+      it 'adds a new numeric bullet with right padding' do
+        test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
+          # Hello there
+          1.  this is the first bullet
+        INIT
+          # Hello there
+          1.  this is the first bullet
+          2.  second bullet
+        EXPECTED
+      end
+
+      it 'adds a new - bullet with right padding' do
+        test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
+          # Hello there
+          -   this is the first bullet
+        INIT
+          # Hello there
+          -   this is the first bullet
+          -   second bullet
+        EXPECTED
+      end
+
       it 'does not insert a new numeric bullet for decimal numbers' do
         test_bullet_inserted('second line', <<-INIT, <<-EXPECTED)
           # Hello there
@@ -108,6 +130,7 @@ RSpec.describe 'Bullets.vim' do
           I. this is the first bullet
         TEXT
 
+        vim.command 'let g:bullets_pad_right = 0'
         vim.edit filename
         vim.type 'GA'
         vim.feedkeys '\<cr>'
