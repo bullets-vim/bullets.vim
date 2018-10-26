@@ -1,5 +1,7 @@
 ![Bullets.vim](bullets.vim.png)
 
+[![Build Status](https://travis-ci.org/dkarter/bullets.vim.svg?branch=master)](https://travis-ci.org/dkarter/bullets.vim)
+
 # Description
 
 Bullets.vim is a Vim plugin for automated bullet lists.
