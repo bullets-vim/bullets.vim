@@ -48,13 +48,20 @@ Just add above to your .vimrc
 
 # Testing
 
-The test suite is only known to be working on OS X with MacVim installed. I
-tried running it on Circle CI but had no success.
+The test suite is written using vimrunner. It is known to run on macOS with MacVim installed, and on travis. Your vim must have `+clientserver` and either have its own GUI or in a virtual X11 window.
 
 On your mac run:
 
 ```sh
-rspec spec
+bundle install
+bundle exec rspec
+```
+
+On linux:
+
+```sh
+bundle install
+xvfb-run bundle exec rspec
 ```
 
 You should see a Vim window open which will run each test, same general idea as
@@ -75,6 +82,7 @@ Capybara integration testing. ❤️
 - [x] create a text object for bullets
 - [x] create a text object for GFM-style checkboxes
 - [x] check if user is at EOL before appending auto-bullet - they may just want to
+- [x] attempt to keep the same total bullet width even as number width varies (right padding)
 - [ ] add alphabetic list
 - [ ] allow user to define a global var with custom bullets
 - [ ] create a text object for bullet list indentation
