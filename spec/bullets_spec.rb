@@ -6,7 +6,7 @@ RSpec.describe 'Bullets.vim' do
   describe 'inserting new bullets' do
     context 'on return key when cursor is not at EOL' do
       it 'splits the line and does not add a bullet' do
-        filename = "#{SecureRandom.hex(6)}.md"
+        filename = "#{SecureRandom.hex(6)}.txt"
         write_file(filename, <<-TEXT)
           # Hello there
           - this is the first bullet
@@ -135,7 +135,7 @@ RSpec.describe 'Bullets.vim' do
       end
 
       it 'adds a new roman numeral bullet' do
-        filename = "#{SecureRandom.hex(6)}.md"
+        filename = "#{SecureRandom.hex(6)}.txt"
         write_file(filename, <<-TEXT)
           # Hello there
           I. this is the first bullet
@@ -167,7 +167,7 @@ RSpec.describe 'Bullets.vim' do
       end
 
       it 'deletes the last bullet if it is empty' do
-        filename = "#{SecureRandom.hex(6)}.md"
+        filename = "#{SecureRandom.hex(6)}.txt"
         write_file(filename, <<-TEXT)
           # Hello there
           - this is the first bullet
@@ -188,7 +188,7 @@ RSpec.describe 'Bullets.vim' do
       end
 
       it 'does not delete the last bullet when configured not to' do
-        filename = "#{SecureRandom.hex(6)}.md"
+        filename = "#{SecureRandom.hex(6)}.txt"
         write_file(filename, <<-TEXT)
           # Hello there
           - this is the first bullet

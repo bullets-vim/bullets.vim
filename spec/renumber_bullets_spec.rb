@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 're-numbering' do
   it 'renumbers a selected list correctly' do
-    filename = "#{SecureRandom.hex(6)}.md"
+    filename = "#{SecureRandom.hex(6)}.txt"
     write_file(filename, <<-TEXT)
       # Hello there
       33. this is the first bullet
