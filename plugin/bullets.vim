@@ -74,7 +74,7 @@ fun! s:match_numeric_list_item(input_text)
 endfun
 
 fun! s:match_roman_list_item(input_text)
-    let l:rom_bullet_regex  = '\v^((\s*)([IVXLCDM]+)(\.|\))(\s*))(.*)'
+  let l:rom_bullet_regex  = '\v^((\s*)([IVXLCDM]+)(\.|\))(\s*))(.*)'
   let l:matches           = matchlist(a:input_text, l:rom_bullet_regex)
   if empty(l:matches)
     return {}
@@ -212,10 +212,28 @@ fun! s:delete_empty_bullet(line_num)
   endif
 endfun
 
+fun! s:indented(line_text)
+  return a:line_text =~ '\v^\s+\w'
+endfun
+
+fun! s:detect_bullet_line(from_line_num)
+  let l:lnum = a:from_line_num
+  let l:ltxt = getline(l:lnum)
+  let l:bullet = s:parse_bullet(l:ltxt)
+
+  while l:lnum > 1 && s:indented(l:ltxt) && l:bullet == {}
+    let l:lnum = l:lnum - 1
+    let l:ltxt = getline(l:lnum)
+    let l:bullet = s:parse_bullet(l:ltxt)
+  endwhile
+
+  return l:bullet
+endfun
+
 fun! s:insert_new_bullet()
   let l:curr_line_num = line('.')
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
-  let l:bullet = s:parse_bullet(getline(l:curr_line_num))
+  let l:bullet = s:detect_bullet_line(l:curr_line_num)
   let l:send_return = 1
   let l:normal_mode = mode() ==# 'n'
 
@@ -233,7 +251,7 @@ fun! s:insert_new_bullet()
 
       " prepend blank lines if desired
       if g:bullets_line_spacing > 1
-        let l:next_bullet_list += map(range(g:bullets_line_spacing - 1),'""')
+        let l:next_bullet_list += map(range(g:bullets_line_spacing - 1), '""')
         call reverse(l:next_bullet_list)
       endif
 
@@ -241,7 +259,8 @@ fun! s:insert_new_bullet()
       " insert next bullet
       call append(l:curr_line_num, l:next_bullet_list)
       " got to next line after the new bullet
-      call setpos('.', [0, l:next_line_num, strlen(getline(l:next_line_num))+1])
+      let l:col = strlen(getline(l:next_line_num)) + 1
+      call setpos('.', [0, l:next_line_num, l:col])
       let l:send_return = 0
     endif
   endif
