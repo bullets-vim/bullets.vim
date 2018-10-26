@@ -40,6 +40,10 @@ end
 if !exists('g:bullets_line_spacing')
   let g:bullets_line_spacing = 1
 end
+
+if !exists('g:bullets_pad_right')
+  let g:bullets_pad_right = 1
+end
 " ------------------------------------------------------   }}}
 
 " Bullet type detection ----------------------------------------  {{{
@@ -51,6 +55,7 @@ fun! s:match_numeric_list_item(input_text)
     return {}
   endif
 
+  let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
   let l:num               = l:matches[3]
   let l:closure           = l:matches[4]
@@ -59,6 +64,7 @@ fun! s:match_numeric_list_item(input_text)
 
   return {
         \ 'bullet_type':       'num',
+        \ 'bullet_length':     l:bullet_length,
         \ 'leading_space':     l:leading_space,
         \ 'trailing_space':    l:trailing_space,
         \ 'bullet':            l:num,
@@ -74,6 +80,7 @@ fun! s:match_roman_list_item(input_text)
     return {}
   endif
 
+  let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
   let l:rom               = l:matches[3]
   let l:closure           = l:matches[4]
@@ -82,6 +89,7 @@ fun! s:match_roman_list_item(input_text)
 
   return {
         \ 'bullet_type':       'rom',
+        \ 'bullet_length':     l:bullet_length,
         \ 'leading_space':     l:leading_space,
         \ 'trailing_space':    l:trailing_space,
         \ 'bullet':            l:rom,
@@ -91,37 +99,45 @@ fun! s:match_roman_list_item(input_text)
 endfun
 
 fun! s:match_checkbox_bullet_item(input_text)
-  let l:checkbox_bullet_regex = '\v(^(\s*)- \[[x ]?\] )(.*)'
+  let l:checkbox_bullet_regex = '\v(^(\s*)- \[[x ]?\](\s+))(.*)'
   let l:matches               = matchlist(a:input_text, l:checkbox_bullet_regex)
 
   if empty(l:matches)
     return {}
   endif
 
+  let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
-  let l:text_after_bullet = l:matches[3]
+  let l:trailing_space    = l:matches[3]
+  let l:text_after_bullet = l:matches[4]
 
   return {
         \ 'bullet_type':       'chk',
+        \ 'bullet_length':     l:bullet_length,
         \ 'leading_space':     l:leading_space,
+        \ 'trailing_space':    l:trailing_space,
         \ 'text_after_bullet': l:text_after_bullet
         \ }
 endfun
 
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^\s*(-|\*+|#\.|\\item) )(.*)'
+  let l:std_bullet_regex  = '\v(^\s*(-|\*+|#\.|\\item)(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
 
   if empty(l:matches)
     return {}
   endif
 
+  let l:bullet_length     = strlen(l:matches[1])
   let l:whole_bullet      = l:matches[1]
-  let l:text_after_bullet = l:matches[3]
+  let l:trailing_space    = l:matches[3]
+  let l:text_after_bullet = l:matches[4]
 
   return {
         \ 'bullet_type':       'std',
+        \ 'bullet_length':     l:bullet_length,
         \ 'whole_bullet':      l:whole_bullet,
+        \ 'trailing_space':    l:trailing_space,
         \ 'text_after_bullet': l:text_after_bullet
         \ }
 endfun
@@ -164,6 +180,18 @@ endfun
 " -------------------------------------------------------  }}}
 
 " Generate bullets --------------------------------------  {{{
+fun! s:pad_to_length(str, len)
+  if g:bullets_pad_right == 0 | return a:str | endif
+  let l:len = a:len - len(a:str)
+  let l:str = a:str
+  if (l:len <= 0) | return a:str | endif
+  while l:len > 0
+    let l:str = l:str . ' '
+    let l:len = l:len - 1
+  endwhile
+  return l:str
+endfun
+
 fun! s:next_bullet_str(bullet)
   if a:bullet.bullet_type ==# 'rom'
     let l:next_num = s:arabic2roman(s:roman2arabic(a:bullet.bullet) + 1)
@@ -201,7 +229,7 @@ fun! s:insert_new_bullet()
       call s:delete_empty_bullet(l:curr_line_num)
     else
 
-      let l:next_bullet_list = [s:next_bullet_str(l:bullet)]
+      let l:next_bullet_list = [s:pad_to_length(s:next_bullet_str(l:bullet), l:bullet.bullet_length)]
 
       " prepend blank lines if desired
       if g:bullets_line_spacing > 1
@@ -337,17 +365,26 @@ fun! s:renumber_selection()
   let l:selection_lines = s:get_visual_selection_lines()
   let l:index = 0
 
+  let l:pad_len = 0
   for l:line in l:selection_lines
     let l:bullet = s:match_numeric_list_item(l:line.text)
 
     if !empty(l:bullet)
+      if l:index == 0
+        " use the first bullet as the first padding length
+        " 10. firstline  -> 1.  firstline
+        " 1.  secondline -> 2.  secondline
+        let l:pad_len = l:bullet.bullet_length
+      endif
       let l:index += 1
-      let l:renumbered_line =
+      let l:new_bullet =
             \ l:bullet.leading_space
             \ . l:index
             \ . l:bullet.closure
-            \ . l:bullet.trailing_space
-            \ . l:bullet.text_after_bullet
+            \ . (l:pad_len == 0 ? l:bullet.trailing_space : ' ')
+      let l:new_bullet = s:pad_to_length(l:new_bullet, l:pad_len)
+      let l:pad_len = len(l:new_bullet)
+      let l:renumbered_line = l:new_bullet . l:bullet.text_after_bullet
       call setline(l:line.nr, l:renumbered_line)
     else
       call setline(l:line.nr, l:line.text)

@@ -7,5 +7,5 @@ group :test do
   gem 'vimrunner'
   gem 'pry'
   gem 'pry-byebug'
-  gem 'rake', '~> 10.3.2'
+  gem 'rake', '~> 12.3.1'
 end

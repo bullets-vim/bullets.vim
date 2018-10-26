@@ -2,11 +2,10 @@ language: ruby
 sudo: false
 cache: bundler
 rvm:
-  - 2.3.1
+  - '2.4'
 addons:
   apt:
     packages:
       - vim-gtk
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
+script:
+  - xvfb-run bundle exec rspec --format documentation

@@ -4,12 +4,12 @@ require 'spec_helper'
 
 RSpec.describe 're-numbering' do
   it 'renumbers a selected list correctly' do
-    filename = "#{SecureRandom.hex(6)}.md"
+    filename = "#{SecureRandom.hex(6)}.txt"
     write_file(filename, <<-TEXT)
       # Hello there
-      3. this is the first bullet
+      33. this is the first bullet
       2. this is the second bullet
-      1. this is the third bullet
+      1.     this is the third bullet
       4. this is the fourth bullet
     TEXT
 
@@ -22,10 +22,10 @@ RSpec.describe 're-numbering' do
 
     expect(file_contents).to eq normalize_string_indent(<<-TEXT)
       # Hello there
-      1. this is the first bullet
-      2. this is the second bullet
-      3. this is the third bullet
-      4. this is the fourth bullet\n
+      1.  this is the first bullet
+      2.  this is the second bullet
+      3.  this is the third bullet
+      4.  this is the fourth bullet\n
     TEXT
   end
 end

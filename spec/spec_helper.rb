@@ -15,7 +15,7 @@ Vimrunner::RSpec.configure do |config|
     vim = Vimrunner.start
 
     # Or, start a GUI instance:
-    # VIM = Vimrunner.start_gvim
+    # vim = Vimrunner.start_gvim
 
     # Setup your plugin in the Vim instance
     plugin_path = File.expand_path('..', __dir__)
@@ -104,12 +104,12 @@ RSpec.configure do |config|
 end
 
 def test_bullet_inserted(second_bullet_text, initial_text, expected_text)
-  filename = "#{SecureRandom.hex(6)}.md"
+  filename = "#{SecureRandom.hex(6)}.txt"
   write_file(filename, initial_text)
 
   vim.edit(filename)
   vim.type('GA')
-  vim.feedkeys('\<cr>')
+  vim.feedkeys('\\<cr>')
   vim.type(second_bullet_text)
   vim.write
 

@@ -19,4 +19,25 @@ RSpec.describe 'filetypes' do
       - this is the second bullet
     TEXT
   end
+
+  it 'should have text filetype for .txt' do
+    # bullets.vim is triggered by particular filetypes;
+    # if somehow your vim is recognising .txt and setting
+    # filetype to something that isn't text or markdown,
+    # the rest of the tests are gonna fail.
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, "")
+
+    vim.edit filename
+    vim.type 'i'
+    vim.feedkeys '\\<c-r>'
+    vim.type "=&filetype"
+    vim.feedkeys '\\<cr>'
+    vim.write
+
+    file_contents = normalize_string_indent(IO.read(filename)).strip
+
+    expect(["markdown", "text"]).to include(file_contents)
+  end
+
 end
