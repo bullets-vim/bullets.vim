@@ -213,7 +213,7 @@ fun! s:delete_empty_bullet(line_num)
 endfun
 
 fun! s:indented(line_text)
-  return a:line_text =~ '\v^\s+\w'
+  return a:line_text =~# '\v^\s+\w'
 endfun
 
 fun! s:detect_bullet_line(from_line_num)
@@ -422,13 +422,13 @@ fun! s:find_bullet_position(lnum)
 endfun
 
 fun! s:select_bullet(inner)
-  let lnum = getpos(".")[1]
+  let lnum = getpos('.')[1]
   let bullet_col = s:find_bullet_position(lnum)
 
   if bullet_col
     " decide if we need to select with the bullet or without
     let offset = a:inner? 2 : 0
-    call setpos(".", [0, lnum, bullet_col + offset])
+    call setpos('.', [0, lnum, bullet_col + offset])
     normal! vg_
   endif
 endfun
@@ -493,5 +493,5 @@ augroup END
 " --------------------------------------------------------- }}}
 
 " Restore previous external compatibility options --------- {{{
-let &cpo = s:save_cpo
+let &cpoptions = s:save_cpo
 " --------------------------------------------------------  }}}
