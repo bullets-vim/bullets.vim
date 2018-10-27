@@ -18,9 +18,9 @@ INTRODUCTION                                *bullets* *bullets-intro*
 
 Bullets.vim is a plugin allowing automated (as in auto completing and auto
 incrementing) bulleted lists in Vim. It is designed to closely emulate the
-experience of working with a familiar word processor which presents the users
-with the next bulleted item, leaving the user focused on what they need to
-write.
+experience of working with a familiar word processor which presents the user
+with the next bulleted item after completing a bullet point and pressing
+the enter key, leaving the user focused on what they need to write.
 
 Out of the box bullets.vim comes with built in support for the following list
 types:
@@ -32,6 +32,9 @@ types:
 2) or this style of numeric lists
 \item latex item lists
 **** Org mode headers
+
+It also provides support for wrapped text in a bullet, allowing you to use the
+`textwidth` feature in Vim seamlessly.
 
 Future versions aim to support the following:
 
