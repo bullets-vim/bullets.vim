@@ -7,6 +7,7 @@
 Bullets.vim is a Vim plugin for automated bullet lists.
 
 Simple bullets:
+
 ![demo](img/bullets.gif)
 
 Wrapped text bullets:
