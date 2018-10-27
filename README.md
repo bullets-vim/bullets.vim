@@ -6,8 +6,13 @@
 
 Bullets.vim is a Vim plugin for automated bullet lists.
 
+Simple bullets:
 ![demo](img/bullets.gif)
 
+Wrapped text bullets:
+![wrapped bullets](img/wrapped-bullets.gif)
+
+Renumbering lines:
 ![renumber demo](img/renumber.gif)
 
 # Installation
@@ -85,12 +90,11 @@ Capybara integration testing. ❤️
 - [x] create a text object for GFM-style checkboxes
 - [x] check if user is at EOL before appending auto-bullet - they may just want to
 - [x] attempt to keep the same total bullet width even as number width varies (right padding)
+- [x] detect lists that have multiline bullets (should have no empty lines between
+  lines).
 - [ ] add alphabetic list
 - [ ] allow user to define a global var with custom bullets
 - [ ] create a text object for bullet list indentation
-- [ ] detect lists that have multiline bullets (should have no empty lines between
-  lines).
-  break the line at a certain point
 - [ ] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
 
 ---
