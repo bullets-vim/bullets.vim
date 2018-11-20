@@ -203,12 +203,6 @@ INSERT MODE
                                             *bullets-i_<C-cr>*
 <C-CR>      Same as <CR>, in case you want to unmap <CR> in INSERT MODE.
 
-                                            *bullets-i_<C-l>*
-<C-l>       Indent current bullet list item to the right by two spaces.
-
-                                            *bullets-i_<C-h>*
-<C-h>       Indent current bullet list item to the left by two spaces.
-
 NORMAL MODE
 
                                             *bullets-o*
