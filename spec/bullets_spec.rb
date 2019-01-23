@@ -166,6 +166,18 @@ RSpec.describe 'Bullets.vim' do
         TEXT
       end
 
+      it 'does not confuse with the "ignorecase" option' do
+        vim.command 'set ignorecase'
+        test_bullet_inserted('second line', <<-INIT, <<-EXPECTED)
+          # Hello there
+          Vi. this is the first line
+        INIT
+          # Hello there
+          Vi. this is the first line
+          second line
+        EXPECTED
+      end
+
       it 'deletes the last bullet if it is empty' do
         filename = "#{SecureRandom.hex(6)}.txt"
         write_file(filename, <<-TEXT)
