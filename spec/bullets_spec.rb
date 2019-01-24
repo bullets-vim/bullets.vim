@@ -210,6 +210,17 @@ RSpec.describe 'Bullets.vim' do
         EXPECTED
       end
 
+      it 'does not insert a new roman bullets without following spaces' do
+        test_bullet_inserted('second line', <<-INIT, <<-EXPECTED)
+          # Hello there
+          m.example.com is a site.
+        INIT
+          # Hello there
+          m.example.com is a site.
+          second line
+        EXPECTED
+      end
+
       it 'deletes the last bullet if it is empty' do
         filename = "#{SecureRandom.hex(6)}.txt"
         write_file(filename, <<-TEXT)
