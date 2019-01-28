@@ -74,7 +74,7 @@ fun! s:match_numeric_list_item(input_text)
 endfun
 
 fun! s:match_roman_list_item(input_text)
-  let l:rom_bullet_regex  = '\v\C^((\s*)([IVXLCDM]+)(\.|\))(\s*))(.*)'
+  let l:rom_bullet_regex  = '\v\C^((\s*)([IVXLCDM]+|[ivxlcdm]+)(\.|\))(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:rom_bullet_regex)
   if empty(l:matches)
     return {}
@@ -194,7 +194,8 @@ endfun
 
 fun! s:next_bullet_str(bullet)
   if a:bullet.bullet_type ==# 'rom'
-    let l:next_num = s:arabic2roman(s:roman2arabic(a:bullet.bullet) + 1)
+    let l:islower = a:bullet.bullet ==# tolower(a:bullet.bullet)
+    let l:next_num = s:arabic2roman(s:roman2arabic(a:bullet.bullet) + 1, l:islower)
     return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
   elseif a:bullet.bullet_type ==# 'num'
     let l:next_num = a:bullet.bullet + 1
@@ -362,7 +363,7 @@ function! s:roman2arabic(roman)
   return l:arabic
 endfunction
 
-function! s:arabic2roman(arabic)
+function! s:arabic2roman(arabic, islower)
   if a:arabic <= 0
     let l:arabic = -a:arabic
     let l:roman = 'n'
@@ -374,7 +375,7 @@ function! s:arabic2roman(arabic)
     let l:roman .= repeat(l:letters, l:arabic / l:numbers)
     let l:arabic = l:arabic % l:numbers
   endfor
-  return toupper(l:roman)
+  return a:islower ? tolower(l:roman) : toupper(l:roman)
 endfunction
 
 " Roman numerals ---------------------------------------------- }}}

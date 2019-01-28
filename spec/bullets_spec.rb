@@ -166,6 +166,38 @@ RSpec.describe 'Bullets.vim' do
         TEXT
       end
 
+      it 'adds a new lowercase roman numeral bullet' do
+        filename = "#{SecureRandom.hex(6)}.txt"
+        write_file(filename, <<-TEXT)
+          # Hello there
+          i. this is the first bullet
+        TEXT
+
+        vim.command 'let g:bullets_pad_right = 0'
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'second bullet'
+        vim.feedkeys '\<cr>'
+        vim.type 'third bullet'
+        vim.feedkeys '\<cr>'
+        vim.type 'fourth bullet'
+        vim.feedkeys '\<cr>'
+        vim.type 'fifth bullet'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          i. this is the first bullet
+          ii. second bullet
+          iii. third bullet
+          iv. fourth bullet
+          v. fifth bullet\n
+        TEXT
+      end
+
       it 'does not confuse with the "ignorecase" option' do
         vim.command 'set ignorecase'
         test_bullet_inserted('second line', <<-INIT, <<-EXPECTED)
@@ -174,6 +206,17 @@ RSpec.describe 'Bullets.vim' do
         INIT
           # Hello there
           Vi. this is the first line
+          second line
+        EXPECTED
+      end
+
+      it 'does not insert a new roman bullets without following spaces' do
+        test_bullet_inserted('second line', <<-INIT, <<-EXPECTED)
+          # Hello there
+          m.example.com is a site.
+        INIT
+          # Hello there
+          m.example.com is a site.
           second line
         EXPECTED
       end
