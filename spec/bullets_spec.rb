@@ -221,6 +221,34 @@ RSpec.describe 'Bullets.vim' do
         EXPECTED
       end
 
+      it 'does not insert a new roman bullets for invalid roman numbers' do
+        filename = "#{SecureRandom.hex(6)}.txt"
+        write_file(filename, <<-TEXT)
+          # Hello there
+          LID. the first line
+        TEXT
+
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'second line'
+        vim.feedkeys '\<cr>'
+        vim.type 'vim. third line'
+        vim.feedkeys '\<cr>'
+        vim.type 'fourth line'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          LID. the first line
+          second line
+          vim. third line
+          fourth line\n
+        TEXT
+      end
+
       it 'deletes the last bullet if it is empty' do
         filename = "#{SecureRandom.hex(6)}.txt"
         write_file(filename, <<-TEXT)

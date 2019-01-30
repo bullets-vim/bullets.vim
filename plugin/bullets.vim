@@ -74,7 +74,19 @@ fun! s:match_numeric_list_item(input_text)
 endfun
 
 fun! s:match_roman_list_item(input_text)
-  let l:rom_bullet_regex  = '\v\C^((\s*)([IVXLCDM]+|[ivxlcdm]+)(\.|\))(\s+))(.*)'
+  let l:rom_bullet_regex  = join([
+        \ '\v\C',
+        \ '^(',
+        \   '(\s*)',
+        \   '(',
+        \     'M{0,4}%(CM|CD|D?C{0,3})%(XC|XL|L?X{0,3})%(IX|IV|V?I{0,3})',
+        \     '|',
+        \     'm{0,4}%(cm|cd|d?c{0,3})%(xc|xl|l?x{0,3})%(ix|iv|v?i{0,3})',
+        \   ')',
+        \   '(\.|\))',
+        \   '(\s+)',
+        \ ')',
+        \ '(.*)'], '')
   let l:matches           = matchlist(a:input_text, l:rom_bullet_regex)
   if empty(l:matches)
     return {}
