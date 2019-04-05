@@ -1,0 +1,4 @@
+name: Bullets.vim
+cover_image: https://raw.githubusercontent.com/dkarter/bullets.vim/master/img/wrapped-bullets.gif
+description: |
+  🔫 Bullets.vim is a Vim/NeoVim plugin for automated bullet lists.
