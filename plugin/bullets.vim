@@ -431,7 +431,15 @@ command! -range=% RenumberSelection call <SID>renumber_selection()
 " Bullets ------------------------------------------------- {{{
 fun! s:find_bullet_position(lnum)
   let line_text = getline(a:lnum)
-  return matchend(line_text, '\v^\s*(\*|-)')
+  " Default support works for following type bullets only
+  " - some bulet text
+  "
+  " But this doesn't work for following types of bullets
+  " 1. first type
+  " 2) second type
+  " 3- third type
+  " Thus following works for all of the above.
+  return matchend(line_text, '\v^(\s|\d)*(\*|-|\.|\))')
 endfun
 
 fun! s:select_bullet(inner)
