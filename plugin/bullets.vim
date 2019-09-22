@@ -44,6 +44,10 @@ end
 if !exists('g:bullets_pad_right')
   let g:bullets_pad_right = 1
 end
+
+if !exists('g:bullets_enable_ascii_indent')
+	let g:bullets_enable_ascii_indent = 0
+endif
 " ------------------------------------------------------   }}}
 
 " Bullet type detection ----------------------------------------  {{{
@@ -142,6 +146,7 @@ fun! s:match_bullet_list_item(input_text)
 
   let l:bullet_length     = strlen(l:matches[1])
   let l:whole_bullet      = l:matches[1]
+  let l:bullet_chars      = l:matches[2]
   let l:trailing_space    = l:matches[3]
   let l:text_after_bullet = l:matches[4]
 
@@ -149,6 +154,7 @@ fun! s:match_bullet_list_item(input_text)
         \ 'bullet_type':       'std',
         \ 'bullet_length':     l:bullet_length,
         \ 'whole_bullet':      l:whole_bullet,
+        \ 'bullet_chars':      l:bullet_chars,
         \ 'trailing_space':    l:trailing_space,
         \ 'text_after_bullet': l:text_after_bullet
         \ }
@@ -189,6 +195,19 @@ fun! s:get_visual_selection_lines()
   endfor
   return l:lines_with_index
 endfun
+
+function! s:is_ascii_bullet() abort
+  let l:curr_line_num = line('.')
+  let l:bullet = s:detect_bullet_line(l:curr_line_num)
+
+  if l:bullet == {}
+	  return 0
+  elseif l:bullet.bullet_chars =~# '\*\+\|\.\+'
+    return 1
+  else
+    return 0
+  endif
+endfunction
 " -------------------------------------------------------  }}}
 
 " Generate bullets --------------------------------------  {{{
@@ -297,6 +316,31 @@ fun! s:is_at_eol()
 endfun
 
 command! InsertNewBullet call <SID>insert_new_bullet()
+
+function! s:ascii_indent() abort
+  " TODO check in which mode let l:mode = mode()
+  let l:curr_line_num = line('.')
+  let l:curr_line_txt = getline(l:curr_line_num)
+  let l:bullet = s:detect_bullet_line(l:curr_line_num)
+  let l:indented_line_txt = l:bullet.bullet_chars[0] . l:curr_line_txt
+  let l:pos = getpos('.')
+  let l:pos[2] += 1
+  call setline(l:curr_line_num, l:indented_line_txt)
+  call setpos('.', l:pos)
+endfunction
+
+function! s:ascii_dec_indent() abort
+  let l:curr_line_num = line('.')
+  let l:curr_line_txt = getline(l:curr_line_num)
+  let l:bullet = s:detect_bullet_line(l:curr_line_num)
+  if len(l:bullet.bullet_chars) > 1
+    let l:pos = getpos('.')
+    let l:pos[2] -= 1
+    " COMBAK stop at top level bullet?
+    execute 'normal! ^x'
+    call setpos('.', l:pos)
+  endif
+endfunction
 " --------------------------------------------------------- }}}
 
 " Checkboxes ---------------------------------------------- {{{
@@ -502,6 +546,23 @@ augroup TextBulletsMappings
     call s:add_local_mapping('onoremap', 'ac', ':SelectCheckbox<cr>')
     " Text Objects -------------------------------------------- }}}
   end
+augroup END
+
+augroup AsciiDocIndent
+  autocmd!
+
+  if type(g:bullets_enable_ascii_indent) == 0 && g:bullets_enable_ascii_indent == 1
+    " conditional mappings
+    autocmd FileType asciidoc* inoremap <silent> <buffer> <expr> <C-t>    <SID>is_ascii_bullet() ? '<Cmd>call <SID>ascii_indent()<CR>'     : '<C-t>'
+    autocmd FileType asciidoc* inoremap <silent> <buffer> <expr> <C-d>    <SID>is_ascii_bullet() ? '<Cmd>call <SID>ascii_dec_indent()<CR>' : '<C-d>'
+    autocmd FileType asciidoc* nnoremap <silent> <buffer> <expr> >>       <SID>is_ascii_bullet() ? ':call <SID>ascii_indent()<CR>'         : '>>'
+    autocmd FileType asciidoc* nnoremap <silent> <buffer> <expr> <lt><lt> <SID>is_ascii_bullet() ? ':call <SID>ascii_dec_indent()<CR>'     : '<lt><lt>'
+  elseif type(g:bullets_enable_ascii_indent) == 3 && len(g:bullets_enable_ascii_indent) == 4
+    execute "autocmd FileType asciidoc* inoremap <silent> <buffer> <expr> " . g:bullets_enable_ascii_indent[0] . " <SID>is_ascii_bullet() ? '<Cmd>call <SID>ascii_indent()<CR>'     : '\<C-t>'"
+    execute "autocmd FileType asciidoc* inoremap <silent> <buffer> <expr> " . g:bullets_enable_ascii_indent[1] . " <SID>is_ascii_bullet() ? '<Cmd>call <SID>ascii_dec_indent()<CR>' : '\<C-d>'"
+    execute "autocmd FileType asciidoc* nnoremap <silent> <buffer> <expr> " . g:bullets_enable_ascii_indent[2] . " <SID>is_ascii_bullet() ? ':call <SID>ascii_indent()<CR>'         : '>>'"
+    execute "autocmd FileType asciidoc* nnoremap <silent> <buffer> <expr> " . g:bullets_enable_ascii_indent[3] . " <SID>is_ascii_bullet() ? ':call <SID>ascii_dec_indent()<CR>'     : '<<'"
+  endif
 augroup END
 " --------------------------------------------------------- }}}
 

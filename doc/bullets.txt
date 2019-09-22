@@ -27,6 +27,7 @@ types:
 
 - Hyphenated lists
 * Star (or bullet) lists
+. Dot lists
 - [ ] GFM markdown checkbox lists
 1. Numeric lists
 2) or this style of numeric lists
@@ -109,6 +110,31 @@ To disable default mappings add the following to your .vimrc:
 >
 
 Now you can use the provided |bullets-commands| to define your own mappings.
+
+
+Enable AsciiDoc bullet indenting
+--------------------------------
+To enable support for indenting AsciiDoc lists, add the following to your
+.vimrc (init.vim):
+
+>
+  let g:bullets_enable_ascii_indent = 1
+<
+
+This will map to <CTRL-t>, <CTRL-d> in insert mode and `>>`, `<<` in normal
+mode. It will have no effect outside of AsciiDoc lists, maintaining default Vim
+behaviour.
+
+You can provide your own mappings to this function by making a list in .vimrc.
+
+Example: >
+  let g:bullets_enable_ascii_indent = ['<F3>','<F4>','<F5>','<F6>']
+
+Items in list set in order: insert mode indent, insert mode deindent, normal
+mode indent and normal mode deindent.
+
+If you want AsciiDoc list indenting enabled only in insert mode, leave last two
+items as `''`.
 
 
 Leader key prefix
