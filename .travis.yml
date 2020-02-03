@@ -2,7 +2,7 @@ language: ruby
 sudo: false
 cache: bundler
 rvm:
-  - '2.6.3'
+  - '2.7.0'
 addons:
   apt:
     packages:
