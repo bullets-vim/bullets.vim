@@ -1,11 +1,13 @@
+os: osx
+osx_image: xcode11.3
 language: ruby
 sudo: false
 cache: bundler
 rvm:
   - '2.7.0'
 addons:
-  apt:
+  homebrew:
     packages:
-      - vim-gtk
+    - macvim
 script:
-  - xvfb-run bundle exec rspec --format documentation
+  - bundle exec rspec --format documentation
