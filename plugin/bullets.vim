@@ -111,7 +111,7 @@ fun! s:match_roman_list_item(input_text)
 endfun
 
 fun! s:match_alphabetical_list_item(input_text)
-  let l:abc_bullet_regex  = '\v^((\s*)([A-Za-z]{1,3})(\.|\))(\s+))(.*)'
+  let l:abc_bullet_regex  = '\v^((\s*)(\u{1,2}|\l{1,2})(\.|\))(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:abc_bullet_regex)
 
   if empty(l:matches)
@@ -120,7 +120,7 @@ fun! s:match_alphabetical_list_item(input_text)
 
   let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
-  let l:abc             = l:matches[3]
+  let l:abc               = l:matches[3]
   let l:closure           = l:matches[4]
   let l:trailing_space    = l:matches[5]
   let l:text_after_bullet = l:matches[6]
@@ -281,14 +281,11 @@ fun! s:insert_new_bullet()
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
   let l:bullet = s:detect_bullet_line(l:curr_line_num)
   if l:bullet != {} && l:curr_line_num > 1 && 
-        \ (l:bullet.bullet_type == 'rom' || l:bullet.bullet_type == 'abc')
+        \ (l:bullet.bullet_type ==# 'rom' || l:bullet.bullet_type ==# 'abc')
     let l:bullet_prev = s:detect_bullet_line(l:curr_line_num - 1)
-    if l:bullet != {} && l:bullet_prev != {}
-      if l:bullet.bullet_type == 'rom'
-        if (s:roman2arabic(l:bullet.bullet) != (s:roman2arabic(l:bullet_prev.bullet) + 1))
-          let l:bullet.bullet_type = 'abc'
-        endif
-      endif
+    if l:bullet_prev != {} && l:bullet.bullet_type ==# 'rom' &&
+          \ (s:roman2arabic(l:bullet.bullet) != (s:roman2arabic(l:bullet_prev.bullet) + 1))
+      let l:bullet.bullet_type = 'abc'
     endif
   endif
   let l:send_return = 1
