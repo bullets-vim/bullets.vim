@@ -7,7 +7,7 @@ rvm:
 
 before_install:
   - gem install bundler
-  - brew install macvim
+  - HOMEBREW_NO_INSTALL_CLEANUP=true brew install macvim
 
 script:
   - bundle exec rspec --format documentation
