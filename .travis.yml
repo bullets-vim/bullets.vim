@@ -1,13 +1,18 @@
 os: osx
 osx_image: xcode11.3
+
+branches:
+  only:
+  - master
+
 language: ruby
-sudo: false
 cache: bundler
 rvm:
   - '2.7.0'
-addons:
-  homebrew:
-    packages:
-    - macvim
+
+before_install:
+  - gem install bundler
+  - HOMEBREW_NO_INSTALL_CLEANUP=1 HOMEBREW_NO_AUTO_UPDATE=1 brew install macvim
+
 script:
   - bundle exec rspec --format documentation
