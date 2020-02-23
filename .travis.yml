@@ -1,7 +1,6 @@
 os: osx
 osx_image: xcode11.3
 language: ruby
-sudo: false
 cache: bundler
 rvm:
   - '2.7.0'
