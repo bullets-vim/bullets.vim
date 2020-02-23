@@ -44,6 +44,17 @@ end
 if !exists('g:bullets_pad_right')
   let g:bullets_pad_right = 1
 end
+
+if !exists('g:bullets_max_alpha_characters')
+  let g:bullets_max_alpha_characters = 2
+end
+" calculate the decimal equivalent to the last alphabetical list item
+let s:power = g:bullets_max_alpha_characters
+let s:abc_max = -1
+while s:power >= 0
+  let s:abc_max += pow(26,s:power)
+  let s:power -= 1
+endwhile
 " ------------------------------------------------------   }}}
 
 " Bullet type detection ----------------------------------------  {{{
@@ -110,6 +121,37 @@ fun! s:match_roman_list_item(input_text)
         \ }
 endfun
 
+fun! s:match_alphabetical_list_item(input_text)
+  let l:abc_bullet_regex  = join([
+        \ '\v^((\s*)(\u{1,',
+        \ string(g:bullets_max_alpha_characters),
+        \ '}|\l{1,',
+        \ string(g:bullets_max_alpha_characters),
+        \ '})(\.|\))(\s+))(.*)'], '')
+  let l:matches           = matchlist(a:input_text, l:abc_bullet_regex)
+
+  if empty(l:matches)
+    return {}
+  endif
+
+  let l:bullet_length     = strlen(l:matches[1])
+  let l:leading_space     = l:matches[2]
+  let l:abc               = l:matches[3]
+  let l:closure           = l:matches[4]
+  let l:trailing_space    = l:matches[5]
+  let l:text_after_bullet = l:matches[6]
+
+  return {
+        \ 'bullet_type':       'abc',
+        \ 'bullet_length':     l:bullet_length,
+        \ 'leading_space':     l:leading_space,
+        \ 'trailing_space':    l:trailing_space,
+        \ 'bullet':            l:abc,
+        \ 'closure':           l:closure,
+        \ 'text_after_bullet': l:text_after_bullet
+        \ }
+endfun
+
 fun! s:match_checkbox_bullet_item(input_text)
   let l:checkbox_bullet_regex = '\v(^(\s*)- \[[x ]?\](\s+))(.*)'
   let l:matches               = matchlist(a:input_text, l:checkbox_bullet_regex)
@@ -159,6 +201,7 @@ fun! s:parse_bullet(line_text)
   let l:chk_bullet_matches = s:match_checkbox_bullet_item(a:line_text)
   let l:num_bullet_matches = s:match_numeric_list_item(a:line_text)
   let l:rom_bullet_matches = s:match_roman_list_item(a:line_text)
+  let l:abc_bullet_matches = s:match_alphabetical_list_item(a:line_text)
 
   if !empty(l:chk_bullet_matches)
     return l:chk_bullet_matches
@@ -168,6 +211,8 @@ fun! s:parse_bullet(line_text)
     return l:num_bullet_matches
   elseif !empty(l:rom_bullet_matches)
     return l:rom_bullet_matches
+  elseif !empty(l:abc_bullet_matches)
+    return l:abc_bullet_matches
   else
     return {}
   endif
@@ -209,6 +254,10 @@ fun! s:next_bullet_str(bullet)
     let l:islower = a:bullet.bullet ==# tolower(a:bullet.bullet)
     let l:next_num = s:arabic2roman(s:roman2arabic(a:bullet.bullet) + 1, l:islower)
     return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
+  elseif a:bullet.bullet_type ==# 'abc'
+    let l:islower = a:bullet.bullet ==# tolower(a:bullet.bullet)
+    let l:next_num = s:dec2abc(s:abc2dec(a:bullet.bullet) + 1, l:islower)
+    return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
   elseif a:bullet.bullet_type ==# 'num'
     let l:next_num = a:bullet.bullet + 1
     return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
@@ -247,6 +296,14 @@ fun! s:insert_new_bullet()
   let l:curr_line_num = line('.')
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
   let l:bullet = s:detect_bullet_line(l:curr_line_num)
+  if l:bullet != {} && l:curr_line_num > 1 && 
+        \ (l:bullet.bullet_type ==# 'rom' || l:bullet.bullet_type ==# 'abc')
+    let l:bullet_prev = s:detect_bullet_line(l:curr_line_num - 1)
+    if l:bullet_prev != {} && l:bullet.bullet_type ==# 'rom' &&
+          \ (s:roman2arabic(l:bullet.bullet) != (s:roman2arabic(l:bullet_prev.bullet) + 1))
+      let l:bullet.bullet_type = 'abc'
+    endif
+  endif
   let l:send_return = 1
   let l:normal_mode = mode() ==# 'n'
 
@@ -258,7 +315,7 @@ fun! s:insert_new_bullet()
       " We don't want to create a new bullet if the previous one was not used,
       " instead we want to delete the empty bullet - like word processors do
       call s:delete_empty_bullet(l:curr_line_num)
-    else
+    elseif !(l:bullet.bullet_type ==# 'abc' && s:abc2dec(l:bullet.bullet) + 1 > s:abc_max)
 
       let l:next_bullet_list = [s:pad_to_length(s:next_bullet_str(l:bullet), l:bullet.bullet_length)]
 
@@ -391,6 +448,33 @@ function! s:arabic2roman(arabic, islower)
 endfunction
 
 " Roman numerals ---------------------------------------------- }}}
+
+" Alphabetic ordinals ----------------------------------------- {{{
+
+" Alphabetic ordinal functions
+" Treat alphabetic ordinals as base-26 numbers to make things easy
+"
+fun! s:abc2dec(abc)
+  let l:abc = tolower(a:abc)
+  let l:dec = char2nr(l:abc[0]) - char2nr('a') + 1
+  if len(l:abc) == 1
+    return l:dec
+  else
+    return float2nr(pow(26, len(l:abc) - 1)) * l:dec + s:abc2dec(l:abc[1:len(l:abc) - 1])
+  endif
+endfun
+
+fun! s:dec2abc(dec, islower)
+  let l:a = a:islower ? 'a' : 'A'
+  let l:rem = (a:dec - 1) % 26
+  let l:abc = nr2char(l:rem + char2nr(l:a))
+  if a:dec <= 26
+    return l:abc
+  else
+    return s:dec2abc((a:dec - 1)/ 26, a:islower) . l:abc
+  endif
+endfun
+" Alphabetic ordinals ----------------------------------------- }}}
 
 " Renumbering --------------------------------------------- {{{
 fun! s:renumber_selection()
