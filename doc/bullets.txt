@@ -30,6 +30,8 @@ types:
 - [ ] GFM markdown checkbox lists
 1. Numeric lists
 2) or this style of numeric lists
+a. alphabetic lists
+B) or this style of alphabetic
 \item latex item lists
 **** Org mode headers
 
@@ -38,7 +40,6 @@ It also provides support for wrapped text in a bullet, allowing you to use the
 
 Future versions aim to support the following:
 
-a. Alphabetic lists
 ]] User defined bullets
 
 
