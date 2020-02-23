@@ -7,11 +7,7 @@ rvm:
 
 before_install:
   - gem install bundler
-
-addons:
-  homebrew:
-    packages:
-    - macvim
+  - brew install macvim
 
 script:
   - bundle exec rspec --format documentation
