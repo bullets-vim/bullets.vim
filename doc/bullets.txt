@@ -152,6 +152,19 @@ This tends to be fine even if you don't use it, but it can be disabled with:
   `let g:bullets_pad_right = 0`
 
 
+Alphabetic Bullet Max Size
+--------------------------
+To avoid falsely detecting a word as an alphabetic bullet we have limited the
+max size of an alphabetic bullets to `2` characters using the following setting:
+
+  `let g:bullets_max_alpha_characters = 2`
+
+You can change this setting in certain file types if you are not worried about
+that using auto commands.
+
+When changed to `0` this will disable alphabetic bullets altogether.
+
+
 INSERTING BULLETS                           *bullets-insert-new-bullet*
 
 When a supported file type is opened (see |bullets-configuration|) you can start

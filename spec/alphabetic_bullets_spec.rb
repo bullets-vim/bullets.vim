@@ -127,6 +127,29 @@ RSpec.describe 'Bullets.vim' do
           not a bullet\n
         TEXT
       end
+
+      it 'does not bullets if configured as 0' do
+        filename = "#{SecureRandom.hex(6)}.txt"
+        write_file(filename, <<-TEXT)
+          # Hello there
+          a. this is the first bullet
+        TEXT
+
+        vim.command 'let g:bullets_max_alpha_characters = 0'
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'not a bullet'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          a. this is the first bullet
+          not a bullet\n
+        TEXT
+      end
     end
   end
 end

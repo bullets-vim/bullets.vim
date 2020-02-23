@@ -122,6 +122,10 @@ fun! s:match_roman_list_item(input_text)
 endfun
 
 fun! s:match_alphabetical_list_item(input_text)
+  if g:bullets_max_alpha_characters == 0
+    return {}
+  endif
+
   let l:abc_bullet_regex  = join([
         \ '\v^((\s*)(\u{1,',
         \ string(g:bullets_max_alpha_characters),
