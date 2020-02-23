@@ -44,6 +44,17 @@ end
 if !exists('g:bullets_pad_right')
   let g:bullets_pad_right = 1
 end
+
+if !exists('g:bullets_max_alpha_characters')
+  let g:bullets_max_alpha_characters = 2
+end
+" calculate the decimal equivalent to the last alphabetical list item
+let s:power = g:bullets_max_alpha_characters
+let s:abc_max = -1
+while s:power >= 0
+  let s:abc_max += pow(26,s:power)
+  let s:power -= 1
+endwhile
 " ------------------------------------------------------   }}}
 
 " Bullet type detection ----------------------------------------  {{{
@@ -111,7 +122,12 @@ fun! s:match_roman_list_item(input_text)
 endfun
 
 fun! s:match_alphabetical_list_item(input_text)
-  let l:abc_bullet_regex  = '\v^((\s*)(\u{1,2}|\l{1,2})(\.|\))(\s+))(.*)'
+  let l:abc_bullet_regex  = join([
+        \ '\v^((\s*)(\u{1,',
+        \ string(g:bullets_max_alpha_characters),
+        \ '}|\l{1,',
+        \ string(g:bullets_max_alpha_characters),
+        \ '})(\.|\))(\s+))(.*)'], '')
   let l:matches           = matchlist(a:input_text, l:abc_bullet_regex)
 
   if empty(l:matches)
@@ -299,7 +315,7 @@ fun! s:insert_new_bullet()
       " We don't want to create a new bullet if the previous one was not used,
       " instead we want to delete the empty bullet - like word processors do
       call s:delete_empty_bullet(l:curr_line_num)
-    else
+    elseif !(l:bullet.bullet_type ==# 'abc' && s:abc2dec(l:bullet.bullet) + 1 > s:abc_max)
 
       let l:next_bullet_list = [s:pad_to_length(s:next_bullet_str(l:bullet), l:bullet.bullet_length)]
 
@@ -450,12 +466,12 @@ endfun
 
 fun! s:dec2abc(dec, islower)
   let l:a = a:islower ? 'a' : 'A'
-  let l:abc = nr2char(a:dec % 26 + char2nr(l:a) - 1)
-  let l:dec = a:dec / 26
-  if l:dec == 0
+  let l:rem = (a:dec - 1) % 26
+  let l:abc = nr2char(l:rem + char2nr(l:a))
+  if a:dec <= 26
     return l:abc
   else
-    return s:dec2abc(l:dec, a:islower) . l:abc
+    return s:dec2abc((a:dec - 1)/ 26, a:islower) . l:abc
   endif
 endfun
 " Alphabetic ordinals ----------------------------------------- }}}
