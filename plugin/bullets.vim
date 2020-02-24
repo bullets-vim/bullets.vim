@@ -57,7 +57,22 @@ while s:power >= 0
 endwhile
 " ------------------------------------------------------   }}}
 
-" Bullet type detection ----------------------------------------  {{{
+" Parse Bullet Type -------------------------------------------  {{{
+fun! s:parse_bullet(line_num, line_text)
+  let l:kinds = s:filter(
+        \ [
+        \  s:match_bullet_list_item(a:line_text),
+        \  s:match_checkbox_bullet_item(a:line_text),
+        \  s:match_numeric_list_item(a:line_text),
+        \  s:match_roman_list_item(a:line_text),
+        \  s:match_alphabetical_list_item(a:line_text),
+        \ ],
+        \ '!empty(v:val)'
+        \ )
+
+  return s:map(l:kinds, 'extend(v:val, { "starting_at_line_num": ' . a:line_num . ' })')
+endfun
+
 fun! s:match_numeric_list_item(input_text)
   let l:num_bullet_regex  = '\v^((\s*)(\d+)(\.|\))(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:num_bullet_regex)
@@ -83,6 +98,7 @@ fun! s:match_numeric_list_item(input_text)
         \ 'text_after_bullet': l:text_after_bullet
         \ }
 endfun
+
 
 fun! s:match_roman_list_item(input_text)
   let l:rom_bullet_regex  = join([
@@ -126,13 +142,15 @@ fun! s:match_alphabetical_list_item(input_text)
     return {}
   endif
 
-  let l:abc_bullet_regex  = join([
+  let l:max = string(g:bullets_max_alpha_characters)
+  let l:abc_bullet_regex = join([
         \ '\v^((\s*)(\u{1,',
-        \ string(g:bullets_max_alpha_characters),
+        \ l:max,
         \ '}|\l{1,',
-        \ string(g:bullets_max_alpha_characters),
+        \ l:max,
         \ '})(\.|\))(\s+))(.*)'], '')
-  let l:matches           = matchlist(a:input_text, l:abc_bullet_regex)
+
+  let l:matches = matchlist(a:input_text, l:abc_bullet_regex)
 
   if empty(l:matches)
     return {}
@@ -199,115 +217,156 @@ fun! s:match_bullet_list_item(input_text)
         \ 'text_after_bullet': l:text_after_bullet
         \ }
 endfun
+" -------------------------------------------------------  }}}
 
-fun! s:parse_bullet(line_text)
-  let l:std_bullet_matches = s:match_bullet_list_item(a:line_text)
-  let l:chk_bullet_matches = s:match_checkbox_bullet_item(a:line_text)
-  let l:num_bullet_matches = s:match_numeric_list_item(a:line_text)
-  let l:rom_bullet_matches = s:match_roman_list_item(a:line_text)
-  let l:abc_bullet_matches = s:match_alphabetical_list_item(a:line_text)
+" Resolve Bullet Type ----------------------------------- {{{
+fun! s:closest_bullet_types(from_line_num)
+  let l:lnum = a:from_line_num
+  let l:ltxt = getline(l:lnum)
+  let l:bullet_kinds = s:parse_bullet(l:lnum, l:ltxt)
 
-  if !empty(l:chk_bullet_matches)
-    return l:chk_bullet_matches
-  elseif !empty(l:std_bullet_matches)
-    return l:std_bullet_matches
-  elseif !empty(l:num_bullet_matches)
-    return l:num_bullet_matches
-  elseif !empty(l:rom_bullet_matches)
-    return l:rom_bullet_matches
-  elseif !empty(l:abc_bullet_matches)
-    return l:abc_bullet_matches
-  else
+  " Support for wrapped text bullets
+  " DEMO: https://raw.githubusercontent.com/dkarter/bullets.vim/master/img/wrapped-bullets.gif
+  while l:lnum > 1 && s:is_indented(l:ltxt) && l:bullet_kinds == []
+    let l:lnum = l:lnum - 1
+    let l:ltxt = getline(l:lnum)
+    let l:bullet_kinds = s:parse_bullet(l:lnum, l:ltxt)
+  endwhile
+
+  return l:bullet_kinds
+endfun
+
+fun! s:resolve_bullet_type(bullet_types)
+  if empty(a:bullet_types)
     return {}
+  elseif len(a:bullet_types) == 2 && s:has_rom_and_abc(a:bullet_types)
+    return s:resolve_rom_or_abc(a:bullet_types)
+  elseif len(a:bullet_types) == 2 && s:has_chk_and_std(a:bullet_types)
+    return s:resolve_chk_or_std(a:bullet_types)
+  else
+    return a:bullet_types[0]
   endif
 endfun
-" -------------------------------------------------------  }}}
 
-" Helper methods ----------------------------------------  {{{
-fun! s:get_visual_selection_lines()
-  let [l:lnum1, l:col1] = getpos("'<")[1:2]
-  let [l:lnum2, l:col2] = getpos("'>")[1:2]
-  let l:lines = getline(l:lnum1, l:lnum2)
-  let l:lines[-1] = l:lines[-1][: l:col2 - (&selection ==# 'inclusive' ? 1 : 2)]
-  let l:lines[0] = l:lines[0][l:col1 - 1:]
-  let l:index = l:lnum1
-  let l:lines_with_index = []
-  for l:line in l:lines
-    let l:lines_with_index += [{'text': l:line, 'nr': l:index}]
-    let l:index += 1
-  endfor
-  return l:lines_with_index
-endfun
-" -------------------------------------------------------  }}}
-
-" Generate bullets --------------------------------------  {{{
-fun! s:pad_to_length(str, len)
-  if g:bullets_pad_right == 0 | return a:str | endif
-  let l:len = a:len - len(a:str)
-  let l:str = a:str
-  if (l:len <= 0) | return a:str | endif
-  while l:len > 0
-    let l:str = l:str . ' '
-    let l:len = l:len - 1
-  endwhile
-  return l:str
+fun! s:contains_type(bullet_types, type)
+  return s:has_item(a:bullet_types, 'v:val.bullet_type ==# "' . a:type . '"')
 endfun
 
+fun! s:find_by_type(bullet_types, type)
+  return s:find(a:bullet_types, 'v:val.bullet_type ==# "' . a:type . '"')
+endfun
+
+" Roman Numeral vs Alphabetic Bullets ---------------------------------- {{{
+fun! s:resolve_rom_or_abc(bullet_types)
+    let l:first_type = a:bullet_types[0]
+    let l:prev_search_starting_line = get(l:first_type, 'starting_at_line_num') - 1
+    let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line)
+
+    if len(l:prev_bullet_types) == 0
+
+      " can't find previous bullet - so we probably have a rom i. bullet
+      return s:find_by_type(a:bullet_types, 'rom')
+
+    elseif len(l:prev_bullet_types) == 1 && s:has_rom_or_abc(l:prev_bullet_types)
+
+      " previous bullet is conclusive, use it's type to continue
+      return s:find_by_type(a:bullet_types, l:prev_bullet_types[0].bullet_type)
+
+    elseif s:has_rom_and_abc(l:prev_bullet_types)
+
+      " inconclusive - keep searching up recursively
+      let l:prev_bullet = s:resolve_rom_or_abc(l:prev_bullet_types)
+      return s:find_by_type(a:bullet_types, l:prev_bullet.bullet_type)
+
+    else
+
+      " parent has unrelated bullet type, we'll go with rom
+      return s:find_by_type(a:bullet_types, 'rom')
+
+    endif
+endfun
+
+fun! s:has_rom_or_abc(bullet_types)
+  let l:has_rom = s:contains_type(a:bullet_types, 'rom')
+  let l:has_abc = s:contains_type(a:bullet_types, 'abc')
+  return l:has_rom || l:has_abc
+endfun
+
+fun! s:has_rom_and_abc(bullet_types)
+  let l:has_rom = s:contains_type(a:bullet_types, 'rom')
+  let l:has_abc = s:contains_type(a:bullet_types, 'abc')
+  return l:has_rom && l:has_abc
+endfun
+" ------------------------------------------------------- }}}
+
+" Checkbox vs Standard Bullets ----------------------------------------- {{{
+fun! s:resolve_chk_or_std(bullet_types)
+  " if it matches both regular and checkbox it is most likely a checkbox
+  return s:find_by_type(a:bullet_types, 'chk')
+endfun
+
+fun! s:has_chk_and_std(bullet_types)
+  let l:has_chk = s:contains_type(a:bullet_types, 'chk')
+  let l:has_std = s:contains_type(a:bullet_types, 'std')
+  return l:has_chk && l:has_std
+endfun
+" ------------------------------------------------------- }}}
+
+" ------------------------------------------------------- }}}
+
+" Build Next Bullet -------------------------------------- {{{
 fun! s:next_bullet_str(bullet)
-  if a:bullet.bullet_type ==# 'rom'
-    let l:islower = a:bullet.bullet ==# tolower(a:bullet.bullet)
-    let l:next_num = s:arabic2roman(s:roman2arabic(a:bullet.bullet) + 1, l:islower)
-    return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
-  elseif a:bullet.bullet_type ==# 'abc'
-    let l:islower = a:bullet.bullet ==# tolower(a:bullet.bullet)
-    let l:next_num = s:dec2abc(s:abc2dec(a:bullet.bullet) + 1, l:islower)
-    return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
-  elseif a:bullet.bullet_type ==# 'num'
-    let l:next_num = a:bullet.bullet + 1
-    return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
-  elseif a:bullet.bullet_type ==# 'chk'
-    return a:bullet.leading_space . '- [ ] '
+  let l:bullet_type = get(a:bullet, 'bullet_type')
+
+  if l:bullet_type ==# 'rom'
+    return s:next_rom_bullet(a:bullet)
+  elseif l:bullet_type ==# 'abc'
+    return s:next_abc_bullet(a:bullet)
+  elseif l:bullet_type ==# 'num'
+    return s:next_num_bullet(a:bullet)
+  elseif l:bullet_type ==# 'chk'
+    return s:next_chk_bullet(a:bullet)
   else
     return a:bullet.whole_bullet
   endif
 endfun
 
+fun! s:next_rom_bullet(bullet)
+  let l:islower = a:bullet.bullet ==# tolower(a:bullet.bullet)
+  let l:next_num = s:arabic2roman(s:roman2arabic(a:bullet.bullet) + 1, l:islower)
+  return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
+endfun
+
+fun! s:next_abc_bullet(bullet)
+  let l:islower = a:bullet.bullet ==# tolower(a:bullet.bullet)
+  let l:next_num = s:dec2abc(s:abc2dec(a:bullet.bullet) + 1, l:islower)
+  return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
+endfun
+
+fun! s:next_num_bullet(bullet)
+  let l:next_num = a:bullet.bullet + 1
+  return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
+endfun
+
+fun! s:next_chk_bullet(bullet)
+  return a:bullet.leading_space . '- [ ] '
+endfun
+" }}}
+
+" Generate bullets --------------------------------------  {{{
 fun! s:delete_empty_bullet(line_num)
   if g:bullets_delete_last_bullet_if_empty
     call setline(a:line_num, '')
   endif
 endfun
 
-fun! s:indented(line_text)
-  return a:line_text =~# '\v^\s+\w'
-endfun
-
-fun! s:detect_bullet_line(from_line_num)
-  let l:lnum = a:from_line_num
-  let l:ltxt = getline(l:lnum)
-  let l:bullet = s:parse_bullet(l:ltxt)
-
-  while l:lnum > 1 && s:indented(l:ltxt) && l:bullet == {}
-    let l:lnum = l:lnum - 1
-    let l:ltxt = getline(l:lnum)
-    let l:bullet = s:parse_bullet(l:ltxt)
-  endwhile
-
-  return l:bullet
-endfun
-
 fun! s:insert_new_bullet()
   let l:curr_line_num = line('.')
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
-  let l:bullet = s:detect_bullet_line(l:curr_line_num)
-  if l:bullet != {} && l:curr_line_num > 1 && 
-        \ (l:bullet.bullet_type ==# 'rom' || l:bullet.bullet_type ==# 'abc')
-    let l:bullet_prev = s:detect_bullet_line(l:curr_line_num - 1)
-    if l:bullet_prev != {} && l:bullet.bullet_type ==# 'rom' &&
-          \ (s:roman2arabic(l:bullet.bullet) != (s:roman2arabic(l:bullet_prev.bullet) + 1))
-      let l:bullet.bullet_type = 'abc'
-    endif
-  endif
+  let l:closest_bullet_types = s:closest_bullet_types(l:curr_line_num)
+  let l:bullet = s:resolve_bullet_type(l:closest_bullet_types)
+  " need to find which line starts the previous bullet started at and start
+  " searching up from there
   let l:send_return = 1
   let l:normal_mode = mode() ==# 'n'
 
@@ -321,14 +380,14 @@ fun! s:insert_new_bullet()
       call s:delete_empty_bullet(l:curr_line_num)
     elseif !(l:bullet.bullet_type ==# 'abc' && s:abc2dec(l:bullet.bullet) + 1 > s:abc_max)
 
-      let l:next_bullet_list = [s:pad_to_length(s:next_bullet_str(l:bullet), l:bullet.bullet_length)]
+      let l:next_bullet = s:next_bullet_str(l:bullet)
+      let l:next_bullet_list = [s:pad_to_length(l:next_bullet, l:bullet.bullet_length)]
 
       " prepend blank lines if desired
       if g:bullets_line_spacing > 1
         let l:next_bullet_list += map(range(g:bullets_line_spacing - 1), '""')
         call reverse(l:next_bullet_list)
       endif
-
 
       " insert next bullet
       call append(l:curr_line_num, l:next_bullet_list)
@@ -406,9 +465,8 @@ command! ToggleCheckbox call <SID>toggle_checkbox()
 " Roman numerals --------------------------------------------- {{{
 
 " Roman numeral functions lifted from tpope's speeddating.vim
-" where they are in turn
-" based on similar functions from VisIncr.vim
-"
+" where they are in turn based on similar functions from VisIncr.vim
+
 let s:a2r = [
            \ [1000, 'm'], [900, 'cm'], [500, 'd'], [400, 'cd'],
            \ [100, 'c'], [90 , 'xc'], [50 , 'l'], [40 , 'xl'],
@@ -457,7 +515,6 @@ endfunction
 
 " Alphabetic ordinal functions
 " Treat alphabetic ordinals as base-26 numbers to make things easy
-"
 fun! s:abc2dec(abc)
   let l:abc = tolower(a:abc)
   let l:dec = char2nr(l:abc[0]) - char2nr('a') + 1
@@ -592,6 +649,67 @@ augroup TextBulletsMappings
   end
 augroup END
 " --------------------------------------------------------- }}}
+
+" Helpers -----------------------------------------------  {{{
+fun! s:get_visual_selection_lines()
+  let [l:lnum1, l:col1] = getpos("'<")[1:2]
+  let [l:lnum2, l:col2] = getpos("'>")[1:2]
+  let l:lines = getline(l:lnum1, l:lnum2)
+  let l:lines[-1] = l:lines[-1][: l:col2 - (&selection ==# 'inclusive' ? 1 : 2)]
+  let l:lines[0] = l:lines[0][l:col1 - 1:]
+  let l:index = l:lnum1
+  let l:lines_with_index = []
+  for l:line in l:lines
+    let l:lines_with_index += [{'text': l:line, 'nr': l:index}]
+    let l:index += 1
+  endfor
+  return l:lines_with_index
+endfun
+
+fun! s:pad_to_length(str, len)
+  if g:bullets_pad_right == 0 | return a:str | endif
+  let l:len = a:len - len(a:str)
+  let l:str = a:str
+  if (l:len <= 0) | return a:str | endif
+  while l:len > 0
+    let l:str = l:str . ' '
+    let l:len = l:len - 1
+  endwhile
+  return l:str
+endfun
+
+fun! s:is_indented(line_text)
+  return a:line_text =~# '\v^\s+\w'
+endfun
+
+fun! s:map(list, fn)
+  let new_list = deepcopy(a:list)
+  call map(new_list, a:fn)
+  return new_list
+endfun
+
+fun! s:filter(list, fn)
+  let new_list = deepcopy(a:list)
+  call filter(new_list, a:fn)
+  return new_list
+endfun
+
+fun! s:find(list, fn)
+  let l:fn = substitute(a:fn, 'v:val', 'l:item', 'g')
+  for l:item in a:list
+    let l:new_item = deepcopy(l:item)
+    if execute('echon (' . l:fn . ')') ==# '1'
+      return l:new_item
+    endif
+  endfor
+
+  return 0
+endfun
+
+fun! s:has_item(list, fn)
+  return !empty(s:find(a:list, a:fn))
+endfun
+" ------------------------------------------------------- }}}
 
 " Restore previous external compatibility options --------- {{{
 let &cpoptions = s:save_cpo

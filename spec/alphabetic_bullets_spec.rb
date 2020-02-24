@@ -21,6 +21,16 @@ RSpec.describe 'Bullets.vim' do
       vim.type 'fourth bullet'
       vim.feedkeys '\<cr>'
       vim.type 'fifth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'sixth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'seventh bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'eighth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'ninth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'tenth bullet'
       vim.write
 
       file_contents = IO.read(filename)
@@ -31,7 +41,12 @@ RSpec.describe 'Bullets.vim' do
           B. second bullet
           C. third bullet
           D. fourth bullet
-          E. fifth bullet\n
+          E. fifth bullet
+          F. sixth bullet
+          G. seventh bullet
+          H. eighth bullet
+          I. ninth bullet
+          J. tenth bullet\n
       TEXT
     end
 
@@ -52,6 +67,16 @@ RSpec.describe 'Bullets.vim' do
       vim.type 'fourth bullet'
       vim.feedkeys '\<cr>'
       vim.type 'fifth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'sixth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'seventh bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'eighth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'ninth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'tenth bullet'
       vim.write
 
       file_contents = IO.read(filename)
@@ -62,7 +87,12 @@ RSpec.describe 'Bullets.vim' do
           b. second bullet
           c. third bullet
           d. fourth bullet
-          e. fifth bullet\n
+          e. fifth bullet
+          f. sixth bullet
+          g. seventh bullet
+          h. eighth bullet
+          i. ninth bullet
+          j. tenth bullet\n
       TEXT
     end
 
