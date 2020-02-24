@@ -1,4 +1,4 @@
-![Bullets.vim](bullets.vim.png)
+![Bullets.vim](img/bullets-vim-logo.svg)
 
 [![Build Status](https://travis-ci.org/dkarter/bullets.vim.svg?branch=master)](https://travis-ci.org/dkarter/bullets.vim)
 
