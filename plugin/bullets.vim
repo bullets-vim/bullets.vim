@@ -573,28 +573,6 @@ endfun
 command! -range=% RenumberSelection call <SID>renumber_selection()
 " --------------------------------------------------------- }}}
 
-" Bullets ------------------------------------------------- {{{
-fun! s:find_bullet_position(lnum)
-  let line_text = getline(a:lnum)
-  return matchend(line_text, '\v^\s*(\*|-)')
-endfun
-
-fun! s:select_bullet(inner)
-  let lnum = getpos('.')[1]
-  let bullet_col = s:find_bullet_position(lnum)
-
-  if bullet_col
-    " decide if we need to select with the bullet or without
-    let offset = a:inner? 2 : 0
-    call setpos('.', [0, lnum, bullet_col + offset])
-    normal! vg_
-  endif
-endfun
-
-command! SelectBulletText call <SID>select_bullet(1)
-command! SelectBullet call <SID>select_bullet(0)
-" Bullets ------------------------------------------------- }}}
-
 " Keyboard mappings --------------------------------------- {{{
 fun! s:add_local_mapping(mapping_type, mapping, action)
   let l:file_types = join(g:bullets_enabled_file_types, ',')
@@ -635,17 +613,6 @@ augroup TextBulletsMappings
 
     " Toggle checkbox
     call s:add_local_mapping('nnoremap', '<leader>x', ':ToggleCheckbox<cr>')
-
-    " Text Objects -------------------------------------------- {{{
-    " inner bullet (just the text)
-    call s:add_local_mapping('onoremap', 'ib', ':SelectBulletText<cr>')
-    " a bullet including the bullet markup
-    call s:add_local_mapping('onoremap', 'ab', ':SelectBullet<cr>')
-    " inside a checkbox
-    call s:add_local_mapping('onoremap', 'ic', ':SelectCheckboxInside<cr>')
-    " a checkbox
-    call s:add_local_mapping('onoremap', 'ac', ':SelectCheckbox<cr>')
-    " Text Objects -------------------------------------------- }}}
   end
 augroup END
 " --------------------------------------------------------- }}}
