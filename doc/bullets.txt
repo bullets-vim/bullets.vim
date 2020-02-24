@@ -38,10 +38,6 @@ B) or this style of alphabetic
 It also provides support for wrapped text in a bullet, allowing you to use the
 `textwidth` feature in Vim seamlessly.
 
-Future versions aim to support the following:
-
-]] User defined bullets
-
 
 GENERAL COMMANDS                            *bullets-commands*
 
@@ -229,25 +225,6 @@ VISUAL MODE
 
                                             *bullets-v_gN*
 gN          Renumbers selected bullet list items.
-
-OPERATOR-PENDING MODE
-
-                                            *bullets-ab*
-ab          "a bullet block", select a bullet block, including the bullet
-            leader.
-
-                                            *bullets-ib*
-ib          "inner bullet block", select a bullet block, excluding the bullet
-            leader.
-
-                                            *bullets-ac*
-ac          "a checkbox block", select a checkbox block, including the '[' and
-            ']'.
-
-                                            *bullets-ic*
-ic          "inner checkbox block", select a checkbox block, excluding the '['
-            and ']'.
-
 
 
 vim:tw=78:et:ft=help:norl:

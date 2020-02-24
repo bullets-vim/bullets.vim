@@ -87,15 +87,11 @@ Capybara integration testing. ❤️
 - [x] check if plugin initialized and don't load if it did
 - [x] allow <C-cr> for return without creating a bullet (only possible in GuiVim
   unfortunately)
-- [x] create a text object for bullets
-- [x] create a text object for GFM-style checkboxes
 - [x] check if user is at EOL before appending auto-bullet - they may just want to
 - [x] attempt to keep the same total bullet width even as number width varies (right padding)
 - [x] detect lists that have multiline bullets (should have no empty lines between
   lines).
 - [x] add alphabetic list
-- [ ] allow user to define a global var with custom bullets
-- [ ] create a text object for bullet list indentation
 - [ ] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
 
 ---
