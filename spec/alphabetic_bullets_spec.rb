@@ -132,6 +132,30 @@ RSpec.describe 'Bullets.vim' do
       TEXT
     end
 
+    it 'does not add a new bullet when mixed case' do
+      test_bullet_inserted('not a bullet', <<-INIT, <<-EXPECTED)
+        # Hello there
+        Ab. this is the first bullet
+      INIT
+        # Hello there
+        Ab. this is the first bullet
+        not a bullet
+      EXPECTED
+    end
+
+    it 'does not add a new alpha bullet with wrapped lines' do
+      test_bullet_inserted('not a bullet', <<-INIT, <<-EXPECTED)
+        # Hello there
+        a. first bullet might not catch
+        	me. second line.
+      INIT
+        # Hello there
+        a. first bullet might not catch
+        	me. second line.
+        not a bullet
+      EXPECTED
+    end
+
     describe 'g:bullets_max_alpha_characters' do
       it 'stops adding items after configured max (default 2)' do
         filename = "#{SecureRandom.hex(6)}.txt"
