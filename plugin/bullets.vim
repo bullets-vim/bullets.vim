@@ -1,5 +1,5 @@
 " Vim plugin for automated bulleted lists
-" Last Change: February 23, 2020
+" Last Change: March 2, 2020
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -55,6 +55,12 @@ while s:power >= 0
   let s:abc_max += pow(26,s:power)
   let s:power -= 1
 endwhile
+
+if !exists('g:bullets_outline_levels')
+  " Capitalization matters: all caps will make the symbol caps, lower = lower
+  let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom']
+endif
+
 " ------------------------------------------------------   }}}
 
 " Parse Bullet Type -------------------------------------------  {{{
@@ -197,7 +203,7 @@ fun! s:match_checkbox_bullet_item(input_text)
 endfun
 
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^\s*(-|\*+|\.+|#\.|\\item)(\s+))(.*)'
+  let l:std_bullet_regex  = '\v(^(\s*)(-|\*+|\.+|#\.|\\item)(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
 
   if empty(l:matches)
@@ -205,14 +211,16 @@ fun! s:match_bullet_list_item(input_text)
   endif
 
   let l:bullet_length     = strlen(l:matches[1])
-  let l:whole_bullet      = l:matches[1]
-  let l:trailing_space    = l:matches[3]
-  let l:text_after_bullet = l:matches[4]
+  let l:leading_space     = l:matches[2]
+  let l:bullet            = l:matches[3]
+  let l:trailing_space    = l:matches[4]
+  let l:text_after_bullet = l:matches[5]
 
   return {
         \ 'bullet_type':       'std',
         \ 'bullet_length':     l:bullet_length,
-        \ 'whole_bullet':      l:whole_bullet,
+        \ 'leading_space':     l:leading_space,
+        \ 'bullet':            l:bullet,
         \ 'trailing_space':    l:trailing_space,
         \ 'text_after_bullet': l:text_after_bullet
         \ }
@@ -220,17 +228,20 @@ endfun
 " -------------------------------------------------------  }}}
 
 " Resolve Bullet Type ----------------------------------- {{{
-fun! s:closest_bullet_types(from_line_num)
+fun! s:closest_bullet_types(from_line_num, max_indent)
   let l:lnum = a:from_line_num
   let l:ltxt = getline(l:lnum)
+  let l:curr_indent = indent(l:lnum)
   let l:bullet_kinds = s:parse_bullet(l:lnum, l:ltxt)
 
   " Support for wrapped text bullets
   " DEMO: https://raw.githubusercontent.com/dkarter/bullets.vim/master/img/wrapped-bullets.gif
-  while l:lnum > 1 && s:is_indented(l:ltxt) && l:bullet_kinds == []
+  while l:lnum > 1 && (l:curr_indent != 0 || l:bullet_kinds != [])
+        \ && (a:max_indent < l:curr_indent || l:bullet_kinds == [])
     let l:lnum = l:lnum - 1
     let l:ltxt = getline(l:lnum)
     let l:bullet_kinds = s:parse_bullet(l:lnum, l:ltxt)
+    let l:curr_indent = indent(l:lnum)
   endwhile
 
   return l:bullet_kinds
@@ -259,8 +270,14 @@ endfun
 " Roman Numeral vs Alphabetic Bullets ---------------------------------- {{{
 fun! s:resolve_rom_or_abc(bullet_types)
     let l:first_type = a:bullet_types[0]
-    let l:prev_search_starting_line = get(l:first_type, 'starting_at_line_num') - 1
-    let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line)
+    let l:prev_search_starting_line = l:first_type.starting_at_line_num - 1
+    let l:bullet_indent = indent(l:first_type.starting_at_line_num)
+    let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line, l:bullet_indent)
+
+    while l:prev_bullet_types != [] && l:bullet_indent > indent(l:prev_search_starting_line)
+      let l:prev_search_starting_line -= 1
+      let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line, l:bullet_indent)
+    endwhile
 
     if len(l:prev_bullet_types) == 0
 
@@ -319,37 +336,36 @@ fun! s:next_bullet_str(bullet)
   let l:bullet_type = get(a:bullet, 'bullet_type')
 
   if l:bullet_type ==# 'rom'
-    return s:next_rom_bullet(a:bullet)
+    let l:next_bullet_marker = s:next_rom_bullet(a:bullet)
   elseif l:bullet_type ==# 'abc'
-    return s:next_abc_bullet(a:bullet)
+    let l:next_bullet_marker = s:next_abc_bullet(a:bullet)
   elseif l:bullet_type ==# 'num'
-    return s:next_num_bullet(a:bullet)
+    let l:next_bullet_marker = s:next_num_bullet(a:bullet)
   elseif l:bullet_type ==# 'chk'
-    return s:next_chk_bullet(a:bullet)
+    let l:next_bullet_marker = s:next_chk_bullet(a:bullet)
   else
-    return a:bullet.whole_bullet
+    let l:next_bullet_marker = a:bullet.bullet
   endif
+  let l:closure = has_key(a:bullet, 'closure') ? a:bullet.closure : ''
+  return a:bullet.leading_space . l:next_bullet_marker . l:closure  . ' '
 endfun
 
 fun! s:next_rom_bullet(bullet)
   let l:islower = a:bullet.bullet ==# tolower(a:bullet.bullet)
-  let l:next_num = s:arabic2roman(s:roman2arabic(a:bullet.bullet) + 1, l:islower)
-  return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
+  return s:arabic2roman(s:roman2arabic(a:bullet.bullet) + 1, l:islower)
 endfun
 
 fun! s:next_abc_bullet(bullet)
   let l:islower = a:bullet.bullet ==# tolower(a:bullet.bullet)
-  let l:next_num = s:dec2abc(s:abc2dec(a:bullet.bullet) + 1, l:islower)
-  return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
+  return s:dec2abc(s:abc2dec(a:bullet.bullet) + 1, l:islower)
 endfun
 
 fun! s:next_num_bullet(bullet)
-  let l:next_num = a:bullet.bullet + 1
-  return a:bullet.leading_space . l:next_num . a:bullet.closure  . ' '
+  return a:bullet.bullet + 1
 endfun
 
 fun! s:next_chk_bullet(bullet)
-  return a:bullet.leading_space . '- [ ] '
+  return '- [ ]'
 endfun
 " }}}
 
@@ -363,7 +379,8 @@ endfun
 fun! s:insert_new_bullet()
   let l:curr_line_num = line('.')
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
-  let l:closest_bullet_types = s:closest_bullet_types(l:curr_line_num)
+  let l:curr_indent = indent(l:curr_line_num)
+  let l:closest_bullet_types = s:closest_bullet_types(l:curr_line_num, l:curr_indent)
   let l:bullet = s:resolve_bullet_type(l:closest_bullet_types)
   " need to find which line starts the previous bullet started at and start
   " searching up from there
@@ -573,6 +590,95 @@ endfun
 command! -range=% RenumberSelection call <SID>renumber_selection()
 " --------------------------------------------------------- }}}
 
+" Changing outline level ---------------------------------- {{{
+fun! s:change_bullet_level(direction)
+  execute ""
+  let l:lnum = line('.')
+  let l:curr_indent = indent(l:lnum)
+  let l:curr_bullet= s:closest_bullet_types(l:lnum, l:curr_indent)
+  let l:curr_bullet = s:resolve_bullet_type(l:curr_bullet)
+
+  if l:curr_bullet != {}
+    " Only change the bullet level if it's currently a bullet.
+    let l:curr_line = l:curr_bullet.starting_at_line_num
+    let l:closest_bullet = s:closest_bullet_types(l:curr_line - 1, l:curr_indent)
+    let l:closest_bullet = s:resolve_bullet_type(l:closest_bullet)
+
+    if l:closest_bullet != {}
+      let l:islower = l:closest_bullet.bullet ==# tolower(l:closest_bullet.bullet)
+      let l:closest_type = l:islower ? l:closest_bullet.bullet_type :
+            \ toupper(l:closest_bullet.bullet_type)
+      let l:closest_index = index(g:bullets_outline_levels, l:closest_type)
+
+      if l:closest_index >= 0
+        let l:closest_indent = indent(l:closest_bullet.starting_at_line_num)
+
+        if (l:curr_indent == l:closest_indent)
+          let l:next_bullet = s:next_bullet_str(l:closest_bullet)
+          let l:next_bullet_str = s:pad_to_length(l:next_bullet, l:closest_bullet.bullet_length)
+                \ . l:curr_bullet.text_after_bullet
+
+        elseif l:closest_index + 1 < len(g:bullets_outline_levels) || l:curr_indent < l:closest_indent
+          let l:next_index = l:closest_index + 1
+          let l:next_type = g:bullets_outline_levels[l:next_index]
+          let l:next_islower = l:next_type ==# tolower(l:next_type)
+          let l:trailing_space = ' '
+
+          if l:next_type ==? 'rom'
+            let l:next_num = s:arabic2roman(1, l:next_islower)
+          elseif l:next_type ==? 'abc'
+            let l:next_num = s:dec2abc(1, l:next_islower)
+          else
+            let l:next_num = '1'
+          endif
+
+          let l:next_bullet_str = 
+                \ l:curr_bullet.leading_space
+                \ . l:next_num
+                \ . l:curr_bullet.closure
+                \ . l:trailing_space
+                \ . l:curr_bullet.text_after_bullet
+
+        else
+          " We're outside of the defined outline levels
+          let l:next_bullet_str =
+                \ l:curr_bullet.leading_space
+                \ . l:curr_bullet.text_after_bullet
+        endif
+
+        if l:next_bullet_str !=# ''
+          call setline(l:lnum, l:next_bullet_str)
+          execute "normal! $" 
+
+        else
+          if g:bullets_delete_last_bullet_if_empty
+            let l:orig_line = s:parse_bullet(l:lnum, getline(l:lnum))
+            if l:orig_line != []
+              call setline(l:lnum, l:orig_line[0].leading_space . l:orig_line[0].text_after_bullet)
+            endif
+          endif
+        endif
+      endif
+    endif
+
+  endif
+endfun
+
+fun! s:bullet_demote()
+  execute "normal! i\<C-t>"
+  call s:change_bullet_level(-1)
+endfun
+fun! s:bullet_promote()
+  execute "normal! i\<C-d>"
+  call s:change_bullet_level(1)
+endfun
+
+command! BulletDemote call <SID>bullet_demote()
+command! BulletPromote call <SID>bullet_promote()
+
+
+" --------------------------------------------------------- }}}
+
 " Keyboard mappings --------------------------------------- {{{
 fun! s:add_local_mapping(mapping_type, mapping, action)
   let l:file_types = join(g:bullets_enabled_file_types, ',')
@@ -613,6 +719,13 @@ augroup TextBulletsMappings
 
     " Toggle checkbox
     call s:add_local_mapping('nnoremap', '<leader>x', ':ToggleCheckbox<cr>')
+
+    " Promote and Demote outline level
+    call s:add_local_mapping('inoremap', '<C-t>', '<C-o>:call <SID>bullet_demote()<cr>')
+    call s:add_local_mapping('nnoremap', '>>', ':call <SID>bullet_demote()<cr>')
+    call s:add_local_mapping('inoremap', '<C-d>', '<C-o>:call <SID>bullet_promote()<cr>')
+    call s:add_local_mapping('nnoremap', '<<', ':call <SID>bullet_promote()<cr>')
+
   end
 augroup END
 " --------------------------------------------------------- }}}
