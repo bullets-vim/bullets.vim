@@ -92,7 +92,12 @@ Capybara integration testing. ❤️
 - [x] detect lists that have multiline bullets (should have no empty lines between
   lines).
 - [x] add alphabetic list
-- [ ] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
+- [x] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
+- [ ] update documentation for nested bullets
+- [ ] support for nested numerical bullets, e.g., 1. -> 1.1 -> 1.1.1, 1.1.2
+- [ ] change nested outline levels in visual mode
+- [ ] support renumbering of alphabetical, roman numerals, and nested lists
+- [ ] add option to turn non-bullet lines into new bullets with `C-t`/`>>`
 
 ---
 
