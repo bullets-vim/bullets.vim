@@ -592,8 +592,20 @@ command! -range=% RenumberSelection call <SID>renumber_selection()
 
 " Changing outline level ---------------------------------- {{{
 fun! s:change_bullet_level(direction)
-  execute ""
   let l:lnum = line('.')
+  let l:curr_line = s:parse_bullet(l:lnum, getline(l:lnum))
+
+  if a:direction == 1
+    if l:curr_line != [] && indent(l:lnum) == 0
+      " Promoting a bullet at the highest level will delete the bullet
+      call setline(l:lnum, l:curr_line[0].text_after_bullet)
+    else
+      execute "normal! a\<C-d>"
+    endif
+  else
+    execute "normal! a\<C-t>"
+  endif
+
   let l:curr_indent = indent(l:lnum)
   let l:curr_bullet= s:closest_bullet_types(l:lnum, l:curr_indent)
   let l:curr_bullet = s:resolve_bullet_type(l:curr_bullet)
@@ -660,16 +672,13 @@ fun! s:change_bullet_level(direction)
         endif
       endif
     endif
-
   endif
 endfun
 
 fun! s:bullet_demote()
-  execute "normal! a\<C-t>"
   call s:change_bullet_level(-1)
 endfun
 fun! s:bullet_promote()
-  execute "normal! a\<C-d>"
   call s:change_bullet_level(1)
 endfun
 
