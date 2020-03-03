@@ -665,11 +665,11 @@ fun! s:change_bullet_level(direction)
 endfun
 
 fun! s:bullet_demote()
-  execute "normal! i\<C-t>"
+  execute "normal! a\<C-t>"
   call s:change_bullet_level(-1)
 endfun
 fun! s:bullet_promote()
-  execute "normal! i\<C-d>"
+  execute "normal! a\<C-d>"
   call s:change_bullet_level(1)
 endfun
 
