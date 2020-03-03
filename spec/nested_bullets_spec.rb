@@ -31,10 +31,10 @@ RSpec.describe 'Bullets.vim' do
       expect(file_contents).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           I. this is the first bullet
-          	A. second bullet
-          			1. third bullet
-          				a. fourth bullet
-          					i. fifth bullet
+          \tA. second bullet
+          \t\t\t1. third bullet
+          \t\t\t\ta. fourth bullet
+          \t\t\t\t\ti. fifth bullet
 
       TEXT
     end
@@ -44,10 +44,10 @@ RSpec.describe 'Bullets.vim' do
       write_file(filename, <<-TEXT)
           # Hello there
           I. this is the first bullet
-          	A. second bullet
-          		1. third bullet
-          			a. fourth bullet
-          				i. fifth bullet
+          \tA. second bullet
+          \t\t1. third bullet
+          \t\t\ta. fourth bullet
+          \t\t\t\ti. fifth bullet
       TEXT
 
       vim.edit filename
@@ -68,8 +68,8 @@ RSpec.describe 'Bullets.vim' do
           # Hello there
           I. this is the first bullet
           II. second bullet
-          	A. third bullet
-          	B. fourth bullet
+          \tA. third bullet
+          \tB. fourth bullet
           III. fifth bullet
 
       TEXT
@@ -103,13 +103,63 @@ RSpec.describe 'Bullets.vim' do
       TEXT
     end
 
+    it 'restarts numbering with multiple outlines' do
+      filename = "#{SecureRandom.hex(6)}.txt"
+      write_file(filename, <<-TEXT)
+          # Hello there
+          I. this is the first bullet
+          \tA. second bullet
+          \t\t1. third bullet
+      TEXT
+
+      vim.edit filename
+      vim.normal 'GA'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<cr>'
+      vim.type 'A. first bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-t>'
+      vim.type 'second bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-t>'
+      vim.type 'third bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<cr>'
+      vim.type '1. first bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-t>'
+      vim.type 'second bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-t>'
+      vim.type 'third bullet'
+      vim.write
+
+      file_contents = IO.read(filename)
+
+      expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+        # Hello there
+        I. this is the first bullet
+        \tA. second bullet
+        \t\t1. third bullet
+
+        A. first bullet
+        \t1. second bullet
+        \t\ta. third bullet
+
+        1. first bullet
+        \ta. second bullet
+        \t\ti. third bullet
+
+      TEXT
+    end
+
     it 'promotes an empty bullet' do
       filename = "#{SecureRandom.hex(6)}.txt"
       write_file(filename, <<-TEXT)
           # Hello there
           I. this is the first bullet
-          	A. second bullet
-          		1. third bullet
+          \tA. second bullet
+          \t\t1. third bullet
       TEXT
 
       vim.edit filename
@@ -131,26 +181,140 @@ RSpec.describe 'Bullets.vim' do
       expect(file_contents).to eq normalize_string_indent(<<-TEXT)
         # Hello there
         I. this is the first bullet
-        	A. second bullet
-        		1. third bullet
-        		2. fourth bullet
-        	B. fifth bullet
+        \tA. second bullet
+        \t\t1. third bullet
+        \t\t2. fourth bullet
+        \tB. fifth bullet
         II. sixth bullet
         III. seventh bullet
 
       TEXT
     end
 
-    it 'does not nest below specified levels' do
+    it 'works with custom outline level definitions' do
+      filename = "#{SecureRandom.hex(6)}.txt"
+      write_file(filename, <<-TEXT)
+          # Hello there
+      TEXT
+
+      vim.edit filename
+      vim.command "let g:bullets_outline_levels=['num','ABC','rom']"
+      vim.normal 'GA'
+      vim.feedkeys '\<cr>'
+      vim.type '1. first bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'second bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-t>'
+      vim.type 'third bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'fourth bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-t>'
+      vim.type 'fifth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'sixth bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-t>'
+      vim.type 'not a bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'seventh bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-d>'
+      vim.type 'eighth bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-d>'
+      vim.type 'ninth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'tenth bullet'
+
+      vim.write
+
+      file_contents = IO.read(filename)
+
+      expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          1. first bullet
+          2. second bullet
+          \tA. third bullet
+          \tB. fourth bullet
+          \t\ti. fifth bullet
+          \t\tii. sixth bullet
+          \t\t\tnot a bullet
+          \t\tiii. seventh bullet
+          \tC. eighth bullet
+          3. ninth bullet
+          4. tenth bullet
+
+      TEXT
+    end
+
+    it 'promotes and demotes from different starting levels' do
+      filename = "#{SecureRandom.hex(6)}.txt"
+      write_file(filename, <<-TEXT)
+          # Hello there
+          1. this is the first bullet
+          2. second bullet
+      TEXT
+
+      vim.edit filename
+      vim.normal 'GA'
+      vim.feedkeys '\<C-t>'
+      vim.feedkeys '\<cr>'
+      vim.type 'third bullet'
+      vim.normal '3hi'
+      vim.feedkeys '\<C-t>'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<esc>'
+      vim.feedkeys '>>'
+      vim.type 'anot a bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'fourth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'fifth bullet'
+      vim.feedkeys '\<C-d>'
+      vim.feedkeys '\<esc>'
+      vim.feedkeys '<<'
+      vim.feedkeys 'i\<C-t>'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<cr>'
+      vim.type 'i. sixth bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-t>'
+      vim.type 'not a bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'seventh bullet'
+
+      vim.write
+
+      file_contents = IO.read(filename)
+
+      expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          1. this is the first bullet
+          \ta. second bullet
+          \t\ti. third bullet
+          \t\t\tnot a bullet
+          \t\tii. fourth bullet
+          \tb. fifth bullet
+
+          i. sixth bullet
+          \tnot a bullet
+          ii. seventh bullet
+
+      TEXT
+    end
+
+    it 'does not nest below defined levels' do
       filename = "#{SecureRandom.hex(6)}.txt"
       write_file(filename, <<-TEXT)
         # Hello there
         I. this is the first bullet
-        	A. second bullet
-        		1. third bullet
-        			a. fourth bullet
-        				i. fifth bullet
-        				ii. sixth bullet
+        \tA. second bullet
+        \t\t1. third bullet
+        \t\t\ta. fourth bullet
+        \t\t\t\ti. fifth bullet
+        \t\t\t\tii. sixth bullet
       TEXT
 
       vim.edit filename
@@ -167,30 +331,93 @@ RSpec.describe 'Bullets.vim' do
       expect(file_contents).to eq normalize_string_indent(<<-TEXT)
         # Hello there
         I. this is the first bullet
-        	A. second bullet
-        		1. third bullet
-        			a. fourth bullet
-        				i. fifth bullet
-        				ii. sixth bullet
-        					not a bullet
-        				iii. seventh bullet
+        \tA. second bullet
+        \t\t1. third bullet
+        \t\t\ta. fourth bullet
+        \t\t\t\ti. fifth bullet
+        \t\t\t\tii. sixth bullet
+        \t\t\t\t\tnot a bullet
+        \t\t\t\tiii. seventh bullet
 
       TEXT
     end
+
+    it 'removes bullet when promoting top level bullet' do
+      filename = "#{SecureRandom.hex(6)}.txt"
+      write_file(filename, <<-TEXT)
+        # Hello there
+        A. this is the first bullet
+
+        I. second bullet
+        \tA. third bullet
+      TEXT
+
+      vim.edit filename
+      vim.normal 'j'
+      vim.feedkeys '<<'
+      vim.normal '3ji'
+      vim.feedkeys '\<C-d>'
+      vim.feedkeys '\<C-d>'
+      vim.write
+
+      file_contents = IO.read(filename)
+
+      expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+        # Hello there
+        this is the first bullet
+
+        I. second bullet
+        third bullet
+
+      TEXT
+    end
+
+    it 'nested outlines handle standard bullets' do
+      filename = "#{SecureRandom.hex(6)}.txt"
+      write_file(filename, <<-TEXT)
+        # Hello there
+        1. this is the first bullet
+        \t- standard bullet
+      TEXT
+
+      vim.edit filename
+      vim.normal 'GA'
+      vim.feedkeys '\<cr>'
+      vim.type 'second standard bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-d>'
+      vim.type 'second bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'third bullet'
+      vim.write
+
+      file_contents = IO.read(filename)
+
+      expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+        # Hello there
+        1. this is the first bullet
+        \t- standard bullet
+        \t- second standard bullet
+        2. second bullet
+        3. third bullet
+
+      TEXT
+    end
+
     it 'adds new nested bullets with correct alpha/roman numerals' do
       filename = "#{SecureRandom.hex(6)}.txt"
       write_file(filename, <<-TEXT)
           # Hello there
           I. this is the first bullet
-          	A. second bullet
-          	B. third bullet
-          	C. fourth bullet
-          	D. fifth bullet
-          	E. sixth bullet
-          	F. seventh bullet
-          	G. eighth bullet
-          	H. ninth bullet
-          	I. tenth bullet
+          \tA. second bullet
+          \tB. third bullet
+          \tC. fourth bullet
+          \tD. fifth bullet
+          \tE. sixth bullet
+          \tF. seventh bullet
+          \tG. eighth bullet
+          \tH. ninth bullet
+          \tI. tenth bullet
       TEXT
 
       vim.edit filename
@@ -223,23 +450,23 @@ RSpec.describe 'Bullets.vim' do
       expect(file_contents).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           I. this is the first bullet
-          	A. second bullet
-          	B. third bullet
-          	C. fourth bullet
-          	D. fifth bullet
-          	E. sixth bullet
-          	F. seventh bullet
-          	G. eighth bullet
-          	H. ninth bullet
-          	I. tenth bullet
-          	J. eleventh bullet
+          \tA. second bullet
+          \tB. third bullet
+          \tC. fourth bullet
+          \tD. fifth bullet
+          \tE. sixth bullet
+          \tF. seventh bullet
+          \tG. eighth bullet
+          \tH. ninth bullet
+          \tI. tenth bullet
+          \tJ. eleventh bullet
           II. twelfth bullet
           III. thirteenth bullet
-          	A. fourteenth bullet
-          		1. fifteenth bullet
-          			a. sixteenth bullet
-          				i. seventeenth bullet
-          				ii. eighteenth bullet
+          \tA. fourteenth bullet
+          \t\t1. fifteenth bullet
+          \t\t\ta. sixteenth bullet
+          \t\t\t\ti. seventeenth bullet
+          \t\t\t\tii. eighteenth bullet
 
       TEXT
     end
