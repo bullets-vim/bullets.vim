@@ -58,7 +58,8 @@ endwhile
 
 if !exists('g:bullets_outline_levels')
   " Capitalization matters: all caps will make the symbol caps, lower = lower
-  let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom']
+  " Standard bullets should include the marker symbol after 'std'
+  let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-', 'std*', 'std+']
 endif
 
 " ------------------------------------------------------   }}}
@@ -203,7 +204,7 @@ fun! s:match_checkbox_bullet_item(input_text)
 endfun
 
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^(\s*)(-|\*+|\.+|#\.|\\item)(\s+))(.*)'
+  let l:std_bullet_regex  = '\v(^(\s*)(-|\*+|\.+|#\.|\+|\\item)(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
 
   if empty(l:matches)
@@ -221,6 +222,7 @@ fun! s:match_bullet_list_item(input_text)
         \ 'bullet_length':     l:bullet_length,
         \ 'leading_space':     l:leading_space,
         \ 'bullet':            l:bullet,
+        \ 'closure':           '',
         \ 'trailing_space':    l:trailing_space,
         \ 'text_after_bullet': l:text_after_bullet
         \ }
@@ -620,6 +622,9 @@ fun! s:change_bullet_level(direction)
       let l:islower = l:closest_bullet.bullet ==# tolower(l:closest_bullet.bullet)
       let l:closest_type = l:islower ? l:closest_bullet.bullet_type :
             \ toupper(l:closest_bullet.bullet_type)
+      if l:closest_bullet.bullet_type ==# 'std'
+        let l:closest_type = l:closest_type . l:closest_bullet.bullet
+      endif
       let l:closest_index = index(g:bullets_outline_levels, l:closest_type)
 
       if l:closest_index >= 0
@@ -636,12 +641,18 @@ fun! s:change_bullet_level(direction)
           let l:next_islower = l:next_type ==# tolower(l:next_type)
           let l:trailing_space = ' '
 
+          let l:curr_bullet.closure = l:closest_bullet.closure
+
           if l:next_type ==? 'rom'
             let l:next_num = s:arabic2roman(1, l:next_islower)
           elseif l:next_type ==? 'abc'
             let l:next_num = s:dec2abc(1, l:next_islower)
-          else
+          elseif l:next_type ==# 'num'
             let l:next_num = '1'
+          else
+            " standard bullet; l:next_type contains the bullet symbol to use
+            let l:next_num = strpart(l:next_type, len(l:next_type) - 1)
+            let l:curr_bullet.closure = ''
           endif
 
           let l:next_bullet_str = 
