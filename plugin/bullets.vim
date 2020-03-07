@@ -240,7 +240,11 @@ fun! s:closest_bullet_types(from_line_num, max_indent)
   " DEMO: https://raw.githubusercontent.com/dkarter/bullets.vim/master/img/wrapped-bullets.gif
   while l:lnum > 1 && (l:curr_indent != 0 || l:bullet_kinds != [])
         \ && (a:max_indent < l:curr_indent || l:bullet_kinds == [])
-    let l:lnum = l:lnum - 1
+    if l:bullet_kinds != []
+      let l:lnum = l:lnum - g:bullets_line_spacing
+    else
+      let l:lnum = l:lnum - 1
+    endif
     let l:ltxt = getline(l:lnum)
     let l:bullet_kinds = s:parse_bullet(l:lnum, l:ltxt)
     let l:curr_indent = indent(l:lnum)
@@ -615,7 +619,7 @@ fun! s:change_bullet_level(direction)
   if l:curr_bullet != {}
     " Only change the bullet level if it's currently a bullet.
     let l:curr_line = l:curr_bullet.starting_at_line_num
-    let l:closest_bullet = s:closest_bullet_types(l:curr_line - 1, l:curr_indent)
+    let l:closest_bullet = s:closest_bullet_types(l:curr_line - g:bullets_line_spacing, l:curr_indent)
     let l:closest_bullet = s:resolve_bullet_type(l:closest_bullet)
 
     if l:closest_bullet != {}

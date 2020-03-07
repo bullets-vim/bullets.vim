@@ -576,5 +576,43 @@ RSpec.describe 'Bullets.vim' do
 
       TEXT
     end
+
+    it 'adds and changes bullets with multiple line spacing and wrapped lines' do
+      filename = "#{SecureRandom.hex(6)}.txt"
+      write_file(filename, <<-TEXT)
+          # Hello there
+          I. this is the first bullet
+      TEXT
+
+      vim.edit filename
+      vim.command 'let g:bullets_line_spacing=2'
+      vim.normal 'GA'
+      vim.feedkeys '\<cr>'
+      vim.type 'second bullet'
+      vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-t>'
+      vim.type 'third bullet'
+      vim.feedkeys '\<cr>'
+      vim.normal 'dd'
+      vim.insert '	wrapped bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'fourth bullet'
+      vim.write
+
+      file_contents = IO.read(filename)
+
+      expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          I. this is the first bullet
+
+          II. second bullet
+
+          \tA. third bullet
+          \twrapped bullet
+
+          \tB. fourth bullet
+
+      TEXT
+    end
   end
 end
