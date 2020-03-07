@@ -276,12 +276,12 @@ endfun
 " Roman Numeral vs Alphabetic Bullets ---------------------------------- {{{
 fun! s:resolve_rom_or_abc(bullet_types)
     let l:first_type = a:bullet_types[0]
-    let l:prev_search_starting_line = l:first_type.starting_at_line_num - 1
+    let l:prev_search_starting_line = l:first_type.starting_at_line_num - g:bullets_line_spacing
     let l:bullet_indent = indent(l:first_type.starting_at_line_num)
     let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line, l:bullet_indent)
 
     while l:prev_bullet_types != [] && l:bullet_indent > indent(l:prev_search_starting_line)
-      let l:prev_search_starting_line -= 1
+      let l:prev_search_starting_line -= g:bullets_line_spacing
       let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line, l:bullet_indent)
     endwhile
 
