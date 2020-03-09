@@ -150,11 +150,11 @@ RSpec.describe 'Bullets.vim' do
     #   test_bullet_inserted('not a bullet', <<-INIT, <<-EXPECTED)
     #     # Hello there
     #     a. first bullet might not catch
-    #     	me. second line.
+    #     \tme. second line.
     #   INIT
     #     # Hello there
     #     a. first bullet might not catch
-    #     	me. second line.
+    #     \tme. second line.
     #     not a bullet
     #   EXPECTED
     # end

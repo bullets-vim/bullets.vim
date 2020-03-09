@@ -462,7 +462,7 @@ RSpec.describe 'Bullets.vim' do
       TEXT
     end
 
-    it 'nested outlines handle standard bullets when they are not in outline list' do
+    it 'handle standard bullets when they are not in outline list' do
       filename = "#{SecureRandom.hex(6)}.txt"
       write_file(filename, <<-TEXT)
           # Hello there
@@ -600,7 +600,7 @@ RSpec.describe 'Bullets.vim' do
       TEXT
     end
 
-    it 'adds and changes bullets with multiple line spacing and wrapped lines' do
+    it 'add and change bullets with multiple line spacing and wrapped lines' do
       filename = "#{SecureRandom.hex(6)}.txt"
       write_file(filename, <<-TEXT)
           # Hello there
