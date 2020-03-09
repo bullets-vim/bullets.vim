@@ -616,83 +616,107 @@ fun! s:change_bullet_level(direction)
   let l:curr_bullet= s:closest_bullet_types(l:lnum, l:curr_indent)
   let l:curr_bullet = s:resolve_bullet_type(l:curr_bullet)
 
-  if l:curr_bullet != {}
+  if l:curr_bullet == {}
     " Only change the bullet level if it's currently a bullet.
-    let l:curr_line = l:curr_bullet.starting_at_line_num
-    let l:closest_bullet = s:closest_bullet_types(l:curr_line - g:bullets_line_spacing, l:curr_indent)
-    let l:closest_bullet = s:resolve_bullet_type(l:closest_bullet)
+    return
+  endif
 
-    if l:closest_bullet != {}
-      let l:islower = l:closest_bullet.bullet ==# tolower(l:closest_bullet.bullet)
-      let l:closest_type = l:islower ? l:closest_bullet.bullet_type :
-            \ toupper(l:closest_bullet.bullet_type)
-      if l:closest_bullet.bullet_type ==# 'std'
-        let l:closest_type = l:closest_type . l:closest_bullet.bullet
-      endif
-      let l:closest_index = index(g:bullets_outline_levels, l:closest_type)
+  let l:curr_line = l:curr_bullet.starting_at_line_num
+  let l:closest_bullet = s:closest_bullet_types(l:curr_line - g:bullets_line_spacing, l:curr_indent)
+  let l:closest_bullet = s:resolve_bullet_type(l:closest_bullet)
 
-      if l:closest_index >= 0
-        let l:closest_indent = indent(l:closest_bullet.starting_at_line_num)
+  if l:closest_bullet == {}
+    " If there is no parent/sibling bullet then this bullet shouldn't change.
+    return
+  endif
 
-        if (l:curr_indent == l:closest_indent)
-          let l:next_bullet = s:next_bullet_str(l:closest_bullet)
-          let l:next_bullet_str = s:pad_to_length(l:next_bullet, l:closest_bullet.bullet_length)
-                \ . l:curr_bullet.text_after_bullet
+  let l:islower = l:closest_bullet.bullet ==# tolower(l:closest_bullet.bullet)
+  let l:closest_type = l:islower ? l:closest_bullet.bullet_type :
+        \ toupper(l:closest_bullet.bullet_type)
 
-        elseif l:closest_index + 1 < len(g:bullets_outline_levels) || l:curr_indent < l:closest_indent
-          let l:next_index = l:closest_index + 1
-          let l:next_type = g:bullets_outline_levels[l:next_index]
-          let l:next_islower = l:next_type ==# tolower(l:next_type)
-          let l:trailing_space = ' '
+  if l:closest_bullet.bullet_type ==# 'std'
+    " Append the bullet marker to the type, e.g., 'std*'
 
-          let l:curr_bullet.closure = l:closest_bullet.closure
+    let l:closest_type = l:closest_type . l:closest_bullet.bullet
+  endif
 
-          if l:next_type ==? 'rom'
-            let l:next_num = s:arabic2roman(1, l:next_islower)
-          elseif l:next_type ==? 'abc'
-            let l:next_num = s:dec2abc(1, l:next_islower)
-          elseif l:next_type ==# 'num'
-            let l:next_num = '1'
-          else
-            " standard bullet; l:next_type contains the bullet symbol to use
-            let l:next_num = strpart(l:next_type, len(l:next_type) - 1)
-            let l:curr_bullet.closure = ''
-          endif
+  let l:closest_index = index(g:bullets_outline_levels, l:closest_type)
 
-          let l:next_bullet_str = 
-                \ l:curr_bullet.leading_space
-                \ . l:next_num
-                \ . l:curr_bullet.closure
-                \ . l:trailing_space
-                \ . l:curr_bullet.text_after_bullet
+  if l:closest_index == -1
+    " We are in a list using markers that aren't specified in
+    " g:bullets_outline_levels so we shouldn't try to change the current
+    " bullet.
+    return
+  endif
 
-        else
-          " We're outside of the defined outline levels
-          let l:next_bullet_str =
-                \ l:curr_bullet.leading_space
-                \ . l:curr_bullet.text_after_bullet
-        endif
+  let l:closest_indent = indent(l:closest_bullet.starting_at_line_num)
 
-        if l:next_bullet_str !=# ''
-          call setline(l:lnum, l:next_bullet_str)
-          execute "normal! $" 
+  if (l:curr_indent == l:closest_indent)
+    " The closest bullet is a sibling so the current bullet should
+    " increment to the next bullet marker.
 
-        else
-          if g:bullets_delete_last_bullet_if_empty
-            let l:orig_line = s:parse_bullet(l:lnum, getline(l:lnum))
-            if l:orig_line != []
-              call setline(l:lnum, l:orig_line[0].leading_space . l:orig_line[0].text_after_bullet)
-            endif
-          endif
-        endif
-      endif
+    let l:next_bullet = s:next_bullet_str(l:closest_bullet)
+    let l:next_bullet_str = s:pad_to_length(l:next_bullet, l:closest_bullet.bullet_length)
+          \ . l:curr_bullet.text_after_bullet
+
+  elseif l:closest_index + 1 < len(g:bullets_outline_levels) || l:curr_indent < l:closest_indent
+    " The current bullet is a child of the closest bullet so figure out
+    " what bullet type it should have and set its marker to the first
+    " character of that type.
+
+    let l:next_index = l:closest_index + 1
+    let l:next_type = g:bullets_outline_levels[l:next_index]
+    let l:next_islower = l:next_type ==# tolower(l:next_type)
+    let l:trailing_space = ' '
+
+    let l:curr_bullet.closure = l:closest_bullet.closure
+
+    " set the bullet marker to the first character of that type
+    if l:next_type ==? 'rom'
+      let l:next_num = s:arabic2roman(1, l:next_islower)
+    elseif l:next_type ==? 'abc'
+      let l:next_num = s:dec2abc(1, l:next_islower)
+    elseif l:next_type ==# 'num'
+      let l:next_num = '1'
+    else
+      " standard bullet; l:next_type contains the bullet symbol to use
+      let l:next_num = strpart(l:next_type, len(l:next_type) - 1)
+      let l:curr_bullet.closure = ''
+    endif
+
+    let l:next_bullet_str =
+          \ l:curr_bullet.leading_space
+          \ . l:next_num
+          \ . l:curr_bullet.closure
+          \ . l:trailing_space
+          \ . l:curr_bullet.text_after_bullet
+
+  else
+    " We're outside of the defined outline levels
+    let l:next_bullet_str =
+          \ l:curr_bullet.leading_space
+          \ . l:curr_bullet.text_after_bullet
+  endif
+
+  " Apply the new bullet
+  if l:next_bullet_str !=# ''
+    call setline(l:lnum, l:next_bullet_str)
+    execute 'normal! $'
+
+  elseif g:bullets_delete_last_bullet_if_empty
+    let l:orig_line = s:parse_bullet(l:lnum, getline(l:lnum))
+    if l:orig_line != []
+      call setline(l:lnum, l:orig_line[0].leading_space . l:orig_line[0].text_after_bullet)
     endif
   endif
+
+  return
 endfun
 
 fun! s:bullet_demote()
   call s:change_bullet_level(-1)
 endfun
+
 fun! s:bullet_promote()
   call s:change_bullet_level(1)
 endfun
