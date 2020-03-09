@@ -143,19 +143,35 @@ RSpec.describe 'Bullets.vim' do
       EXPECTED
     end
 
-    # it 'does not add a new alpha bullet with wrapped lines' do
+    # it 'correctly numbers after wrapped lines starting with short words' do
     # # TODO: maybe take guidance from Pandoc and require two spaces after the
     # closure to allow us to differentiate between bullets and abbreviations
     # and words. Might also consider only allowing single letters.
-    #   test_bullet_inserted('not a bullet', <<-INIT, <<-EXPECTED)
+    #   test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
     #     # Hello there
     #     a. first bullet might not catch
-    #     \tme. second line.
+    #        me. second line.
     #   INIT
     #     # Hello there
     #     a. first bullet might not catch
     #     \tme. second line.
-    #     not a bullet
+    #     b. second bullet
+    #   EXPECTED
+    # end
+
+    # it 'correctly numbers after lines beginning with initialized names' do
+    # # TODO: maybe take guidance from Pandoc and require two spaces after the
+    # closure to allow us to differentiate between bullets and abbreviations
+    # and words. Might also consider only allowing single letters.
+    #   test_bullet_inserted('Second bullet', <<-INIT, <<-EXPECTED)
+    #     # Hello there
+    #     I. The first president of the USA was
+    #        G. Washington.
+    #   INIT
+    #     # Hello there
+    #     I. The first president of the USA was
+    #        G. Washington.
+    #     II. Second bullet
     #   EXPECTED
     # end
 
