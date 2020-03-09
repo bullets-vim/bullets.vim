@@ -27,6 +27,7 @@ rvm:
 
 before_install:
   - gem install bundler
+  - gem install rubocop
   - brew install macvim
 
 install:
@@ -46,5 +47,6 @@ install:
 
 
 script:
-  - bundle exec rspec --format documentation
   - vint -s --enable-neovim plugin/*.vim
+  - rubocop
+  - bundle exec rspec --format documentation
