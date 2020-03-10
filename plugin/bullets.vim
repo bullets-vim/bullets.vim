@@ -605,11 +605,12 @@ fun! s:change_bullet_level(direction)
     if l:curr_line != [] && indent(l:lnum) == 0
       " Promoting a bullet at the highest level will delete the bullet
       call setline(l:lnum, l:curr_line[0].text_after_bullet)
+      return
     else
-      execute "normal! a\<C-d>"
+      execute "normal! <<"
     endif
   else
-    execute "normal! a\<C-t>"
+    execute "normal! >>"
   endif
 
   let l:curr_indent = indent(l:lnum)
@@ -699,16 +700,8 @@ fun! s:change_bullet_level(direction)
   endif
 
   " Apply the new bullet
-  if l:next_bullet_str !=# ''
-    call setline(l:lnum, l:next_bullet_str)
-    execute 'normal! $'
-
-  elseif g:bullets_delete_last_bullet_if_empty
-    let l:orig_line = s:parse_bullet(l:lnum, getline(l:lnum))
-    if l:orig_line != []
-      call setline(l:lnum, l:orig_line[0].leading_space . l:orig_line[0].text_after_bullet)
-    endif
-  endif
+  call setline(l:lnum, l:next_bullet_str)
+  execute 'normal! $'
 
   return
 endfun
@@ -721,8 +714,8 @@ fun! s:bullet_promote()
   call s:change_bullet_level(1)
 endfun
 
-command! BulletDemote call <SID>bullet_demote()
-command! BulletPromote call <SID>bullet_promote()
+command! BulletDemote call <SID>change_bullet_level(-1)
+command! BulletPromote call <SID>change_bullet_level(1)
 
 
 " --------------------------------------------------------- }}}
@@ -769,10 +762,10 @@ augroup TextBulletsMappings
     call s:add_local_mapping('nnoremap', '<leader>x', ':ToggleCheckbox<cr>')
 
     " Promote and Demote outline level
-    call s:add_local_mapping('inoremap', '<C-t>', '<C-o>:call <SID>bullet_demote()<cr>')
-    call s:add_local_mapping('nnoremap', '>>', ':call <SID>bullet_demote()<cr>')
-    call s:add_local_mapping('inoremap', '<C-d>', '<C-o>:call <SID>bullet_promote()<cr>')
-    call s:add_local_mapping('nnoremap', '<<', ':call <SID>bullet_promote()<cr>')
+    call s:add_local_mapping('inoremap', '<C-t>', '<C-o>:BulletDemote<cr>')
+    call s:add_local_mapping('nnoremap', '>>', ':BulletDemote<cr>')
+    call s:add_local_mapping('inoremap', '<C-d>', '<C-o>:BulletPromote<cr>')
+    call s:add_local_mapping('nnoremap', '<<', ':BulletPromote<cr>')
 
   end
 augroup END
