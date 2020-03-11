@@ -563,27 +563,58 @@ endfun
 " Renumbering --------------------------------------------- {{{
 fun! s:renumber_selection()
   let l:selection_lines = s:get_visual_selection_lines()
-  let l:index = 0
+  let l:prev_indent = -1
+  let l:level = 0
+  let l:indices = {}
+  let l:pad_len = {}
+  let l:types = {}
+  let l:islower = {}
 
-  let l:pad_len = 0
   for l:line in l:selection_lines
-    let l:bullet = s:match_numeric_list_item(l:line.text)
+    let l:indent = indent(l:line.nr)
+    let l:bullet = s:closest_bullet_types(l:line.nr, l:indent)
+    let l:bullet = s:resolve_bullet_type(l:bullet)
 
     if !empty(l:bullet)
-      if l:index == 0
-        " use the first bullet as the first padding length
+      let l:level = l:indent
+      if l:indent > l:prev_indent
+        let l:indices[l:level] = 1
+
+        " use the first bullet at this level to define the bullet type for
+        " subsequent bullets. Needed to normalize bullet types when there are
+        " multiple types of bullets at the same indent level.
+        let l:islower[l:level] = l:bullet.bullet ==# tolower(l:bullet.bullet)
+        let l:types[l:level] = l:bullet.bullet_type
+
+        " use the first bullet as the first padding length, and store it for
+        " each indent level
         " 10. firstline  -> 1.  firstline
         " 1.  secondline -> 2.  secondline
-        let l:pad_len = l:bullet.bullet_length
+        let l:pad_len[l:level] = l:bullet.bullet_length
+      else
+        let l:indices[l:level] += 1
       endif
-      let l:index += 1
+
+      let l:prev_indent = l:indent
+
+      if l:types[l:level] ==? 'rom'
+        let l:bullet_num = s:arabic2roman(l:indices[l:level], l:islower[l:level])
+      elseif l:types[l:level] ==? 'abc'
+        let l:bullet_num = s:dec2abc(l:indices[l:level], l:islower[l:level])
+      elseif l:types[l:level] ==# 'num'
+        let l:bullet_num = l:indices[l:level]
+      else
+        " standard or checkbox
+        let l:bullet_num = l:bullet.bullet
+      endif
+
       let l:new_bullet =
             \ l:bullet.leading_space
-            \ . l:index
+            \ . l:bullet_num
             \ . l:bullet.closure
-            \ . (l:pad_len == 0 ? l:bullet.trailing_space : ' ')
-      let l:new_bullet = s:pad_to_length(l:new_bullet, l:pad_len)
-      let l:pad_len = len(l:new_bullet)
+            \ . (l:pad_len[l:level] == 0 ? l:bullet.trailing_space : ' ')
+      let l:new_bullet = s:pad_to_length(l:new_bullet, l:pad_len[l:level])
+      let l:pad_len[l:level] = len(l:new_bullet)
       let l:renumbered_line = l:new_bullet . l:bullet.text_after_bullet
       call setline(l:line.nr, l:renumbered_line)
     else
@@ -706,17 +737,8 @@ fun! s:change_bullet_level(direction)
   return
 endfun
 
-fun! s:bullet_demote()
-  call s:change_bullet_level(-1)
-endfun
-
-fun! s:bullet_promote()
-  call s:change_bullet_level(1)
-endfun
-
 command! BulletDemote call <SID>change_bullet_level(-1)
 command! BulletPromote call <SID>change_bullet_level(1)
-
 
 " --------------------------------------------------------- }}}
 
