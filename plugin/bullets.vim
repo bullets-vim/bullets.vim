@@ -421,9 +421,6 @@ fun! s:insert_new_bullet()
       call append(l:curr_line_num, l:next_bullet_list)
       " got to next line after the new bullet
       let l:col = strlen(getline(l:next_line_num)) + 1
-      if g:bullets_renumber_on_change
-        call s:renumber_whole_list()
-      endif
       call setpos('.', [0, l:next_line_num, l:col])
       let l:send_return = 0
     endif
