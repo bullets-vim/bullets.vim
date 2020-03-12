@@ -93,10 +93,10 @@ Capybara integration testing. ❤️
   lines).
 - [x] add alphabetic list
 - [x] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
+- [x] change nested outline levels in visual mode
+- [x] support renumbering of alphabetical, roman numerals, and nested lists
 - [ ] update documentation for nested bullets
 - [ ] support for nested numerical bullets, e.g., 1. -> 1.1 -> 1.1.1, 1.1.2
-- [ ] change nested outline levels in visual mode
-- [ ] support renumbering of alphabetical, roman numerals, and nested lists
 - [ ] add option to turn non-bullet lines into new bullets with `C-t`/`>>`
 
 ---

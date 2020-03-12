@@ -33,19 +33,20 @@ RSpec.describe 're-numbering' do
     filename = "#{SecureRandom.hex(6)}.txt"
     write_file(filename, <<-TEXT)
       # Hello there
+      0. zero bullet
       X. first bullet
-      V. second bullet
+      - second bullet
       3. third bullet
       I. fourth bullet
       V. fifth bullet
       \tB. sixth bullet
-      \tB. seventh bullet
+      \t* seventh bullet
       \t\ti. eighth bullet
       \t\tx. ninth bullet
       \t\ta. tenth bullet
       \tC. eleventh bullet
       \t\t1. twelfth bullet
-      \t\t1. thirteenth bullet
+      \t\t\t thirteenth not a bullet
       \t\t1. fourteenth bullet
       \td. fifteenth bullet
       \t\ta. sixteenth bullet
@@ -60,11 +61,12 @@ RSpec.describe 're-numbering' do
       \t\t\t\t\t- twenty-fifth bullet
       \tII. twenty-sixth bullet
       \t\t- twenty-seventh bullet
-      0. twenty-eighth bullet
+      i. twenty-eighth bullet
+      0. twenty-ninth bullet
     TEXT
 
     vim.edit filename
-    vim.type 'ggVG'
+    vim.type '2jVGk'
     vim.feedkeys 'gN'
     vim.write
 
@@ -72,6 +74,7 @@ RSpec.describe 're-numbering' do
 
     expect(file_contents).to eq normalize_string_indent(<<-TEXT)
       # Hello there
+      0. zero bullet
       I. first bullet
       II. second bullet
       III. third bullet
@@ -84,8 +87,8 @@ RSpec.describe 're-numbering' do
       \t\tiii. tenth bullet
       \tC. eleventh bullet
       \t\t1. twelfth bullet
-      \t\t2. thirteenth bullet
-      \t\t3. fourteenth bullet
+      \t\t\t thirteenth not a bullet
+      \t\t2. fourteenth bullet
       \tD. fifteenth bullet
       \t\ta. sixteenth bullet
       \t\t\t1. seventeenth bullet
@@ -100,6 +103,7 @@ RSpec.describe 're-numbering' do
       \tE. twenty-sixth bullet
       \t\t- twenty-seventh bullet
       VI.  twenty-eighth bullet
+      0. twenty-ninth bullet
 
     TEXT
   end

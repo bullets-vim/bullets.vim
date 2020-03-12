@@ -50,7 +50,7 @@ RSpec.describe 'Bullets.vim' do
           \t\t\t\t\t\t- sixth bullet
           \t\t\t\t\t\t\t* seventh bullet
           \t\t\t\t\t\t\t\t+ eighth bullet
-          \t\t\t\t\t\t\t\t\tninth bullet
+          \t\t\t\t\t\t\t\t\t+ ninth bullet
 
       TEXT
     end
@@ -290,17 +290,18 @@ RSpec.describe 'Bullets.vim' do
       vim.type 'sixth bullet'
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<C-t>'
-      vim.type 'not a bullet'
-      vim.feedkeys '\<cr>'
       vim.type 'seventh bullet'
       vim.feedkeys '\<cr>'
-      vim.feedkeys '\<C-d>'
       vim.type 'eighth bullet'
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<C-d>'
+      vim.feedkeys '\<C-d>'
       vim.type 'ninth bullet'
       vim.feedkeys '\<cr>'
+      vim.feedkeys '\<C-d>'
       vim.type 'tenth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'eleventh bullet'
 
       vim.write
 
@@ -314,11 +315,11 @@ RSpec.describe 'Bullets.vim' do
           \tB. fourth bullet
           \t\t* fifth bullet
           \t\t* sixth bullet
-          \t\t\tnot a bullet
-          \t\t* seventh bullet
-          \tC. eighth bullet
-          3. ninth bullet
-          4. tenth bullet
+          \t\t\t* seventh bullet
+          \t\t\t* eighth bullet
+          \tC. ninth bullet
+          3. tenth bullet
+          4. eleventh bullet
 
       TEXT
     end
@@ -356,15 +357,16 @@ RSpec.describe 'Bullets.vim' do
       vim.type '+ sixth bullet'
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<C-t>'
-      vim.type 'not a bullet'
-      vim.feedkeys '\<cr>'
       vim.type 'seventh bullet'
       vim.feedkeys '\<cr>'
+      vim.type 'eighth bullet'
+      vim.feedkeys '\<C-d>'
       vim.feedkeys '\<cr>'
-      vim.type '* eighth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type '* ninth bullet'
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<C-t>'
-      vim.type 'ninth bullet'
+      vim.type 'tenth bullet'
 
       vim.write
 
@@ -380,16 +382,16 @@ RSpec.describe 'Bullets.vim' do
           \tb. fifth bullet
 
           + sixth bullet
-          \tnot a bullet
-          + seventh bullet
+          \t+ seventh bullet
+          + eighth bullet
 
-          * eighth bullet
-          \t+ ninth bullet
+          * ninth bullet
+          \t+ tenth bullet
 
       TEXT
     end
 
-    it 'does not nest below defined levels' do
+    it 'does not nest further below defined levels' do
       filename = "#{SecureRandom.hex(6)}.txt"
       write_file(filename, <<-TEXT)
           # Hello there
@@ -408,9 +410,9 @@ RSpec.describe 'Bullets.vim' do
       vim.normal 'GA'
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<C-t>'
-      vim.type 'not a bullet'
-      vim.feedkeys '\<cr>'
       vim.type 'tenth bullet'
+      vim.feedkeys '\<cr>'
+      vim.type 'eleventh bullet'
       vim.write
 
       file_contents = IO.read(filename)
@@ -426,8 +428,8 @@ RSpec.describe 'Bullets.vim' do
           \t\t\t\t\t- seventh bullet
           \t\t\t\t\t\t* eighth bullet
           \t\t\t\t\t\t\t+ ninth bullet
-          \t\t\t\t\t\t\t\tnot a bullet
-          \t\t\t\t\t\t\t+ tenth bullet
+          \t\t\t\t\t\t\t\t+ tenth bullet
+          \t\t\t\t\t\t\t\t+ eleventh bullet
 
       TEXT
     end
@@ -596,6 +598,68 @@ RSpec.describe 'Bullets.vim' do
           \t\t\t\twrapped line
 
           \t\t\td. eighteenth bullet
+
+      TEXT
+    end
+
+    it 'changes levels in visual mode' do
+      filename = "#{SecureRandom.hex(6)}.txt"
+      write_file(filename, <<-TEXT)
+          # Hello there
+          1. first bullet
+          \ta. second bullet
+          \tb. third bullet
+          \t\t* fourth bullet
+          \t\t* fifth bullet
+          \t\t\tsixth bullet
+          \t\t* seventh bullet
+          2. eighth bullet
+          \t\ta. ninth bullet
+          \ta. tenth bullet
+          \tb. eleventh bullet
+          3. twelfth bullet
+          \t thirteenth bullet
+          \ta. fourteenth bullet
+          \t\t* fifteenth bullet
+          4. sixteenth bullet
+      TEXT
+
+      vim.edit filename
+      vim.command "let g:bullets_outline_levels=['num','abc','std*']"
+      vim.normal '3jv'
+      vim.feedkeys '<'
+      vim.normal 'jv2j'
+      vim.feedkeys '<'
+      vim.normal 'jvj'
+      vim.feedkeys '>'
+      vim.normal 'jvj'
+      vim.feedkeys '<<'
+      vim.normal 'jv'
+      vim.feedkeys '>'
+      vim.normal '3jv2j'
+      vim.feedkeys '>>'
+      vim.write
+
+      file_contents = IO.read(filename)
+
+      expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          1. first bullet
+          \ta. second bullet
+          2. third bullet
+          \ta. fourth bullet
+          \tb. fifth bullet
+          \t\tsixth bullet
+          \t\t\t* seventh bullet
+          \tc. eighth bullet
+          3. ninth bullet
+          tenth bullet
+          \t\ta. eleventh bullet
+          4. twelfth bullet
+          \t thirteenth bullet
+          \t\t\ta. fourteenth bullet
+          \t\t\t\t* fifteenth bullet
+          \t\ta. sixteenth bullet
 
       TEXT
     end
