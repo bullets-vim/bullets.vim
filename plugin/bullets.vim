@@ -243,7 +243,7 @@ fun! s:closest_bullet_types(from_line_num, max_indent)
   " Support for wrapped text bullets, even if the wrapped line is not indented
   " It considers a blank line as the end of a bullet
   " DEMO: https://raw.githubusercontent.com/dkarter/bullets.vim/master/img/wrapped-bullets.gif
-  while l:lnum > 1 && (l:curr_indent != 0 || l:bullet_kinds != [] || !(l:ltxt =~ '\v^(\s+$|$)'))
+  while l:lnum > 1 && (l:curr_indent != 0 || l:bullet_kinds != [] || !(l:ltxt =~# '\v^(\s+$|$)'))
         \ && (a:max_indent < l:curr_indent || l:bullet_kinds == [])
     if l:bullet_kinds != []
       let l:lnum = l:lnum - g:bullets_line_spacing
@@ -511,7 +511,7 @@ function! s:roman2arabic(roman)
       let l:sign = -l:sign
     endif
     for [l:numbers, l:letters] in s:a2r
-      if l:roman =~ '^' . l:letters
+      if l:roman =~# '^' . l:letters
         let l:arabic += l:sign * l:numbers
         let l:roman = strpart(l:roman,strlen(l:letters)-1)
         break
@@ -654,7 +654,7 @@ fun! s:renumber_whole_list(...)
       " Reset the starting visual selection
       call setpos("'<", [0, a:1[0], a:1[1], 0])
       call setpos("'>", [0, a:2[0], a:2[1], 0])
-      execute "normal! gv"
+      execute 'normal! gv'
     endif
   endif
 endfun
@@ -675,13 +675,13 @@ fun! s:change_bullet_level(direction)
       if g:bullets_renumber_on_change
         call s:renumber_whole_list()
       endif
-      execute "normal! $"
+      execute 'normal! $'
       return
     else
-      execute "normal! <<$"
+      execute 'normal! <<$'
     endif
   else
-    execute "normal! >>$"
+    execute 'normal! >>$'
   endif
 
   if l:curr_line == []
@@ -779,7 +779,7 @@ fun! s:change_bullet_level(direction)
   if g:bullets_renumber_on_change
     call s:renumber_whole_list()
   endif
-  execute "normal! $"
+  execute 'normal! $'
   return
 endfun
 
