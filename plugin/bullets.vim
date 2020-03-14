@@ -10,9 +10,9 @@ set cpoptions&vim
 " -------------------------------------------------------  }}}
 
 " Prevent execution if already loaded ------------------   {{{
-" if exists('g:loaded_bullets_vim')
-"   finish
-" endif
+if exists('g:loaded_bullets_vim')
+  finish
+endif
 let g:loaded_bullets_vim = 1
 " Prevent execution if already loaded ------------------   }}}
 
