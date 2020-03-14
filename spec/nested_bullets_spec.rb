@@ -29,13 +29,17 @@ RSpec.describe 'Bullets.vim' do
       vim.normal 'j'
       vim.feedkeys '>>>>>>>>>>'
       vim.normal 'j'
-      vim.feedkeys '>>>>>>>>>>>>'
+      vim.feedkeys '>>>>>>>>'
+      vim.feedkeys '>>>>'
       vim.normal 'j'
-      vim.feedkeys '>>>>>>>>>>>>>>'
+      vim.feedkeys '>>>>>>>>'
+      vim.feedkeys '>>>>>>'
       vim.normal 'j'
-      vim.feedkeys '>>>>>>>>>>>>>>>>'
+      vim.feedkeys '>>>>>>>>'
+      vim.feedkeys '>>>>>>>>'
       vim.normal 'j'
-      vim.feedkeys '>>>>>>>>>>>>>>>>>>'
+      vim.feedkeys '>>>>>>>>'
+      vim.feedkeys '>>>>>>>>>>'
       vim.write
 
       file_contents = IO.read(filename)
@@ -78,13 +82,18 @@ RSpec.describe 'Bullets.vim' do
       vim.normal 'j'
       vim.feedkeys '<<<<<<'
       vim.normal 'j'
-      vim.feedkeys '<<<<<<<<<<'
+      vim.feedkeys '<<<<<<'
+      vim.feedkeys '<<<<'
       vim.normal 'j'
-      vim.feedkeys '<<<<<<<<<<<<'
+      vim.feedkeys '<<<<<<'
+      vim.feedkeys '<<<<<<'
       vim.normal 'j'
-      vim.feedkeys '<<<<<<<<<<<<<<'
+      vim.feedkeys '<<<<<<'
+      vim.feedkeys '<<<<<<<<'
       vim.normal 'j'
-      vim.feedkeys '<<<<<<<<<<<<<<<<'
+      vim.feedkeys '<<<<<<'
+      vim.feedkeys '<<<<<<'
+      vim.feedkeys '<<<<'
       vim.write
 
       file_contents = IO.read(filename)
@@ -633,11 +642,13 @@ RSpec.describe 'Bullets.vim' do
       vim.normal 'jvj'
       vim.feedkeys '>'
       vim.normal 'jvj'
-      vim.feedkeys '<<'
+      vim.feedkeys '<'
+      vim.feedkeys '<'
       vim.normal 'jv'
       vim.feedkeys '>'
       vim.normal '3jv2j'
-      vim.feedkeys '>>'
+      vim.feedkeys '>'
+      vim.feedkeys '>'
       vim.write
 
       file_contents = IO.read(filename)
