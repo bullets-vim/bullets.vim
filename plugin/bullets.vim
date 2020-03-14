@@ -10,9 +10,9 @@ set cpoptions&vim
 " -------------------------------------------------------  }}}
 
 " Prevent execution if already loaded ------------------   {{{
-if exists('g:loaded_bullets_vim')
-  finish
-endif
+" if exists('g:loaded_bullets_vim')
+"   finish
+" endif
 let g:loaded_bullets_vim = 1
 " Prevent execution if already loaded ------------------   }}}
 
@@ -186,7 +186,7 @@ fun! s:match_alphabetical_list_item(input_text)
 endfun
 
 fun! s:match_checkbox_bullet_item(input_text)
-  let l:checkbox_bullet_regex = '\v(^(\s*)- \[[x ]?\](\s+))(.*)'
+  let l:checkbox_bullet_regex = '\v(^(\s*)(- \[[x ]?\])(\s+))(.*)'
   let l:matches               = matchlist(a:input_text, l:checkbox_bullet_regex)
 
   if empty(l:matches)
@@ -195,13 +195,16 @@ fun! s:match_checkbox_bullet_item(input_text)
 
   let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
-  let l:trailing_space    = l:matches[3]
-  let l:text_after_bullet = l:matches[4]
+  let l:bullet            = l:matches[3]
+  let l:trailing_space    = l:matches[4]
+  let l:text_after_bullet = l:matches[5]
 
   return {
         \ 'bullet_type':       'chk',
         \ 'bullet_length':     l:bullet_length,
         \ 'leading_space':     l:leading_space,
+        \ 'bullet':            l:bullet,
+        \ 'closure':           '',
         \ 'trailing_space':    l:trailing_space,
         \ 'text_after_bullet': l:text_after_bullet
         \ }
@@ -421,6 +424,9 @@ fun! s:insert_new_bullet()
       call append(l:curr_line_num, l:next_bullet_list)
       " got to next line after the new bullet
       let l:col = strlen(getline(l:next_line_num)) + 1
+      if g:bullets_renumber_on_change
+        call s:renumber_whole_list()
+      endif
       call setpos('.', [0, l:next_line_num, l:col])
       let l:send_return = 0
     endif
@@ -575,6 +581,11 @@ fun! s:renumber_selection()
     let l:indent = indent(l:line.nr)
     let l:bullet = s:closest_bullet_types(l:line.nr, l:indent)
     let l:bullet = s:resolve_bullet_type(l:bullet)
+    let l:curr_level = s:get_level(l:bullet)
+    if l:curr_level > 1
+      " then it's an AsciiDoc list and shouldn't be renumbered
+      break
+    endif
 
     if !empty(l:bullet) && l:bullet.starting_at_line_num == l:line.nr
       " skip wrapped lines and lines that aren't bullets
@@ -619,9 +630,12 @@ fun! s:renumber_selection()
         let l:bullet_num = s:dec2abc(l:levels[l:indent].index, l:levels[l:indent].islower)
       elseif l:levels[l:indent].type ==# 'num'
         let l:bullet_num = l:levels[l:indent].index
-      else
-        " standard or checkbox
+      elseif l:levels[l:indent].type ==# 'std'
+        " normalize standard bullets
         let l:bullet_num = l:levels[l:indent].bullet
+      else
+        " checkboxes shouldn't change their checked status
+        let l:bullet_num = l:bullet.bullet
       endif
 
       let l:new_bullet =
@@ -921,6 +935,14 @@ fun! s:has_item(list, fn)
   return !empty(s:find(a:list, a:fn))
 endfun
 
+fun! s:get_level(bullet)
+  if a:bullet == {} || a:bullet.bullet_type !=# 'std'
+    return 0
+  else
+    return len(a:bullet.bullet)
+  endif
+endfun
+
 fun! s:first_bullet_line()
   " returns the line number of the first bullet in the list containing the
   " cursor, up to the first blank line
@@ -929,16 +951,20 @@ fun! s:first_bullet_line()
   let l:first_line = -1
   let l:curr_indent = indent(l:lnum)
   let l:bullet_kinds = s:closest_bullet_types(l:lnum, l:curr_indent)
+  let l:blank_lines = 0
+  let l:list_start = 0
 
-  while l:lnum >= 1 && (l:curr_indent != 0 || l:bullet_kinds != [])
+  while l:lnum >= 1 && !l:list_start
     if l:bullet_kinds != []
       let l:first_line = l:lnum
-      let l:lnum = l:lnum - g:bullets_line_spacing
+      let l:blank_lines = 0
     else
-      let l:lnum = l:lnum - 1
+      let l:blank_lines += 1
+      let l:list_start = l:blank_lines >= g:bullets_line_spacing
     endif
-    let l:bullet_kinds = s:closest_bullet_types(l:lnum, l:curr_indent)
+    let l:lnum -= 1
     let l:curr_indent = indent(l:lnum)
+    let l:bullet_kinds = s:closest_bullet_types(l:lnum, l:curr_indent)
   endwhile
   return l:first_line
 endfun
@@ -952,16 +978,20 @@ fun! s:last_bullet_line()
   let l:last_line = -1
   let l:curr_indent = indent(l:lnum)
   let l:bullet_kinds = s:closest_bullet_types(l:lnum, l:curr_indent)
+  let l:blank_lines = 0
+  let l:list_end = 0
 
-  while l:lnum <= l:buf_end && (l:curr_indent != 0 || l:bullet_kinds != [])
+  while l:lnum <= l:buf_end && !l:list_end
     if l:bullet_kinds != []
       let l:last_line = l:lnum
-      let l:lnum = l:lnum + g:bullets_line_spacing
+      let l:blank_lines = 0
     else
-      let l:lnum = l:lnum + 1
+      let l:blank_lines += 1
+      let l:list_end = l:blank_lines >= g:bullets_line_spacing
     endif
-    let l:bullet_kinds = s:closest_bullet_types(l:lnum, l:curr_indent)
+    let l:lnum += 1
     let l:curr_indent = indent(l:lnum)
+    let l:bullet_kinds = s:closest_bullet_types(l:lnum, l:curr_indent)
   endwhile
   return l:last_line
 endfun

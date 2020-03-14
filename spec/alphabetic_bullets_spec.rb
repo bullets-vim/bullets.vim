@@ -104,6 +104,7 @@ RSpec.describe 'Bullets.vim' do
       TEXT
 
       vim.edit filename
+      vim.command('let g:bullets_renumber_on_change=0')
       vim.type 'GA'
       vim.feedkeys '\<cr>'
       vim.type 'second bullet'
@@ -184,6 +185,7 @@ RSpec.describe 'Bullets.vim' do
         TEXT
 
         vim.edit filename
+        vim.command('let g:bullets_renumber_on_change=0')
         vim.type 'GA'
         vim.feedkeys '\<cr>'
         vim.type 'second bullet'

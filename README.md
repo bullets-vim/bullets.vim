@@ -134,19 +134,31 @@ let g:bullets_outline_levels = ['num', 'abc', 'std*']
 " 2. second parent [ <cr><C-d> ]
 ```
 
-Enable/disable automatically renumbering the current ordered bullet list when changing the indent level of bullets:
+Enable/disable automatically renumbering the current ordered bullet list when changing the indent level of bullets or inserting a new bullet:
 
 ```vim
 let g:bullets_renumber_on_change = 1 " default = 1
-" Example:
+" Example 1:
 " 1. first existing bullet
 "   a. second existing bullet [ hit <C-t> ]
 " 2. third existing bullet [ this got renumbered 3 -> 2 when bullet 2 got demoted ]
+"
+" Example 2:
+" 1. first existing bullet
+" 2. second existing bullet [ use <cr>/o to add a new bullet below this ]
+" 3. new bullet
+" 4. third existing bullet [ this got renumbered 3 -> 2 when bullet 2 got demoted ]
 
 let g:bullets_renumber_on_change = 0
 " Example:
 " 1. first existing bullet
 "   a. second existing bullet [ hit <C-t> ]
+" 3. third existing bullet [ no renumbering so this bullet remained `3` ]
+"
+" Example 2:
+" 1. first existing bullet
+" 2. second existing bullet [ use <cr>/o to add a new bullet below this ]
+" 3. new bullet
 " 3. third existing bullet [ no renumbering so this bullet remained `3` ]
 ```
 

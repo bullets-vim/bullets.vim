@@ -29,40 +29,188 @@ RSpec.describe 're-numbering' do
     TEXT
   end
 
-  it 'renumbers a nested list correctly' do
+  it 'visually renumbers a nested list' do
     filename = "#{SecureRandom.hex(6)}.txt"
     write_file(filename, <<-TEXT)
       # Hello there
       0. zero bullet
+
       X. first bullet
+
       - second bullet
-      3. third bullet
+      \twrapped line
+
+      a. third bullet
+
       I. fourth bullet
-      V. fifth bullet
-      \tB. sixth bullet
+
+      \tV. fifth bullet
+
+      \t\tB. sixth bullet
+
       \t* seventh bullet
+
       \t\ti. eighth bullet
+
       \t\tx. ninth bullet
-      \t\ta. tenth bullet
+      \t\t\t wrapped line
+
+      \t\t\ta. tenth bullet
+      wrapped line without indent
+
       \tC. eleventh bullet
-      \t\t1. twelfth bullet
-      \t\t\t thirteenth not a bullet
-      \t\t1. fourteenth bullet
-      \td. fifteenth bullet
+      \t\t0. twelfth bullet
+
+      \t\t\t* thirteenth bullet
+
+      \t\t\t\t+ fourteenth bullet
+
+      \t\t\td. fifteenth bullet
+
       \t\ta. sixteenth bullet
+
       \t\t\t8. seventeenth bullet
+
       \t\t\t0. eighteenth bullet
-      \t\t\t\tv. nineteenth bullet
-      \t\t\t\ti. twentieth bullet
-      \t\t\t\ti. twenty-first bullet
-      \t\t\tc. twenty-second bullet
-      \t\t\t\tX. twenty-third bullet
-      \t\t\t\t\t- twenty-fourth bullet
-      \t\t\t\t\t- twenty-fifth bullet
-      \tII. twenty-sixth bullet
-      \t\t- twenty-seventh bullet
-      i. twenty-eighth bullet
-      0. twenty-ninth bullet
+      \t\t\t\t wrapped line
+
+      \tnormal indented line
+      next normal line
+
+      1. nineteenth bullet
+      x. twentieth bullet
+
+      v. twenty-first bullet
+      - twenty-second bullet
+
+
+      v. twenty-third bullet
+    TEXT
+
+    vim.edit filename
+    vim.command 'let g:bullets_line_spacing=2'
+    vim.normal '3jVG19k'
+    vim.feedkeys 'gN'
+    vim.normal 'GV6k'
+    vim.feedkeys 'gN'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      0. zero bullet
+
+      I. first bullet
+
+      II. second bullet
+      \twrapped line
+
+      III. third bullet
+
+      IV.  fourth bullet
+
+      \tI. fifth bullet
+
+      \t\tA. sixth bullet
+
+      \tII. seventh bullet
+
+      \t\ta. eighth bullet
+
+      \t\tb. ninth bullet
+      \t\t\t wrapped line
+
+      \t\t\ta. tenth bullet
+      wrapped line without indent
+
+      \tIII. eleventh bullet
+      \t\t1. twelfth bullet
+
+      \t\t\t* thirteenth bullet
+
+      \t\t\t\t+ fourteenth bullet
+
+      \t\t\t* fifteenth bullet
+
+      \t\ta. sixteenth bullet
+
+      \t\t\t8. seventeenth bullet
+
+      \t\t\t0. eighteenth bullet
+      \t\t\t\t wrapped line
+
+      \tnormal indented line
+      next normal line
+
+      1. nineteenth bullet
+      i. twentieth bullet
+
+      ii. twenty-first bullet
+      iii. twenty-second bullet
+
+
+      iv.  twenty-third bullet
+
+    TEXT
+  end
+
+  it 'renumbers a nested list' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      0. zero bullet
+
+      X. first bullet
+
+      - second bullet
+      \twrapped line
+
+      a. third bullet
+
+      I. fourth bullet
+
+      \tV. fifth bullet
+
+      \t\tB. sixth bullet
+
+      \t* seventh bullet
+
+      \t\ti. eighth bullet
+
+      \t\tx. ninth bullet
+      \t\t\t wrapped line
+
+      \t\t\ta. tenth bullet
+      wrapped line without indent
+
+      \tC. eleventh bullet
+      \t\t0. twelfth bullet
+
+      \t\t\t* thirteenth bullet
+
+      \t\t\t\t+ fourteenth bullet
+
+      \t\t\td. fifteenth bullet
+
+      \t\ta. sixteenth bullet
+
+      \t\t\t8. seventeenth bullet
+
+      \t\t\t0. eighteenth bullet
+      \t\t\t\t wrapped line
+
+      \tnormal indented line
+      next normal line
+
+      1. nineteenth bullet
+      x. twentieth bullet
+
+      v. twenty-first bullet
+      - twenty-second bullet
+
+
+      v. twenty-third bullet
     TEXT
 
     vim.edit filename
@@ -75,35 +223,57 @@ RSpec.describe 're-numbering' do
     expect(file_contents).to eq normalize_string_indent(<<-TEXT)
       # Hello there
       0. zero bullet
+
       I. first bullet
+
       II. second bullet
+      \twrapped line
+
       III. third bullet
+
       IV.  fourth bullet
-      V.   fifth bullet
-      \tA. sixth bullet
-      \tB. seventh bullet
+
+      \tI. fifth bullet
+
+      \t\tA. sixth bullet
+
+      \tII. seventh bullet
+
       \t\ti. eighth bullet
+
       \t\tii. ninth bullet
-      \t\tiii. tenth bullet
-      \tC. eleventh bullet
+      \t\t\t wrapped line
+
+      \t\t\ta. tenth bullet
+      wrapped line without indent
+
+      \tIII. eleventh bullet
       \t\t1. twelfth bullet
-      \t\t\t thirteenth not a bullet
-      \t\t2. fourteenth bullet
-      \tD. fifteenth bullet
-      \t\ta. sixteenth bullet
+
+      \t\t\t* thirteenth bullet
+
+      \t\t\t\t+ fourteenth bullet
+
+      \t\t\t* fifteenth bullet
+
+      \t\t2. sixteenth bullet
+
       \t\t\t1. seventeenth bullet
+
       \t\t\t2. eighteenth bullet
-      \t\t\t\ti. nineteenth bullet
-      \t\t\t\tii. twentieth bullet
-      \t\t\t\tiii. twenty-first bullet
-      \t\t\t3. twenty-second bullet
-      \t\t\t\tI. twenty-third bullet
-      \t\t\t\t\t- twenty-fourth bullet
-      \t\t\t\t\t- twenty-fifth bullet
-      \tE. twenty-sixth bullet
-      \t\t- twenty-seventh bullet
-      VI.  twenty-eighth bullet
-      0. twenty-ninth bullet
+      \t\t\t\t wrapped line
+
+      \tnormal indented line
+      next normal line
+
+      V.   nineteenth bullet
+      VI.  twentieth bullet
+
+      VII. twenty-first bullet
+      VIII. twenty-second bullet
+
+
+      v. twenty-third bullet
 
     TEXT
   end
