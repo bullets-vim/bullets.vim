@@ -630,7 +630,12 @@ fun! s:change_bullet_level(direction)
     return
   endif
 
-  let l:islower = l:closest_bullet.bullet ==# tolower(l:closest_bullet.bullet)
+  if has_key(l:closest_bullet, "bullet")
+      let l:islower = l:closest_bullet.bullet ==# tolower(l:closest_bullet.bullet)
+  else
+      let l:islower = 1
+  endif
+
   let l:closest_type = l:islower ? l:closest_bullet.bullet_type :
         \ toupper(l:closest_bullet.bullet_type)
 
