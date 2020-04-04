@@ -102,6 +102,7 @@ RSpec.describe 'Bullets.vim' do
       end
 
       it 'maintains total bullet width from 9. to 10. with reduced padding' do
+        vim.command('let g:bullets_renumber_on_change=0')
         test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
           # Hello there
           9.  this is the first bullet

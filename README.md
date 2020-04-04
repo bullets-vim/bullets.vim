@@ -34,6 +34,8 @@ to go to the next line, a new list item will be created.
 
 # Configuration
 
+### Filetypes
+
 You can choose which file types this plugin will work on:
 
 ```vim
@@ -44,6 +46,219 @@ let g:bullets_enabled_file_types = [
     \ 'gitcommit',
     \ 'scratch'
     \]
+```
+
+You can disable this plugin for empty buffers (no filetype):
+
+```vim
+let g:bullets_enable_in_empty_buffers = 0 " default = 1
+```
+
+Enable/disable default key mappings:
+
+```vim
+let g:bullets_set_mappings = 0 " default = 1
+```
+
+Add a leader key before default mappings:
+
+```vim
+let g:bullets_mapping_leader = '<M-b>' " default = ''
+```
+
+Enable/disable deleting the last empty bullet when hitting `<cr>` (insert mode) or `o` (normal mode):
+
+```vim
+let g:bullets_delete_last_bullet_if_empty = 0 " default = 1
+```
+
+Line spacing between bullets (1 = no blank lines, 2 = one blank line, etc.):
+
+```vim
+let g:bullets_line_spacing = 2 " default = 1
+```
+
+Don't/add extra padding between the bullet and text when bullets are multiple characters long:
+
+```vim
+let g:bullets_pad_right = 1 " default = 1
+" I. text
+" II. text
+" III. text
+" IV.  text
+" V.   text
+"     ^ extra spaces to align the text with the longest bullet
+
+let g:bullets_pad_right = 0
+" I. text
+" II. text
+" III. text
+" IV. text
+"    ^ no extra space between bullet and text
+```
+
+Maximum number of alphabetic characters to use for bullets:
+
+```vim
+let g:bullets_max_alpha_characters = 2 " default = 2
+" ...
+" y. text
+" z. text
+" aa. text
+" ab. text
+
+let g:bullets_max_alpha_characters = 1
+" ...
+" y. text
+" z. text
+" text
+```
+
+Nested outline bullet levels:
+
+```vim
+let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-', 'std*', 'std+'] " default
+" Ordered list containing the heirarchical bullet levels, starting from the outer most level.
+" Available bullet level options (cannot use the same marker more than once)
+" ROM/rom = upper/lower case Roman numerals (e.g., I, II, III, IV)
+" ABC/abc = upper/lower case alphabetic characters (e.g., A, B, C)
+" std[-/*/+] = standard bullets using a hyphen (-), asterisk (*), or plus (+) as the marker.
+" chk = checkbox (- [ ])
+
+let g:bullets_outline_levels = ['num', 'abc', 'std*']
+" Example [keys pressed to get this bullet]:
+" 1. first parent
+"   a. child bullet [ <cr><C-t> ]
+"     - unordered bullet [ <cr><C-t> ]
+"   b. second child bullet [ <cr><C-d> ]
+" 2. second parent [ <cr><C-d> ]
+```
+
+Enable/disable automatically renumbering the current ordered bullet list when changing the indent level of bullets or inserting a new bullet:
+
+```vim
+let g:bullets_renumber_on_change = 1 " default = 1
+" Example 1:
+" 1. first existing bullet
+"   a. second existing bullet [ hit <C-t> ]
+" 2. third existing bullet [ this got renumbered 3 -> 2 when bullet 2 got demoted ]
+"
+" Example 2:
+" 1. first existing bullet
+" 2. second existing bullet [ use <cr>/o to add a new bullet below this ]
+" 3. new bullet
+" 4. third existing bullet [ this got renumbered 3 -> 2 when bullet 2 got demoted ]
+
+let g:bullets_renumber_on_change = 0
+" Example:
+" 1. first existing bullet
+"   a. second existing bullet [ hit <C-t> ]
+" 3. third existing bullet [ no renumbering so this bullet remained `3` ]
+"
+" Example 2:
+" 1. first existing bullet
+" 2. second existing bullet [ use <cr>/o to add a new bullet below this ]
+" 3. new bullet
+" 3. third existing bullet [ no renumbering so this bullet remained `3` ]
+```
+
+Enable/disable toggling parent and child checkboxes to indicate "completion" of child checkboxes:
+
+```vim
+let g:bullets_nested_checkboxes = 1 " default = 1
+" Example:
+" - [ ] first bullet
+"   - [ ] child bullet  [ type <leader>x ]
+"     - [ ] sub-child
+"   - [ ] child bullet
+" 
+" Result:
+" - [o] first bullet   [ <- indicates partial completion of sub-tasks ]
+"   - [X] child bullet
+"     - [X] sub-child  [ <- children get checked when parents get checked ]
+"   - [ ] child bullet
+```
+
+Define the checkbox markers to use to indicate unchecked, checked, and "partially" checked. When only two marker characters are defined, the use of partial completion markers will be disabled. If more than two markers are defined, each character between the first and last characters will be used to indicate a percentage of the child checkboxes that are checked. Each marker corresponds to 1/n, where n is the number of partial completion markers. By default, there are three partial completion markers, `.`, `o`, and `O`, corresponding to 33%, 66%, and up to but less than 100%, respectively. Note that unchecked (`[ ]`) and checked (`[x]` or `[X]`) statuses using the default markers are always valid, even if you set custom markers for unchecked and checked.
+
+```vim
+let g:bullets_checkbox_markers = ' .oOX'
+" Example:
+" - [o] parent bullet  [ <- `o` indicates 66% - 99% of children are checked ]
+"   - [ ] child bullet
+"   - [.] child bullet [ <- partial completions don't count as complete ]
+"     - [ ] sub-child bullet [ <- 1/4 of children checked so parent is `.` ]
+"     - [ ] sub-child bullet
+"     - [ ] sub-child bullet
+"     - [X] sub-child bullet
+"   - [X] child bullet
+"   - [X] child bullet
+"
+" You can use fancy markers:
+" let g:bullets_checkbox_markers = '✗○◐●✓'
+" - [✗] unchecked
+" - [○] partial
+"   - [✓] checked
+"   - [✗] unchecked
+"   - [✗] unchecked
+"   - [✗] unchecked
+```
+
+Define whether toggling partially complete checkboxes sets the checkbox to checked or unchecked:
+
+```vim
+" Example 1:
+let g:bullets_checkbox_partials_toggle = 1 " default = 1
+" - [o] partially checked  [ type <leader>x ]
+"   - [x] sub bullet
+"   - [ ] sub bullet
+" 
+" Result:
+" - [x] checked
+"   - [x] sub bullet
+"   - [x] sub bullet
+" 
+" Example 2:
+let g:bullets_checkbox_partials_toggle = 0
+" - [o] partially checked  [ type <leader>x ]
+"   - [x] sub bullet
+"   - [ ] sub bullet
+" 
+" Result:
+" - [ ] checked
+"   - [ ] sub bullet
+"   - [ ] sub bullet
+```
+
+# Mappings
+
+* Insert new bullet in INSERT mode: `<cr>` (Return key)
+* Same as <cr> in case you want to unmap <cr> in INSERT mode (compatibility depends on your terminal emulator): `<C-cr>`
+* Insert new bullet in NORMAL mode: `o`
+* Renumber current visual selection: `gN`
+* Renumber entire bullet list containing the cursor in NORMAL mode: gN
+* Toggle a checkbox in NORMAL mode: `<leader>x`
+* Demote a bullet (indent it, decrease bullet level, and make it a child of the previous bullet):
+  + NORMAL mode: `>>`
+  + INSERT mode: `<C-t>`
+  + VISUAL mode: `>`
+* Promote a bullet (unindent it and increase the bullet level):
+  + NORMAL mode: `<<`
+  + INSERT mode: `<C-d>`
+  + VISUAL mode: `>`
+
+Disable default mappings:
+
+```vim
+let g:bullets_set_mappings = 0
+```
+
+Add a leader key before default mappings:
+
+```vim
+let g:bullets_mapping_leader = '<M-b>' 
+" Set <M-b> to the leader before all default mappings:
+" Example: renumbering becomes `<M-b>gN` instead of just `gN`
 ```
 
 Just add above to your .vimrc
@@ -93,11 +308,12 @@ Capybara integration testing. ❤️
   lines).
 - [x] add alphabetic list
 - [x] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
-- [ ] update documentation for nested bullets
+- [x] change nested outline levels in visual mode
+- [x] support renumbering of alphabetical, roman numerals, and nested lists
+- [x] update documentation for nested bullets
+- [x] support nested bullets with child and partial completion
 - [ ] support for nested numerical bullets, e.g., 1. -> 1.1 -> 1.1.1, 1.1.2
-- [ ] change nested outline levels in visual mode
-- [ ] support renumbering of alphabetical, roman numerals, and nested lists
-- [ ] add option to turn non-bullet lines into new bullets with `C-t`/`>>`
+- [ ] add option to turn non-bullet lines into new bullets with `<C-t>`/`>>`/`>`
 
 ---
 

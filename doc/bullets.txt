@@ -10,7 +10,7 @@ TABLE OF CONTENTS                         *bullets-toc*
 |bullets-configuration|            Configuration
 |bullets-insert-new-bullet|        Inserting Bullets
 |bullets-indenting|                Indenting Bullets
-|bullets-checkboxes|               Gfm Markdown Checkboxes
+|bullets-checkboxes|               Gfm/vimwiki Markdown Checkboxes
 |bullets-mappings|                 Mappings
 
 
@@ -27,13 +27,19 @@ types:
 
 - Hyphenated lists
 * Star (or bullet) lists
-- [ ] GFM markdown checkbox lists
++ Plus (also bullet) lists
+- [ ] GFM/vimwiki markdown checkbox lists
 1. Numeric lists
 2) or this style of numeric lists
 a. alphabetic lists
 B) or this style of alphabetic
+i. Roman numeral lists
+II. or capitalized Roman numeral lists
 \item latex item lists
 **** Org mode headers
+
+It supports nested (heirarchical) ordered lists/outlines using different types
+of bullet markers for each level.
 
 It also provides support for wrapped text in a bullet, allowing you to use the
 `textwidth` feature in Vim seamlessly.
@@ -71,6 +77,30 @@ GENERAL COMMANDS                            *bullets-commands*
 :RenumberSelection     Renumbers all the arabic/numeric bullets lines in the
                        visual selection. Right padding is initalized to the
                        first found bullet.
+
+                                            *bullets-:RenumberList*
+:RenumberList          Renumbers all of the bullet lines in the current list.
+                       A blank line before/after the first/last bullet denotes
+                       the end of the list.
+
+                                            *bullets-:BulletDemote*
+:BulletDemote          Demotes the current bullet by indenting it and changing
+                       its bullet type to the next level defined in 
+                       g:bullets_outline_levels. Mapped to <C-t> in INSERT
+                       mode and `>>` in NORMAL mode.
+
+                                            *bullets-:BulletPromote*
+:BulletPromote         Promotes the current bullet by unindenting it and 
+                       changing its bullet type to the next level defined in 
+                       g:bullets_outline_levels. Mapped to <C-d> in INSERT
+                       mode and `<<` in NORMAL mode by default.
+
+                                            *bullets-:BulletDemoteVisual*
+:BulletDemoteVisual    Demotes the currently selected bullet(s) in VISUAL
+                       mode. Mapped to `>` in VISUAL mode by default.
+                                            *bullets-:BulletPromoteVisual*
+:BulletPromoteVisual   Promotes the currently selected bullet(s) in VISUAL
+                       mode. Mapped to `>` in VISUAL mode by default.
 
 CONFIGURATION                               *bullets-configuration*
 
@@ -161,6 +191,89 @@ that using auto commands.
 When changed to `0` this will disable alphabetic bullets altogether.
 
 
+Nested Outline Bullet Levels
+----------------------------
+You can create heirarchically nested outlines using indentation and different
+bullet types for each level of indentation. Define the type of bullet used for
+each level using the following ordered list:
+
+   `let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-',`
+  `   \ 'std*', 'std+']`
+
+Demoting a bullet ([I]<C-t>, [N]`>>`, [V]`>`) will increase its indentation and use the
+next bullet level defined in this list. Similarly, promoting the bullet
+([I]<C-d>, [N]`<<`, [V]`<`) will decrease the bullet
+indentation and use the previous bullet level. Promoting a top-level bullet
+will remove the bullet and demoting a bottom-level bullet will indent, but not
+change the bullet marker.
+
+
+Renumber Bullets on Change
+--------------------------
+By default, inserting a new bullet or promoting/demoting an existing bullet in
+the middle of a list will cause all of the list items, including nested
+bullets, to be renumbered. You can disable renumbering using the following:
+
+  `let g:bullets_renumber_on_change = 0`
+
+The current list is defined by blank lines surrounding the first/last bullet
+items, taking into consideration the setting in g:bullets_line_spacing.
+
+You can always manually renumber the current list or visual selection using
+`gN` in NORMAL or VISUAL mode.
+
+
+Toggle Parent and Child Checkboxes
+----------------------------------
+If a checkbox has child checkboxes, checking the checkbox will check all
+its children, and unchecking it will uncheck all its children. When toggling
+a child checkbox, the parent will be checked, unchecked, or marked with
+a partial completion marker (see |bullets-checkboxes|). You can disable this
+behavior using the following:
+
+  `let g:bullets_nested_checkboxes = 0`
+
+
+Checkbox Marker and Partial Completion Symbols
+----------------------------------------------
+In addition to the GFM markdown checkbox symbols, ` ` (unchecked) and `x`
+(checked), you can define and use custom marker symbols. You can also define
+and use marker symbols indicating partial completion of child checkboxes,
+like vimwiki syntax. By default, three symbols are defined for 1%-33% complete
+(`.`), 34%-66% complete (`o`), and 67%-99% complete (`O`), with 0% and 100%
+completion indicated by the unchecked and checked markers, respectively.
+
+The marker symbols are defined in a text string consisting of the sequential
+markers to use for unckecked (first character), partially checked (0+ middle
+characters), and checked (last character) statuses:
+
+  `let g:bullets_checkbox_markers = ' .oOX'`
+
+You can define fewer or more intermediate characters for partial completion,
+and the completion intervals will be adjusted accordingly.
+
+If you only define a checked and unchecked marker symbol, partial completion
+will be disabled:
+
+  `let g:bullets_checkbox_markers = ' X'`
+
+The standard GFM marker symbols for checked and unchecked (` ` and `x`) will
+always work for compatibility purposes, even when you use custom marker symbols.
+
+You can also use fancy marker symbols, for example:
+
+  `let g:bullets_checkbox_markers = '✗○◐●✓'`
+
+
+Toggling Partially Checked Checkboxes
+-------------------------------------
+You can define whether toggling a partially checked checkbox will result in it
+being marked checked (1, default) or unchecked (0):
+
+
+  `let g:bullets_checkbox_partials_toggle = 1`
+
+
 INSERTING BULLETS                           *bullets-insert-new-bullet*
 
 When a supported file type is opened (see |bullets-configuration|) you can start
@@ -184,18 +297,24 @@ Vim comes built in with support for indenting and de-indenting in INSERT mode.
 To indent the current bullet to the right: from insert mode press <CTRL-t>.
 To indent the current bullet to the left: from insert mode press <CTRL-d>.
 
-Note: For <CTRL-d> to work properly you have to be at the end of the line.
-
 For more information `:h i_CTRL-T` and `:h i_CTRL-D`
 
 
-GFM MARKDOWN CHECKBOXES                     *bullets-checkboxes*
+GFM AND VIMWIKI MARKDOWN CHECKBOXES         *bullets-checkboxes*
 
-Bullets.vim supports checking and unchecking GFM markdown checkboxes. While in
-normal mode, move over a checkbox list item (anywhere on the item) and use
-<leader>x to toggle the checkbox state.
+Bullets.vim supports checking and unchecking GFM- and vimwiki-style markdown
+checkboxes. While in normal mode, move over a checkbox list item (anywhere
+on the item) and use <leader>x to toggle the checkbox state.
 
-There are also |bullets-commands| that you can use to to create your own mappings.
+Vimwiki-style checkboxes allow for marking a checkbox as partially complete
+based on how many of its child checkboxes are checked. Partially complete
+checkboxes can use different markers to indicate a relative percentage of
+completion. Vimwiki-style (partial completion) checkboxes can be disabled
+through the `g:bullets_checkbox_markers` configuration option (see
+|bullets-configuration|).
+
+There are also |bullets-commands| that you can use to to create your own
+mappings.
 
 
 MAPPINGS                                    *bullets-mappings*
@@ -213,18 +332,48 @@ INSERT MODE
                                             *bullets-i_<C-cr>*
 <C-CR>      Same as <CR>, in case you want to unmap <CR> in INSERT MODE.
 
+                                            *bullets-i_<C-d>*
+<C-D>       Promotes the current bullet item by unindenting the line and
+            changing the bullet to the previous type defined in
+            g:bullets_outline_levels.
+
+                                            *bullets-i_<C-t>*
+<C-T>       Demotes the current bullet item by indenting the line and changing
+            the bullet to the next type defined in g:bullets_outline_levels.
+
 NORMAL MODE
 
                                             *bullets-o*
 o           Inserts a new bullet list item. Same as <CR> in INSERT MODE.
 
+                                            *bullets-gN*
+gN          Renumbers entire list containing the current cursor position.
+
                                             *bullets-<leader>x*
 <leader>x   Toggles the checkbox on the current line.
+
+                                            *bullets->>*
+>>          Promotes the current bullet item by unindenting the line and
+            changing the bullet to the next type defined in
+            g:bullets_outline_levels.
+
+                                            *bullets-<<*
+<<          Demotes the current bullet item by indenting the line and changing
+            the bullet to the previous type defined in g:bullets_outline_levels.
 
 VISUAL MODE
 
                                             *bullets-v_gN*
 gN          Renumbers selected bullet list items.
 
+                                            *bullets-v_>*
+>           Promotes the currently selected bullet item(s) by unindenting the
+            lines and changing the bullets to the next type defined in
+            g:bullets_outline_levels.
+
+                                            *bullets-v_<*
+<           Demotes the currently selected bullet item(s) by indenting the
+            lines and changing the bullets to the previous type defined in
+            g:bullets_outline_levels.
 
 vim:tw=78:et:ft=help:norl:

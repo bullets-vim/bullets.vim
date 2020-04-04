@@ -24,4 +24,172 @@ RSpec.describe 'checkboxes' do
       - [ ] do that
     EXPECTED
   end
+
+  it 'toggle a bullet' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      - [ ] first bullet
+      - [X] second bullet
+      - [x] third bullet
+      - [.] fourth bullet
+      - [o] fifth bullet
+      - [O] sixth bullet
+    TEXT
+
+    vim.edit filename
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [X] first bullet
+      - [ ] second bullet
+      - [ ] third bullet
+      - [X] fourth bullet
+      - [X] fifth bullet
+      - [X] sixth bullet
+
+    TEXT
+  end
+
+  it 'toggle a bullet and adjust parent' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      - [ ] first bullet
+        - [ ] second bullet
+          - [ ] third bullet
+    TEXT
+
+    vim.edit filename
+    vim.normal 'G'
+    vim.command 'ToggleCheckbox'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [X] first bullet
+        - [X] second bullet
+          - [X] third bullet
+
+    TEXT
+  end
+
+  it 'toggle a bullet and adjust children' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      - [ ] first bullet
+        - [ ] second bullet
+          - [ ] third bullet
+    TEXT
+
+    vim.edit filename
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [X] first bullet
+        - [X] second bullet
+          - [X] third bullet
+
+    TEXT
+  end
+
+  it 'toggle a bullet and calculate completion' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      - [ ] first bullet
+        - [ ] second bullet
+          - [ ] third bullet
+          - [ ] fourth bullet
+          - [ ] fifth bullet
+          - [ ] sixth bullet
+        - [ ] seventh bullet
+          - [ ] eighth bullet
+          - [ ] ninth bullet
+          - [ ] tenth bullet
+          - [ ] eleventh bullet
+        - [ ] twelfth bullet
+          - [ ] thirteenth bullet
+          - [ ] fourteenth bullet
+          - [ ] fifteenth bullet
+          - [ ] sixteenth bullet
+        - [X] seventeenth bullet
+          - [X] eighteenth bullet
+          - [X] ninteenth bullet
+          - [X] twentieth bullet
+          - [X] twenty-first bullet
+    TEXT
+
+    vim.edit filename
+    vim.normal '3j'
+    vim.command 'ToggleCheckbox'
+    vim.normal '6j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal '2j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.normal '2j'
+    vim.command 'ToggleCheckbox'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [.] first bullet
+        - [.] second bullet
+          - [X] third bullet
+          - [ ] fourth bullet
+          - [ ] fifth bullet
+          - [ ] sixth bullet
+        - [O] seventh bullet
+          - [ ] eighth bullet
+          - [X] ninth bullet
+          - [X] tenth bullet
+          - [X] eleventh bullet
+        - [X] twelfth bullet
+          - [X] thirteenth bullet
+          - [X] fourteenth bullet
+          - [X] fifteenth bullet
+          - [X] sixteenth bullet
+        - [O] seventeenth bullet
+          - [ ] eighteenth bullet
+          - [X] ninteenth bullet
+          - [X] twentieth bullet
+          - [X] twenty-first bullet
+
+    TEXT
+  end
 end
