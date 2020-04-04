@@ -27,13 +27,19 @@ types:
 
 - Hyphenated lists
 * Star (or bullet) lists
++ Plus (also bullet) lists
 - [ ] GFM markdown checkbox lists
 1. Numeric lists
 2) or this style of numeric lists
 a. alphabetic lists
 B) or this style of alphabetic
+i. Roman numeral lists
+II. or capitalized Roman numeral lists
 \item latex item lists
 **** Org mode headers
+
+It supports nested (heirarchical) ordered lists/outlines using different types
+of bullet markers for each level.
 
 It also provides support for wrapped text in a bullet, allowing you to use the
 `textwidth` feature in Vim seamlessly.
@@ -71,6 +77,30 @@ GENERAL COMMANDS                            *bullets-commands*
 :RenumberSelection     Renumbers all the arabic/numeric bullets lines in the
                        visual selection. Right padding is initalized to the
                        first found bullet.
+
+                                            *bullets-:RenumberList*
+:RenumberList          Renumbers all of the bullet lines in the current list.
+                       A blank line before/after the first/last bullet denotes
+                       the end of the list.
+
+                                            *bullets-:BulletDemote*
+:BulletDemote          Demotes the current bullet by indenting it and changing
+                       its bullet type to the next level defined in 
+                       g:bullets_outline_levels. Mapped to <C-t> in INSERT
+                       mode and `>>` in NORMAL mode.
+
+                                            *bullets-:BulletPromote*
+:BulletPromote         Promotes the current bullet by unindenting it and 
+                       changing its bullet type to the next level defined in 
+                       g:bullets_outline_levels. Mapped to <C-d> in INSERT
+                       mode and `<<` in NORMAL mode by default.
+
+                                            *bullets-:BulletDemoteVisual*
+:BulletDemoteVisual    Demotes the currently selected bullet(s) in VISUAL
+                       mode. Mapped to `>` in VISUAL mode by default.
+                                            *bullets-:BulletPromoteVisual*
+:BulletPromoteVisual   Promotes the currently selected bullet(s) in VISUAL
+                       mode. Mapped to `>` in VISUAL mode by default.
 
 CONFIGURATION                               *bullets-configuration*
 
@@ -161,6 +191,38 @@ that using auto commands.
 When changed to `0` this will disable alphabetic bullets altogether.
 
 
+Nested Outline Bullet Levels
+----------------------------
+You can create heirarchically nested outlines using indentation and different
+bullet types for each level of indentation. Define the type of bullet used for
+each level using the following ordered list:
+
+   `let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-',`
+  `   \ 'std*', 'std+']`
+
+Demoting a bullet ([I]<C-t>, [N]`>>`, [V]`>`) will increase its indentation and use the
+next bullet level defined in this list. Similarly, promoting the bullet
+([I]<C-d>, [N]`<<`, [V]`<`) will decrease the bullet
+indentation and use the previous bullet level. Promoting a top-level bullet
+will remove the bullet and demoting a bottom-level bullet will indent, but not
+change the bullet marker.
+
+
+Renumber Bullets on Change
+--------------------------
+By default, inserting a new bullet or promoting/demoting an existing bullet in
+the middle of a list will cause all of the list items, including nested
+bullets, to be renumbered. You can disable renumbering using the following:
+
+  `let g:bullets_renumber_on_change = 0`
+
+The current list is defined by blank lines surrounding the first/last bullet
+items, taking into consideration the setting in g:bullets_line_spacing.
+
+You can always manually renumber the current list or visual selection using
+`gN` in NORMAL or VISUAL mode.
+
+
 INSERTING BULLETS                           *bullets-insert-new-bullet*
 
 When a supported file type is opened (see |bullets-configuration|) you can start
@@ -183,8 +245,6 @@ Vim comes built in with support for indenting and de-indenting in INSERT mode.
 
 To indent the current bullet to the right: from insert mode press <CTRL-t>.
 To indent the current bullet to the left: from insert mode press <CTRL-d>.
-
-Note: For <CTRL-d> to work properly you have to be at the end of the line.
 
 For more information `:h i_CTRL-T` and `:h i_CTRL-D`
 
@@ -213,18 +273,48 @@ INSERT MODE
                                             *bullets-i_<C-cr>*
 <C-CR>      Same as <CR>, in case you want to unmap <CR> in INSERT MODE.
 
+                                            *bullets-i_<C-d>*
+<C-D>       Promotes the current bullet item by unindenting the line and
+            changing the bullet to the previous type defined in
+            g:bullets_outline_levels.
+
+                                            *bullets-i_<C-t>*
+<C-T>       Demotes the current bullet item by indenting the line and changing
+            the bullet to the next type defined in g:bullets_outline_levels.
+
 NORMAL MODE
 
                                             *bullets-o*
 o           Inserts a new bullet list item. Same as <CR> in INSERT MODE.
 
+                                            *bullets-gN*
+gN          Renumbers entire list containing the current cursor position.
+
                                             *bullets-<leader>x*
 <leader>x   Toggles the checkbox on the current line.
+
+                                            *bullets->>*
+>>          Promotes the current bullet item by unindenting the line and
+            changing the bullet to the next type defined in
+            g:bullets_outline_levels.
+
+                                            *bullets-<<*
+<<          Demotes the current bullet item by indenting the line and changing
+            the bullet to the previous type defined in g:bullets_outline_levels.
 
 VISUAL MODE
 
                                             *bullets-v_gN*
 gN          Renumbers selected bullet list items.
 
+                                            *bullets-v_>*
+>           Promotes the currently selected bullet item(s) by unindenting the
+            lines and changing the bullets to the next type defined in
+            g:bullets_outline_levels.
+
+                                            *bullets-v_<*
+<           Demotes the currently selected bullet item(s) by indenting the
+            lines and changing the bullets to the previous type defined in
+            g:bullets_outline_levels.
 
 vim:tw=78:et:ft=help:norl:
