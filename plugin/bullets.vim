@@ -760,13 +760,9 @@ fun! s:renumber_selection()
         let l:bullet_num = s:dec2abc(l:levels[l:indent].index, l:levels[l:indent].islower)
       elseif l:levels[l:indent].type ==# 'num'
         let l:bullet_num = l:levels[l:indent].index
-      elseif l:levels[l:indent].type ==# 'std'
-        " normalize standard bullets
-        let l:bullet_num = l:levels[l:indent].bullet
       else
-        " checkboxes shouldn't change their checked status
-        " let l:bullet_num = l:bullet.bullet
-        break
+        " normalize standard and checkbox bullets
+        let l:bullet_num = l:levels[l:indent].bullet
       endif
 
       let l:new_bullet =
@@ -778,6 +774,13 @@ fun! s:renumber_selection()
       let l:levels[l:indent].pad_len = len(l:new_bullet)
       let l:renumbered_line = l:new_bullet . l:bullet.text_after_bullet
       call setline(l:line.nr, l:renumbered_line)
+
+      " Reset the checkbox marker if it already exists, or blank otherwise
+      if l:levels[l:indent].type ==# 'chk'
+        let l:marker = has_key(l:bullet, 'checkbox_marker') ?
+              \ l:bullet.checkbox_marker : ' '
+        call s:set_checkbox(l:line.nr, l:marker)
+      endif
     endif
   endfor
 endfun

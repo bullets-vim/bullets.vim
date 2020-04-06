@@ -29,6 +29,44 @@ RSpec.describe 're-numbering' do
     TEXT
   end
 
+  it 'renumbers a list containing checkboxes' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      33. this is the first bullet
+      - [x] this is the second bullet
+      1.     this is the third bullet
+        - [ ] this is the fourth bullet
+      4. this is the fifth bullet
+
+      - [o] second bullet list
+      a. second item
+      - [x] third item
+    TEXT
+
+    vim.edit filename
+    vim.type 'j'
+    vim.feedkeys 'gN'
+    vim.type '}j'
+    vim.feedkeys 'gN'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      1.  this is the first bullet
+      2.  this is the second bullet
+      3.  this is the third bullet
+        - [ ] this is the fourth bullet
+      4.  this is the fifth bullet
+
+      - [o] second bullet list
+      - [ ] second item
+      - [x] third item\n
+    TEXT
+  end
+
   it 'visually renumbers a nested list' do
     filename = "#{SecureRandom.hex(6)}.txt"
     write_file(filename, <<-TEXT)

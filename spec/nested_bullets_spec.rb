@@ -511,59 +511,40 @@ RSpec.describe 'Bullets.vim' do
       write_file(filename, <<-TEXT)
           # Hello there
           I. this is the first bullet
-
           \tA. second bullet
-
-          \tB. third bullet
-
-          \tC. fourth bullet
       TEXT
 
       vim.edit filename
-      vim.command 'let g:bullets_line_spacing=2'
       vim.normal 'GA'
       vim.feedkeys '\<cr>'
-      vim.type 'fifth bullet'
+      vim.type 'third bullet'
+      vim.feedkeys '\<C-t>'
       vim.feedkeys '\<cr>'
-      vim.feedkeys '\<C-d>'
+      vim.type 'fourth bullet'
+      vim.feedkeys '\<C-t>'
+      vim.feedkeys '\<cr>'
+      vim.type 'fifth bullet'
+      vim.feedkeys '\<C-t>'
+      vim.feedkeys '\<cr>'
       vim.type 'sixth bullet'
+      vim.feedkeys '\<C-t>'
       vim.feedkeys '\<cr>'
       vim.type 'seventh bullet'
       vim.feedkeys '\<cr>'
       vim.type 'eighth bullet'
-      vim.feedkeys '\<C-t>'
+      vim.feedkeys '\<C-d>'
       vim.feedkeys '\<cr>'
       vim.type 'ninth bullet'
-      vim.feedkeys '\<C-t>'
+      vim.feedkeys '\<C-d>'
       vim.feedkeys '\<cr>'
       vim.type 'tenth bullet'
-      vim.feedkeys '\<C-t>'
+      vim.feedkeys '\<C-d>'
       vim.feedkeys '\<cr>'
-      vim.feedkeys '\<C-t>'
       vim.type 'eleventh bullet'
+      vim.feedkeys '\<C-d>'
       vim.feedkeys '\<cr>'
       vim.type 'twelfth bullet'
-      vim.feedkeys '\<cr>'
-      vim.type 'thirteenth bullet'
-      vim.feedkeys '\<C-t>'
-      vim.feedkeys '\<cr>'
-      vim.type 'fourteenth bullet'
-      vim.feedkeys '\<cr>'
-      vim.type 'fifteenth bullet'
       vim.feedkeys '\<C-d>'
-      vim.feedkeys '\<cr>'
-      vim.feedkeys '\<C-d>'
-      vim.type 'sixteenth bullet'
-      vim.feedkeys '\<cr>'
-      vim.normal 'dd'
-      vim.insert '				wrapped line'
-      vim.feedkeys '\<cr>'
-      vim.type 'seventeenth bullet'
-      vim.feedkeys '\<cr>'
-      vim.normal 'dd'
-      vim.insert '				wrapped line'
-      vim.feedkeys '\<cr>'
-      vim.type 'eighteenth bullet'
       vim.write
 
       file_contents = IO.read(filename)
@@ -571,42 +552,17 @@ RSpec.describe 'Bullets.vim' do
       expect(file_contents).to eq normalize_string_indent(<<-TEXT)
           # Hello there
           I. this is the first bullet
-
           \tA. second bullet
-
-          \tB. third bullet
-
-          \tC. fourth bullet
-
-          \tD. fifth bullet
-
-          II. sixth bullet
-
-          III. seventh bullet
-
-          \tA. eighth bullet
-
-          \t\t1. ninth bullet
-
-          \t\t\ta. tenth bullet
-
-          \t\t\t\ti. eleventh bullet
-
-          \t\t\t\tii. twelfth bullet
-
-          \t\t\t\t\t- thirteenth bullet
-
-          \t\t\t\t\t- fourteenth bullet
-
-          \t\t\t\tiii. fifteenth bullet
-
-          \t\t\tb. sixteenth bullet
-          \t\t\t\twrapped line
-
-          \t\t\tc. seventeenth bullet
-          \t\t\t\twrapped line
-
-          \t\t\td. eighteenth bullet
+          \t\t1. third bullet
+          \t\t\ta. fourth bullet
+          \t\t\t\ti. fifth bullet
+          \t\t\t\t\t- sixth bullet
+          \t\t\t\t\t- seventh bullet
+          \t\t\t\tii. eighth bullet
+          \t\t\tb. ninth bullet
+          \t\t2. tenth bullet
+          \tB. eleventh bullet
+          II. twelfth bullet
 
       TEXT
     end
