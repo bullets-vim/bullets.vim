@@ -30,6 +30,16 @@
         "code",
         "bug"
       ]
+    },
+    {
+      "login": "kaymmm",
+      "name": "Keith Miyake",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/2266804?v=4",
+      "profile": "http://keithmiyake.info",
+      "contributions": [
+        "code",
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
