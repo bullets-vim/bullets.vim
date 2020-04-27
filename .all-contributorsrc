@@ -91,6 +91,15 @@
         "code",
         "ideas"
       ]
+    },
+    {
+      "login": "noodlor",
+      "name": "noodlor",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/49209345?v=4",
+      "profile": "https://github.com/noodlor",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
