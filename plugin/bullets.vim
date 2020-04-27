@@ -421,7 +421,8 @@ fun! s:next_num_bullet(bullet)
 endfun
 
 fun! s:next_chk_bullet(bullet)
-  return '- [ ]'
+  let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
+  return '- [' . l:checkbox_markers[0] . ']'
 endfun
 " }}}
 

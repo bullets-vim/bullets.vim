@@ -226,7 +226,7 @@ RSpec.describe 'checkboxes' do
       # Hello there
       - [✓] first bullet
       - [◐] second bullet
-      \t- [ ] third bullet
+      \t- [✗] third bullet
       \t- [✓] fourth bullet
       - [✓] fifth bullet
       - [✗] sixth bullet
