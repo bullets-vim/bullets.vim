@@ -1,6 +1,6 @@
 ![Bullets.vim](img/bullets-vim-logo.svg)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Build Status](https://travis-ci.org/dkarter/bullets.vim.svg?branch=master)](https://travis-ci.org/dkarter/bullets.vim)
@@ -273,6 +273,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/cormacrelf"><img src="https://avatars3.githubusercontent.com/u/378760?v=4" width="100px;" alt=""/><br /><sub><b>Cormac Relf</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=cormacrelf" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/issues?q=author%3Acormacrelf" title="Bug reports">🐛</a></td>
     <td align="center"><a href="http://keithmiyake.info"><img src="https://avatars1.githubusercontent.com/u/2266804?v=4" width="100px;" alt=""/><br /><sub><b>Keith Miyake</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=kaymmm" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=kaymmm" title="Documentation">📖</a></td>
     <td align="center"><a href="https://yous.be"><img src="https://avatars0.githubusercontent.com/u/853977?v=4" width="100px;" alt=""/><br /><sub><b>Chayoung You</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=yous" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/adriaanzon"><img src="https://avatars3.githubusercontent.com/u/4326420?v=4" width="100px;" alt=""/><br /><sub><b>Adriaan Zonnenberg</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=adriaanzon" title="Code">💻</a></td>
   </tr>
 </table>
 
