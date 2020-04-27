@@ -20,6 +20,16 @@
         "test",
         "doc"
       ]
+    },
+    {
+      "login": "cormacrelf",
+      "name": "Cormac Relf",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/378760?v=4",
+      "profile": "https://github.com/cormacrelf",
+      "contributions": [
+        "code",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7

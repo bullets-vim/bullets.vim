@@ -1,6 +1,6 @@
 ![Bullets.vim](img/bullets-vim-logo.svg)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Build Status](https://travis-ci.org/dkarter/bullets.vim.svg?branch=master)](https://travis-ci.org/dkarter/bullets.vim)
@@ -270,6 +270,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://doriankarter.com"><img src="https://avatars3.githubusercontent.com/u/551858?v=4" width="100px;" alt=""/><br /><sub><b>Dorian Karter</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Tests">⚠️</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/cormacrelf"><img src="https://avatars3.githubusercontent.com/u/378760?v=4" width="100px;" alt=""/><br /><sub><b>Cormac Relf</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=cormacrelf" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/issues?q=author%3Acormacrelf" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
