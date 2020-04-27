@@ -1,0 +1,24 @@
+{
+  "projectName": "bullets.vim",
+  "projectOwner": "dkarter",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "gitmoji",
+  "contributors": [
+    {
+      "login": "dkarter",
+      "name": "Dorian Karter",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/551858?v=4",
+      "profile": "https://doriankarter.com",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}
