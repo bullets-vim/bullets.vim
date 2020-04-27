@@ -1,6 +1,6 @@
 ![Bullets.vim](img/bullets-vim-logo.svg)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![Build Status](https://travis-ci.org/dkarter/bullets.vim.svg?branch=master)](https://travis-ci.org/dkarter/bullets.vim)
@@ -276,6 +276,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/adriaanzon"><img src="https://avatars3.githubusercontent.com/u/4326420?v=4" width="100px;" alt=""/><br /><sub><b>Adriaan Zonnenberg</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=adriaanzon" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/eater"><img src="https://avatars3.githubusercontent.com/u/106199?v=4" width="100px;" alt=""/><br /><sub><b>eater</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=eater" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/hut"><img src="https://avatars1.githubusercontent.com/u/90548?v=4" width="100px;" alt=""/><br /><sub><b>hut</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=hut" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=hut" title="Documentation">📖</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/mykoza"><img src="https://avatars1.githubusercontent.com/u/48719773?v=4" width="100px;" alt=""/><br /><sub><b>mykoza</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=mykoza" title="Code">💻</a></td>
   </tr>
 </table>
 

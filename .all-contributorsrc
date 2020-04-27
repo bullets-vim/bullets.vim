@@ -78,6 +78,15 @@
         "code",
         "doc"
       ]
+    },
+    {
+      "login": "mykoza",
+      "name": "mykoza",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/48719773?v=4",
+      "profile": "https://github.com/mykoza",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
