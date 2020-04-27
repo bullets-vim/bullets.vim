@@ -16,7 +16,9 @@
       "avatar_url": "https://avatars3.githubusercontent.com/u/551858?v=4",
       "profile": "https://doriankarter.com",
       "contributions": [
-        "code"
+        "code",
+        "test",
+        "doc"
       ]
     }
   ],

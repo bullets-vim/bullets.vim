@@ -269,7 +269,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://doriankarter.com"><img src="https://avatars3.githubusercontent.com/u/551858?v=4" width="100px;" alt=""/><br /><sub><b>Dorian Karter</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Code">💻</a></td>
+    <td align="center"><a href="https://doriankarter.com"><img src="https://avatars3.githubusercontent.com/u/551858?v=4" width="100px;" alt=""/><br /><sub><b>Dorian Karter</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Tests">⚠️</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Documentation">📖</a></td>
   </tr>
 </table>
 
