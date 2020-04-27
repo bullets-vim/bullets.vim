@@ -89,7 +89,6 @@ if !exists('g:bullets_checkbox_markers')
   " You can disable partial completion markers like this:
   " let g:bullets_checkbox_markers = ' X'
 endif
-let s:checkbox_markers = split(g:bullets_checkbox_markers,'\zs')
 
 if !exists('g:bullets_checkbox_partials_toggle')
   " Should toggling on a partially completed checkbox set it to on (1), off
@@ -221,7 +220,7 @@ fun! s:match_checkbox_bullet_item(input_text)
   " default ' ', 'x', and 'X'
   let l:checkbox_bullet_regex =
         \ '\v(^(\s*)([-\*] \[(['
-        \ . join(s:checkbox_markers,'')
+        \ . g:bullets_checkbox_markers
         \ . ' xX])?\])(\s+))(.*)'
   let l:matches = matchlist(a:input_text, l:checkbox_bullet_regex)
 
@@ -455,7 +454,11 @@ fun! s:insert_new_bullet()
     elseif !(l:bullet.bullet_type ==# 'abc' && s:abc2dec(l:bullet.bullet) + 1 > s:abc_max)
 
       let l:next_bullet = s:next_bullet_str(l:bullet)
-      let l:next_bullet_list = [s:pad_to_length(l:next_bullet, l:bullet.bullet_length)]
+      if l:bullet.bullet_type ==# 'chk'
+        let l:next_bullet_list = [l:next_bullet]
+      else
+        let l:next_bullet_list = [s:pad_to_length(l:next_bullet, l:bullet.bullet_length)]
+      endif
 
       " prepend blank lines if desired
       if g:bullets_line_spacing > 1
@@ -531,23 +534,24 @@ fun! s:toggle_checkbox(lnum)
     return -1
   endif
 
-  let l:partial_markers = join(s:checkbox_markers[1:-2], '')
+  let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
+  let l:partial_markers = join(l:checkbox_markers[1:-2], '')
   if g:bullets_checkbox_partials_toggle > 0
         \ && l:checkbox_content =~# '\v[' . l:partial_markers . ']'
     " Partially complete
     let l:marker = g:bullets_checkbox_partials_toggle ?
-          \ s:checkbox_markers[-1] :
-          \ s:checkbox_markers[0]
-  elseif l:checkbox_content =~# '\v[ ' . s:checkbox_markers[0] . ']'
-    let l:marker = s:checkbox_markers[-1]
-  elseif l:checkbox_content =~# '\v[xX' . s:checkbox_markers[-1] . ']'
-    let l:marker = s:checkbox_markers[0]
+          \ l:checkbox_markers[-1] :
+          \ l:checkbox_markers[0]
+  elseif l:checkbox_content =~# '\v[ ' . l:checkbox_markers[0] . ']'
+    let l:marker = l:checkbox_markers[-1]
+  elseif l:checkbox_content =~# '\v[xX' . l:checkbox_markers[-1] . ']'
+    let l:marker = l:checkbox_markers[0]
   else
     return -1
   endif
 
   call s:set_checkbox(l:lnum, l:marker)
-  return l:marker ==? s:checkbox_markers[-1]
+  return l:marker ==? l:checkbox_markers[-1]
 endfun
 
 fun! s:set_checkbox(lnum, marker)
@@ -612,9 +616,10 @@ fun! s:set_child_checkboxes(lnum, checked)
 
   let l:children = s:get_children_line_numbers(a:lnum)
   if !empty(l:children)
+    let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
     for l:child in l:children
-      let l:marker = a:checked ? s:checkbox_markers[-1] :
-            \ s:checkbox_markers[0]
+      let l:marker = a:checked ? l:checkbox_markers[-1] :
+            \ l:checkbox_markers[0]
       call s:set_checkbox(l:child, l:marker)
       call s:set_child_checkboxes(l:child, a:checked)
     endfor
@@ -1217,6 +1222,7 @@ fun! s:sibling_checkbox_status(lnum)
   let l:siblings = s:get_sibling_line_numbers(a:lnum)
   let l:num_siblings = len(l:siblings)
   let l:checked = 0
+  let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
   for l:lnum in l:siblings
     let l:indent = indent(l:lnum)
     let l:bullet = s:closest_bullet_types(l:lnum, l:indent)
@@ -1224,15 +1230,15 @@ fun! s:sibling_checkbox_status(lnum)
     if !empty(l:bullet) && has_key(l:bullet, 'checkbox_marker')
       let l:checkbox_content = l:bullet.checkbox_marker
 
-      if l:checkbox_content =~# '\v[xX' . s:checkbox_markers[-1] . ']'
+      if l:checkbox_content =~# '\v[xX' . l:checkbox_markers[-1] . ']'
         " Checked
         let l:checked += 1
       endif
     endif
   endfor
-  let l:divisions = len(s:checkbox_markers) - 1.0
+  let l:divisions = len(l:checkbox_markers) - 1.0
   let l:completion = float2nr(ceil(l:divisions * l:checked / l:num_siblings))
-  return s:checkbox_markers[l:completion]
+  return l:checkbox_markers[l:completion]
 endfun
 
 " ------------------------------------------------------- }}}

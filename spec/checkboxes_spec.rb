@@ -192,4 +192,45 @@ RSpec.describe 'checkboxes' do
 
     TEXT
   end
+
+  it 'adds and toggles bullets using UTF characters' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      - [ ] first bullet
+    TEXT
+
+    vim.edit filename
+    vim.command 'let g:bullets_checkbox_markers="✗○◐●✓"'
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
+    vim.feedkeys 'o'
+    vim.type 'second bullet'
+    vim.feedkeys '\<cr>\<C-t>'
+    vim.type 'third bullet'
+    vim.feedkeys '\<cr>'
+    vim.type 'fourth bullet<esc>'
+    vim.command 'ToggleCheckbox'
+    vim.feedkeys 'o\<C-d>'
+    vim.type 'fifth bullet<esc>'
+    vim.command 'ToggleCheckbox'
+    vim.feedkeys 'o'
+    vim.type 'sixth bullet'
+    vim.command 'ToggleCheckbox'
+    vim.command 'ToggleCheckbox'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [✓] first bullet
+      - [◐] second bullet
+      \t- [ ] third bullet
+      \t- [✓] fourth bullet
+      - [✓] fifth bullet
+      - [✗] sixth bullet
+
+    TEXT
+  end
 end
