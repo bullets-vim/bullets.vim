@@ -331,12 +331,12 @@ fun! s:resolve_rom_or_abc(bullet_types)
     let l:bullet_indent = indent(l:first_type.starting_at_line_num)
     let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line, l:bullet_indent)
 
-    while l:prev_bullet_types != [] && l:bullet_indent > indent(l:prev_search_starting_line)
+    while l:prev_bullet_types != [] && l:bullet_indent <= indent(l:prev_search_starting_line)
       let l:prev_search_starting_line -= g:bullets_line_spacing
       let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line, l:bullet_indent)
     endwhile
 
-    if len(l:prev_bullet_types) == 0
+    if len(l:prev_bullet_types) == 0 || l:bullet_indent > indent(l:prev_search_starting_line)
 
       " can't find previous bullet - so we probably have a rom i. bullet
       return s:find_by_type(a:bullet_types, 'rom')
@@ -719,7 +719,8 @@ fun! s:renumber_selection()
 
     if !empty(l:bullet) && l:bullet.starting_at_line_num == l:line.nr
       " skip wrapped lines and lines that aren't bullets
-      if l:indent > l:prev_indent || !has_key(l:levels, l:indent)
+      if (l:indent > l:prev_indent || !has_key(l:levels, l:indent))
+          \ && l:bullet.bullet_type !=# 'chk' && l:bullet.bullet_type !=# 'std'
         if !has_key(l:levels, l:indent)
           let l:levels[l:indent] = {'index': 1}
         endif
@@ -731,14 +732,11 @@ fun! s:renumber_selection()
         let l:levels[l:indent].type = l:bullet.bullet_type
         let l:levels[l:indent].bullet = l:bullet.bullet " for standard bullets
         let l:levels[l:indent].closure = l:bullet.closure " normalize closures
-
-        " use the first bullet as the first padding length, and store it for
-        " each indent level
-        " 10. firstline  -> 1.  firstline
-        " 1.  secondline -> 2.  secondline
-        let l:levels[l:indent].pad_len = l:bullet.bullet_length
+        let l:levels[l:indent].trailing_space = l:bullet.trailing_space
       else
-        let l:levels[l:indent].index += 1
+        if l:bullet.bullet_type !=# 'chk' && l:bullet.bullet_type !=# 'std'
+          let l:levels[l:indent].index += 1
+        endif
 
         if l:indent < l:prev_indent
           " Reset the numbering on all all child items. Needed to avoid continuing
@@ -754,30 +752,33 @@ fun! s:renumber_selection()
 
       let l:prev_indent = l:indent
 
-      if l:levels[l:indent].type ==? 'rom'
-        let l:bullet_num = s:arabic2roman(l:levels[l:indent].index, l:levels[l:indent].islower)
-      elseif l:levels[l:indent].type ==? 'abc'
-        let l:bullet_num = s:dec2abc(l:levels[l:indent].index, l:levels[l:indent].islower)
-      elseif l:levels[l:indent].type ==# 'num'
-        let l:bullet_num = l:levels[l:indent].index
-      elseif l:levels[l:indent].type ==# 'std'
-        " normalize standard bullets
-        let l:bullet_num = l:levels[l:indent].bullet
-      else
-        " checkboxes shouldn't change their checked status
-        " let l:bullet_num = l:bullet.bullet
-        break
-      endif
+      if l:bullet.bullet_type !=# 'chk' && l:bullet.bullet_type !=# 'std'
+        if l:levels[l:indent].type ==? 'rom'
+          let l:bullet_num = s:arabic2roman(l:levels[l:indent].index, l:levels[l:indent].islower)
+        elseif l:levels[l:indent].type ==? 'abc'
+          let l:bullet_num = s:dec2abc(l:levels[l:indent].index, l:levels[l:indent].islower)
+        elseif l:levels[l:indent].type ==# 'num'
+          let l:bullet_num = l:levels[l:indent].index
+        endif
 
-      let l:new_bullet =
-            \ l:bullet.leading_space
-            \ . l:bullet_num
-            \ . l:levels[l:indent].closure
-            \ . (l:levels[l:indent].pad_len == 0 ? l:bullet.trailing_space : ' ')
-      let l:new_bullet = s:pad_to_length(l:new_bullet, l:levels[l:indent].pad_len)
-      let l:levels[l:indent].pad_len = len(l:new_bullet)
-      let l:renumbered_line = l:new_bullet . l:bullet.text_after_bullet
-      call setline(l:line.nr, l:renumbered_line)
+        let l:new_bullet =
+              \ l:bullet_num
+              \ . l:levels[l:indent].closure
+              \ . l:levels[l:indent].trailing_space
+        if l:levels[l:indent].index > 1
+          let l:new_bullet = s:pad_to_length(l:new_bullet, l:levels[l:indent].pad_len)
+        endif
+        let l:levels[l:indent].pad_len = len(l:new_bullet)
+        let l:renumbered_line = l:bullet.leading_space
+              \ . l:new_bullet
+              \ . l:bullet.text_after_bullet
+        call setline(l:line.nr, l:renumbered_line)
+      elseif l:bullet.bullet_type ==# 'chk'
+        " Reset the checkbox marker if it already exists, or blank otherwise
+        let l:marker = has_key(l:bullet, 'checkbox_marker') ?
+              \ l:bullet.checkbox_marker : ' '
+        call s:set_checkbox(l:line.nr, l:marker)
+      endif
     endif
   endfor
 endfun
