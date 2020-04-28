@@ -1,5 +1,6 @@
+scriptencoding utf-8
 " Vim plugin for automated bulleted lists
-" Last Change: March 13, 2020
+" Last Change: April 5, 2020
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -64,6 +65,35 @@ endif
 
 if !exists('g:bullets_renumber_on_change')
   let g:bullets_renumber_on_change = 1
+endif
+
+if !exists('g:bullets_nested_checkboxes')
+  " Enable nested checkboxes that toggle parents and children when the current
+  " checkbox status changes
+  let g:bullets_nested_checkboxes = 1
+endif
+
+if !exists('g:bullets_checkbox_markers')
+  " The ordered series of markers to use in checkboxes
+  " If only two markers are listed, they represent 'off' and 'on'
+  " When more than two markers are included, the (n) intermediate markers
+  " represent partial completion where each marker is 1/n of the total number
+  " of markers.
+  " E.g. the default ' .oOX': ' ' = 0 < '.' <= 1/3 < 'o' < 2/3 < 'O' < 1 = X
+  " This scheme is borrowed from https://github.com/vimwiki/vimwiki
+  let g:bullets_checkbox_markers = ' .oOX'
+
+  " You can use fancy symbols like this:
+  " let g:bullets_checkbox_markers = '✗○◐●✓'
+
+  " You can disable partial completion markers like this:
+  " let g:bullets_checkbox_markers = ' X'
+endif
+
+if !exists('g:bullets_checkbox_partials_toggle')
+  " Should toggling on a partially completed checkbox set it to on (1), off
+  " (0), or disable toggling partially completed checkboxes (-1)
+  let g:bullets_checkbox_partials_toggle = 1
 endif
 
 " ------------------------------------------------------   }}}
@@ -186,8 +216,13 @@ fun! s:match_alphabetical_list_item(input_text)
 endfun
 
 fun! s:match_checkbox_bullet_item(input_text)
-  let l:checkbox_bullet_regex = '\v(^(\s*)(- \[[x ]?\])(\s+))(.*)'
-  let l:matches               = matchlist(a:input_text, l:checkbox_bullet_regex)
+  " match any symbols listed in g:bullets_checkbox_markers as well as the
+  " default ' ', 'x', and 'X'
+  let l:checkbox_bullet_regex =
+        \ '\v(^(\s*)([-\*] \[(['
+        \ . g:bullets_checkbox_markers
+        \ . ' xX])?\])(\s+))(.*)'
+  let l:matches = matchlist(a:input_text, l:checkbox_bullet_regex)
 
   if empty(l:matches)
     return {}
@@ -196,14 +231,16 @@ fun! s:match_checkbox_bullet_item(input_text)
   let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
   let l:bullet            = l:matches[3]
-  let l:trailing_space    = l:matches[4]
-  let l:text_after_bullet = l:matches[5]
+  let l:checkbox_marker   = l:matches[4]
+  let l:trailing_space    = l:matches[5]
+  let l:text_after_bullet = l:matches[6]
 
   return {
         \ 'bullet_type':       'chk',
         \ 'bullet_length':     l:bullet_length,
         \ 'leading_space':     l:leading_space,
         \ 'bullet':            l:bullet,
+        \ 'checkbox_marker':   l:checkbox_marker,
         \ 'closure':           '',
         \ 'trailing_space':    l:trailing_space,
         \ 'text_after_bullet': l:text_after_bullet
@@ -242,6 +279,11 @@ fun! s:closest_bullet_types(from_line_num, max_indent)
   let l:ltxt = getline(l:lnum)
   let l:curr_indent = indent(l:lnum)
   let l:bullet_kinds = s:parse_bullet(l:lnum, l:ltxt)
+
+  if a:max_indent < 0
+    " sanity check
+    return []
+  endif
 
   " Support for wrapped text bullets, even if the wrapped line is not indented
   " It considers a blank line as the end of a bullet
@@ -288,12 +330,12 @@ fun! s:resolve_rom_or_abc(bullet_types)
     let l:bullet_indent = indent(l:first_type.starting_at_line_num)
     let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line, l:bullet_indent)
 
-    while l:prev_bullet_types != [] && l:bullet_indent > indent(l:prev_search_starting_line)
+    while l:prev_bullet_types != [] && l:bullet_indent <= indent(l:prev_search_starting_line)
       let l:prev_search_starting_line -= g:bullets_line_spacing
       let l:prev_bullet_types = s:closest_bullet_types(l:prev_search_starting_line, l:bullet_indent)
     endwhile
 
-    if len(l:prev_bullet_types) == 0
+    if len(l:prev_bullet_types) == 0 || l:bullet_indent > indent(l:prev_search_starting_line)
 
       " can't find previous bullet - so we probably have a rom i. bullet
       return s:find_by_type(a:bullet_types, 'rom')
@@ -379,7 +421,8 @@ fun! s:next_num_bullet(bullet)
 endfun
 
 fun! s:next_chk_bullet(bullet)
-  return '- [ ]'
+  let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
+  return '- [' . l:checkbox_markers[0] . ']'
 endfun
 " }}}
 
@@ -412,7 +455,11 @@ fun! s:insert_new_bullet()
     elseif !(l:bullet.bullet_type ==# 'abc' && s:abc2dec(l:bullet.bullet) + 1 > s:abc_max)
 
       let l:next_bullet = s:next_bullet_str(l:bullet)
-      let l:next_bullet_list = [s:pad_to_length(l:next_bullet, l:bullet.bullet_length)]
+      if l:bullet.bullet_type ==# 'chk'
+        let l:next_bullet_list = [l:next_bullet]
+      else
+        let l:next_bullet_list = [s:pad_to_length(l:next_bullet, l:bullet.bullet_length)]
+      endif
 
       " prepend blank lines if desired
       if g:bullets_line_spacing > 1
@@ -476,24 +523,113 @@ fun! s:select_checkbox(inner)
   endif
 endfun
 
-fun! s:toggle_checkbox()
-  let l:initpos = getpos('.')
-  let l:lnum = line('.')
-  let l:pos = s:find_checkbox_position(l:lnum)
-  let l:checkbox_content = getline(l:lnum)[l:pos]
-  " select inside checkbox
-  call setpos('.', [0, l:lnum, l:pos])
-  if l:checkbox_content ==? 'x'
-    execute "normal! ci[\<Space>"
-  else
-    normal! ci[x
+fun! s:toggle_checkbox(lnum)
+  " Toggles the checkbox on line a:lnum.
+  " Returns the resulting status: (1) checked, (0) unchecked, (-1) unchanged
+  let l:lnum = a:lnum
+  let l:indent = indent(l:lnum)
+  let l:bullet = s:closest_bullet_types(l:lnum, l:indent)
+  let l:bullet = s:resolve_bullet_type(l:bullet)
+  let l:checkbox_content = l:bullet.checkbox_marker
+  if empty(l:bullet) || !has_key(l:bullet, 'checkbox_marker')
+    return -1
   endif
+
+  let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
+  let l:partial_markers = join(l:checkbox_markers[1:-2], '')
+  if g:bullets_checkbox_partials_toggle > 0
+        \ && l:checkbox_content =~# '\v[' . l:partial_markers . ']'
+    " Partially complete
+    let l:marker = g:bullets_checkbox_partials_toggle ?
+          \ l:checkbox_markers[-1] :
+          \ l:checkbox_markers[0]
+  elseif l:checkbox_content =~# '\v[ ' . l:checkbox_markers[0] . ']'
+    let l:marker = l:checkbox_markers[-1]
+  elseif l:checkbox_content =~# '\v[xX' . l:checkbox_markers[-1] . ']'
+    let l:marker = l:checkbox_markers[0]
+  else
+    return -1
+  endif
+
+  call s:set_checkbox(l:lnum, l:marker)
+  return l:marker ==? l:checkbox_markers[-1]
+endfun
+
+fun! s:set_checkbox(lnum, marker)
+  let l:initpos = getpos('.')
+  let l:pos = s:find_checkbox_position(a:lnum)
+  let l:checkbox_content = getline(a:lnum)[l:pos]
+  " select inside checkbox
+  call setpos('.', [0, a:lnum, l:pos])
+  execute 'normal! ci[' . a:marker
   call setpos('.', l:initpos)
+endfun
+
+fun! s:toggle_checkboxes_nested()
+  " toggle checkbox on the current line, as well as its parents and children
+  let l:lnum = line('.')
+  let l:indent = indent(l:lnum)
+  let l:bullet = s:closest_bullet_types(l:lnum, l:indent)
+  let l:bullet = s:resolve_bullet_type(l:bullet)
+
+  " Is this a checkbox? Do nothing if it's not, otherwise toggle the checkbox
+  if empty(l:bullet) || l:bullet.bullet_type !=# 'chk'
+    return
+  endif
+
+  let l:checked = s:toggle_checkbox(l:lnum)
+
+  if g:bullets_nested_checkboxes
+    " Toggle children and parents
+    let l:completion_marker = s:sibling_checkbox_status(l:lnum)
+    call s:set_parent_checkboxes(l:lnum, l:completion_marker)
+
+    " Toggle children
+    if l:checked >= 0
+      call s:set_child_checkboxes(l:lnum, l:checked)
+    endif
+  endif
+endfun
+
+fun! s:set_parent_checkboxes(lnum, marker)
+  " set the parent checkbox of line a:lnum, as well as its parents, based on
+  " the marker passed in a:marker
+  if !g:bullets_nested_checkboxes
+    return
+  endif
+
+  let l:parent = s:get_parent(a:lnum)
+  if !empty(l:parent) && l:parent.bullet_type ==# 'chk'
+    " Check for siblings' status
+    let l:pnum = l:parent.starting_at_line_num
+    call s:set_checkbox(l:pnum, a:marker)
+    let l:completion_marker = s:sibling_checkbox_status(l:pnum)
+    call s:set_parent_checkboxes(l:pnum, l:completion_marker)
+  endif
+endfun
+
+fun! s:set_child_checkboxes(lnum, checked)
+  " set the children checkboxes of line a:lnum based on the value of a:checked
+  " 0: unchecked, 1: checked, other: do nothing
+  if !g:bullets_nested_checkboxes || !(a:checked == 0 || a:checked == 1)
+    return
+  endif
+
+  let l:children = s:get_children_line_numbers(a:lnum)
+  if !empty(l:children)
+    let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
+    for l:child in l:children
+      let l:marker = a:checked ? l:checkbox_markers[-1] :
+            \ l:checkbox_markers[0]
+      call s:set_checkbox(l:child, l:marker)
+      call s:set_child_checkboxes(l:child, a:checked)
+    endfor
+  endif
 endfun
 
 command! SelectCheckboxInside call <SID>select_checkbox(1)
 command! SelectCheckbox call <SID>select_checkbox(0)
-command! ToggleCheckbox call <SID>toggle_checkbox()
+command! ToggleCheckbox call <SID>toggle_checkboxes_nested()
 " Checkboxes ---------------------------------------------- }}}
 
 " Roman numerals --------------------------------------------- {{{
@@ -589,7 +725,8 @@ fun! s:renumber_selection()
 
     if !empty(l:bullet) && l:bullet.starting_at_line_num == l:line.nr
       " skip wrapped lines and lines that aren't bullets
-      if l:indent > l:prev_indent || !has_key(l:levels, l:indent)
+      if (l:indent > l:prev_indent || !has_key(l:levels, l:indent))
+          \ && l:bullet.bullet_type !=# 'chk' && l:bullet.bullet_type !=# 'std'
         if !has_key(l:levels, l:indent)
           let l:levels[l:indent] = {'index': 1}
         endif
@@ -601,14 +738,11 @@ fun! s:renumber_selection()
         let l:levels[l:indent].type = l:bullet.bullet_type
         let l:levels[l:indent].bullet = l:bullet.bullet " for standard bullets
         let l:levels[l:indent].closure = l:bullet.closure " normalize closures
-
-        " use the first bullet as the first padding length, and store it for
-        " each indent level
-        " 10. firstline  -> 1.  firstline
-        " 1.  secondline -> 2.  secondline
-        let l:levels[l:indent].pad_len = l:bullet.bullet_length
+        let l:levels[l:indent].trailing_space = l:bullet.trailing_space
       else
-        let l:levels[l:indent].index += 1
+        if l:bullet.bullet_type !=# 'chk' && l:bullet.bullet_type !=# 'std'
+          let l:levels[l:indent].index += 1
+        endif
 
         if l:indent < l:prev_indent
           " Reset the numbering on all all child items. Needed to avoid continuing
@@ -624,29 +758,33 @@ fun! s:renumber_selection()
 
       let l:prev_indent = l:indent
 
-      if l:levels[l:indent].type ==? 'rom'
-        let l:bullet_num = s:arabic2roman(l:levels[l:indent].index, l:levels[l:indent].islower)
-      elseif l:levels[l:indent].type ==? 'abc'
-        let l:bullet_num = s:dec2abc(l:levels[l:indent].index, l:levels[l:indent].islower)
-      elseif l:levels[l:indent].type ==# 'num'
-        let l:bullet_num = l:levels[l:indent].index
-      elseif l:levels[l:indent].type ==# 'std'
-        " normalize standard bullets
-        let l:bullet_num = l:levels[l:indent].bullet
-      else
-        " checkboxes shouldn't change their checked status
-        let l:bullet_num = l:bullet.bullet
-      endif
+      if l:bullet.bullet_type !=# 'chk' && l:bullet.bullet_type !=# 'std'
+        if l:levels[l:indent].type ==? 'rom'
+          let l:bullet_num = s:arabic2roman(l:levels[l:indent].index, l:levels[l:indent].islower)
+        elseif l:levels[l:indent].type ==? 'abc'
+          let l:bullet_num = s:dec2abc(l:levels[l:indent].index, l:levels[l:indent].islower)
+        elseif l:levels[l:indent].type ==# 'num'
+          let l:bullet_num = l:levels[l:indent].index
+        endif
 
-      let l:new_bullet =
-            \ l:bullet.leading_space
-            \ . l:bullet_num
-            \ . l:levels[l:indent].closure
-            \ . (l:levels[l:indent].pad_len == 0 ? l:bullet.trailing_space : ' ')
-      let l:new_bullet = s:pad_to_length(l:new_bullet, l:levels[l:indent].pad_len)
-      let l:levels[l:indent].pad_len = len(l:new_bullet)
-      let l:renumbered_line = l:new_bullet . l:bullet.text_after_bullet
-      call setline(l:line.nr, l:renumbered_line)
+        let l:new_bullet =
+              \ l:bullet_num
+              \ . l:levels[l:indent].closure
+              \ . l:levels[l:indent].trailing_space
+        if l:levels[l:indent].index > 1
+          let l:new_bullet = s:pad_to_length(l:new_bullet, l:levels[l:indent].pad_len)
+        endif
+        let l:levels[l:indent].pad_len = len(l:new_bullet)
+        let l:renumbered_line = l:bullet.leading_space
+              \ . l:new_bullet
+              \ . l:bullet.text_after_bullet
+        call setline(l:line.nr, l:renumbered_line)
+      elseif l:bullet.bullet_type ==# 'chk'
+        " Reset the checkbox marker if it already exists, or blank otherwise
+        let l:marker = has_key(l:bullet, 'checkbox_marker') ?
+              \ l:bullet.checkbox_marker : ' '
+        call s:set_checkbox(l:line.nr, l:marker)
+      endif
     endif
   endfor
 endfun
@@ -656,8 +794,8 @@ fun! s:renumber_whole_list(...)
   " Does not renumber across blank lines.
   " Takes 2 optional arguments containing starting and ending cursor positions
   " so that we can reset the existing visual selection after renumbering.
-  let l:first_line = s:first_bullet_line()
-  let l:last_line = s:last_bullet_line()
+  let l:first_line = s:first_bullet_line(line('.'))
+  let l:last_line = s:last_bullet_line(line('.'))
   if l:first_line > 0 && l:last_line > 0
     " Create a visual selection around the current list so that we can call
     " s:renumber_selection() to do the renumbering.
@@ -943,18 +1081,25 @@ fun! s:get_level(bullet)
   endif
 endfun
 
-fun! s:first_bullet_line()
+fun! s:first_bullet_line(lnum, ...)
   " returns the line number of the first bullet in the list containing the
-  " cursor, up to the first blank line
-  " returns -1 if the cursor is not in a list
-  let l:lnum = line('.')
+  " given line number, up to the first blank line
+  " returns -1 if lnum is not in a list
+  " Optional argument: only consider bullets at or above this indentation
+  let l:lnum = a:lnum
   let l:first_line = -1
   let l:curr_indent = indent(l:lnum)
   let l:bullet_kinds = s:closest_bullet_types(l:lnum, l:curr_indent)
   let l:blank_lines = 0
   let l:list_start = 0
 
-  while l:lnum >= 1 && !l:list_start
+  let l:min_indent = exists('a:1') ? a:1 : 0
+  if l:min_indent < 0
+    " sanity check
+    return -1
+  endif
+
+  while l:lnum >= 1 && !l:list_start && l:curr_indent >= l:min_indent
     if l:bullet_kinds != []
       let l:first_line = l:lnum
       let l:blank_lines = 0
@@ -969,11 +1114,12 @@ fun! s:first_bullet_line()
   return l:first_line
 endfun
 
-fun! s:last_bullet_line()
+fun! s:last_bullet_line(lnum, ...)
   " returns the line number of the last bullet in the list containing the
-  " cursor, down to the first blank line
-  " returns -1 if the cursor is not in a list
-  let l:lnum = line('.')
+  " given line number, down to the end of the list
+  " returns -1 if lnum is not in a list
+  " Optional argument: only consider bullets at or above this indentation
+  let l:lnum = a:lnum
   let l:buf_end = line('$')
   let l:last_line = -1
   let l:curr_indent = indent(l:lnum)
@@ -981,7 +1127,13 @@ fun! s:last_bullet_line()
   let l:blank_lines = 0
   let l:list_end = 0
 
-  while l:lnum <= l:buf_end && !l:list_end
+  let l:min_indent = exists('a:1') ? a:1 : 0
+  if l:min_indent < 0
+    " sanity check
+    return -1
+  endif
+
+  while l:lnum <= l:buf_end && !l:list_end && l:curr_indent >= l:min_indent
     if l:bullet_kinds != []
       let l:last_line = l:lnum
       let l:blank_lines = 0
@@ -995,6 +1147,101 @@ fun! s:last_bullet_line()
   endwhile
   return l:last_line
 endfun
+
+fun! s:get_parent(lnum)
+  " returns the parent bullet of the given line number, lnum, with indentation
+  " at or below the given indent.
+  " if there is no parent, returns an empty dictionary
+  let l:indent = indent(a:lnum)
+  if l:indent < 0
+    return {}
+  endif
+  let l:parent = s:closest_bullet_types(a:lnum, l:indent - 1)
+  let l:parent = s:resolve_bullet_type(l:parent)
+  return l:parent
+endfun
+
+fun! s:get_sibling_line_numbers(lnum)
+  " returns a list with line numbers of the sibling bullets with the same
+  " indentation as a:indent, starting from the given line number, a:lnum
+  let l:indent = indent(a:lnum)
+  let l:first_sibling = s:first_bullet_line(a:lnum, l:indent)
+  let l:last_sibling = s:last_bullet_line(a:lnum, l:indent)
+  let l:siblings = []
+  for l:lnum in range(l:first_sibling, l:last_sibling)
+    if indent(l:lnum) == l:indent
+      let l:bullet = s:parse_bullet(l:lnum, getline(l:lnum))
+      if !empty(l:bullet)
+        call add(l:siblings, l:lnum)
+      endif
+    endif
+  endfor
+  return l:siblings
+endfun
+
+fun! s:get_children_line_numbers(lnum)
+  " returns a list with line numbers of the immediate children bullets with
+  " indentation greater than line a:lnum
+
+  " sanity check
+  if a:lnum < 1
+    return []
+  endif
+
+  " find the first child (if any) so we can figure out the indentation for the
+  " rest of the children
+  let l:lnum = a:lnum + 1
+  let l:indent = indent(a:lnum)
+  let l:buf_end = line('$')
+  let l:curr_indent = indent(l:lnum)
+  let l:bullet_kinds = s:closest_bullet_types(l:lnum, l:curr_indent)
+  let l:child_lnum = 0
+  let l:blank_lines = 0
+
+  while l:lnum <= l:buf_end && l:child_lnum == 0
+    if l:bullet_kinds != [] && l:curr_indent > l:indent
+      let l:child_lnum = l:lnum
+    else
+      let l:blank_lines += 1
+      let l:child_lnum = l:blank_lines >= g:bullets_line_spacing ? -1 : 0
+    endif
+    let l:lnum += 1
+    let l:curr_indent = indent(l:lnum)
+    let l:bullet_kinds = s:closest_bullet_types(l:lnum, l:curr_indent)
+  endwhile
+
+  if l:child_lnum > 0
+    return s:get_sibling_line_numbers(l:child_lnum)
+  else
+    return []
+  endif
+endfun
+
+fun! s:sibling_checkbox_status(lnum)
+  " Returns the marker corresponding to the proportion of siblings that are
+  " completed.
+  let l:siblings = s:get_sibling_line_numbers(a:lnum)
+  let l:num_siblings = len(l:siblings)
+  let l:checked = 0
+  let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
+  for l:lnum in l:siblings
+    let l:indent = indent(l:lnum)
+    let l:bullet = s:closest_bullet_types(l:lnum, l:indent)
+    let l:bullet = s:resolve_bullet_type(l:bullet)
+    if !empty(l:bullet) && has_key(l:bullet, 'checkbox_marker')
+      let l:checkbox_content = l:bullet.checkbox_marker
+
+      if l:checkbox_content =~# '\v[xX' . l:checkbox_markers[-1] . ']'
+        " Checked
+        let l:checked += 1
+      endif
+    endif
+  endfor
+  let l:divisions = len(l:checkbox_markers) - 1.0
+  let l:completion = float2nr(ceil(l:divisions * l:checked / l:num_siblings))
+  return l:checkbox_markers[l:completion]
+endfun
+
 " ------------------------------------------------------- }}}
 
 " Restore previous external compatibility options --------- {{{

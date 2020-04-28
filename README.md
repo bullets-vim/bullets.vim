@@ -166,6 +166,74 @@ let g:bullets_renumber_on_change = 0
 " 3. third existing bullet [ no renumbering so this bullet remained `3` ]
 ```
 
+Enable/disable toggling parent and child checkboxes to indicate "completion" of child checkboxes:
+
+```vim
+let g:bullets_nested_checkboxes = 1 " default = 1
+" Example:
+" - [ ] first bullet
+"   - [ ] child bullet  [ type <leader>x ]
+"     - [ ] sub-child
+"   - [ ] child bullet
+" 
+" Result:
+" - [o] first bullet   [ <- indicates partial completion of sub-tasks ]
+"   - [X] child bullet
+"     - [X] sub-child  [ <- children get checked when parents get checked ]
+"   - [ ] child bullet
+```
+
+Define the checkbox markers to use to indicate unchecked, checked, and "partially" checked. When only two marker characters are defined, the use of partial completion markers will be disabled. If more than two markers are defined, each character between the first and last characters will be used to indicate a percentage of the child checkboxes that are checked. Each marker corresponds to 1/n, where n is the number of partial completion markers. By default, there are three partial completion markers, `.`, `o`, and `O`, corresponding to 33%, 66%, and up to but less than 100%, respectively. Note that unchecked (`[ ]`) and checked (`[x]` or `[X]`) statuses using the default markers are always valid, even if you set custom markers for unchecked and checked.
+
+```vim
+let g:bullets_checkbox_markers = ' .oOX'
+" Example:
+" - [o] parent bullet  [ <- `o` indicates 66% - 99% of children are checked ]
+"   - [ ] child bullet
+"   - [.] child bullet [ <- partial completions don't count as complete ]
+"     - [ ] sub-child bullet [ <- 1/4 of children checked so parent is `.` ]
+"     - [ ] sub-child bullet
+"     - [ ] sub-child bullet
+"     - [X] sub-child bullet
+"   - [X] child bullet
+"   - [X] child bullet
+"
+" You can use fancy markers:
+" let g:bullets_checkbox_markers = '✗○◐●✓'
+" - [✗] unchecked
+" - [○] partial
+"   - [✓] checked
+"   - [✗] unchecked
+"   - [✗] unchecked
+"   - [✗] unchecked
+```
+
+Define whether toggling partially complete checkboxes sets the checkbox to checked or unchecked:
+
+```vim
+" Example 1:
+let g:bullets_checkbox_partials_toggle = 1 " default = 1
+" - [o] partially checked  [ type <leader>x ]
+"   - [x] sub bullet
+"   - [ ] sub bullet
+" 
+" Result:
+" - [x] checked
+"   - [x] sub bullet
+"   - [x] sub bullet
+" 
+" Example 2:
+let g:bullets_checkbox_partials_toggle = 0
+" - [o] partially checked  [ type <leader>x ]
+"   - [x] sub bullet
+"   - [ ] sub bullet
+" 
+" Result:
+" - [ ] checked
+"   - [ ] sub bullet
+"   - [ ] sub bullet
+```
+
 # Mappings
 
 * Insert new bullet in INSERT mode: `<cr>` (Return key)
@@ -247,6 +315,7 @@ Capybara integration testing. ❤️
 - [x] change nested outline levels in visual mode
 - [x] support renumbering of alphabetical, roman numerals, and nested lists
 - [x] update documentation for nested bullets
+- [x] support nested bullets with child and partial completion
 - [ ] support for nested numerical bullets, e.g., 1. -> 1.1 -> 1.1.1, 1.1.2
 - [ ] add option to turn non-bullet lines into new bullets with `<C-t>`/`>>`/`>`
 
