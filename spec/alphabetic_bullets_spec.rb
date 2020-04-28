@@ -46,7 +46,8 @@ RSpec.describe 'Bullets.vim' do
           G. seventh bullet
           H. eighth bullet
           I. ninth bullet
-          J. tenth bullet\n
+          J. tenth bullet
+
       TEXT
     end
 
@@ -92,7 +93,8 @@ RSpec.describe 'Bullets.vim' do
           g. seventh bullet
           h. eighth bullet
           i. ninth bullet
-          j. tenth bullet\n
+          j. tenth bullet
+
       TEXT
     end
 
