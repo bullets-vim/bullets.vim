@@ -1,6 +1,10 @@
 ![Bullets.vim](img/bullets-vim-logo.svg)
 
-[![Build Status](https://travis-ci.org/dkarter/bullets.vim.svg?branch=master)](https://travis-ci.org/dkarter/bullets.vim)
+[![Build Status](https://travis-ci.org/dkarter/bullets.vim.svg?branch=master)](https://travis-ci.org/dkarter/bullets.vim) 
+
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 # Description
 
@@ -325,3 +329,32 @@ Bullets.vim is kindly supported by [Hashrocket, a multidisciplinary design and
 development consultancy](https://hashrocket.com). If you'd like to [work with
 us](https://hashrocket.com/contact-us/hire-us) or [join our
 team](https://hashrocket.com/contact-us/jobs), don't hesitate to get in touch.
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://doriankarter.com"><img src="https://avatars3.githubusercontent.com/u/551858?v=4" width="100px;" alt=""/><br /><sub><b>Dorian Karter</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Tests">⚠️</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=dkarter" title="Documentation">📖</a> <a href="#maintenance-dkarter" title="Maintenance">🚧</a></td>
+    <td align="center"><a href="https://github.com/cormacrelf"><img src="https://avatars3.githubusercontent.com/u/378760?v=4" width="100px;" alt=""/><br /><sub><b>Cormac Relf</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=cormacrelf" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/issues?q=author%3Acormacrelf" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://keithmiyake.info"><img src="https://avatars1.githubusercontent.com/u/2266804?v=4" width="100px;" alt=""/><br /><sub><b>Keith Miyake</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=kaymmm" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=kaymmm" title="Documentation">📖</a> <a href="#ideas-kaymmm" title="Ideas, Planning, & Feedback">🤔</a> <a href="#maintenance-kaymmm" title="Maintenance">🚧</a></td>
+    <td align="center"><a href="https://yous.be"><img src="https://avatars0.githubusercontent.com/u/853977?v=4" width="100px;" alt=""/><br /><sub><b>Chayoung You</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=yous" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=yous" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/adriaanzon"><img src="https://avatars3.githubusercontent.com/u/4326420?v=4" width="100px;" alt=""/><br /><sub><b>Adriaan Zonnenberg</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=adriaanzon" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/eater"><img src="https://avatars3.githubusercontent.com/u/106199?v=4" width="100px;" alt=""/><br /><sub><b>eater</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=eater" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/hut"><img src="https://avatars1.githubusercontent.com/u/90548?v=4" width="100px;" alt=""/><br /><sub><b>hut</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=hut" title="Code">💻</a> <a href="https://github.com/dkarter/bullets.vim/commits?author=hut" title="Documentation">📖</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/mykoza"><img src="https://avatars1.githubusercontent.com/u/48719773?v=4" width="100px;" alt=""/><br /><sub><b>mykoza</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=mykoza" title="Code">💻</a> <a href="#ideas-mykoza" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/noodlor"><img src="https://avatars3.githubusercontent.com/u/49209345?v=4" width="100px;" alt=""/><br /><sub><b>noodlor</b></sub></a><br /><a href="https://github.com/dkarter/bullets.vim/commits?author=noodlor" title="Code">💻</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
