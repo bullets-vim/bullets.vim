@@ -824,9 +824,6 @@ fun! s:change_bullet_level(direction)
     if l:curr_line != [] && indent(l:lnum) == 0
       " Promoting a bullet at the highest level will delete the bullet
       call setline(l:lnum, l:curr_line[0].text_after_bullet)
-      if g:bullets_renumber_on_change
-        call s:renumber_whole_list()
-      endif
       execute 'normal! $'
       return
     else
@@ -928,11 +925,16 @@ fun! s:change_bullet_level(direction)
   " Apply the new bullet
   call setline(l:lnum, l:next_bullet_str)
 
-  if g:bullets_renumber_on_change
-    call s:renumber_whole_list()
-  endif
   execute 'normal! $'
   return
+endfun
+
+fun! s:change_bullet_level_and_renumber(direction)
+    " Calls change_bullet_level and then renumber_whole_list if required
+    call s:change_bullet_level(a:direction)
+    if g:bullets_renumber_on_change
+        call s:renumber_whole_list()
+    endif
 endfun
 
 fun! s:visual_change_bullet_level(direction)
@@ -953,8 +955,8 @@ fun! s:visual_change_bullet_level(direction)
   endif
 endfun
 
-command! BulletDemote call <SID>change_bullet_level(-1)
-command! BulletPromote call <SID>change_bullet_level(1)
+command! BulletDemote call <SID>change_bullet_level_and_renumber(-1)
+command! BulletPromote call <SID>change_bullet_level_and_renumber(1)
 command! -range=% BulletDemoteVisual call <SID>visual_change_bullet_level(-1)
 command! -range=% BulletPromoteVisual call <SID>visual_change_bullet_level(1)
 
