@@ -110,6 +110,15 @@
         "code",
         "bug"
       ]
+    },
+    {
+      "login": "ErickChacon",
+      "name": "Erick A. Chacón Montalván",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/7862458?v=4",
+      "profile": "https://erickchacon.github.io/",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
