@@ -559,7 +559,7 @@ fun! s:set_checkbox(lnum, marker)
   let l:initpos = getpos('.')
   let l:pos = s:find_checkbox_position(a:lnum)
   " select inside checkbox
-  call s:replace(a:lnum, l:pos, a:marker)
+  call s:replace_char(a:lnum, l:pos, a:marker)
   call setpos('.', l:initpos)
 endfun
 
