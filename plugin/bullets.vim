@@ -1243,8 +1243,8 @@ endfun
 
 fun! s:replace_char_in_line(lnum, chari, item)
   let l:curline = getline(a:lnum)
-  let l:before = strgetchar(l:curline, chari - 1)
-  let l:after = strgetchar(l:curline, chari + 1)
+  let l:before = strcharpart(l:curline, 0, a:chari)
+  let l:after = strcharpart(l:curline, a:chari + 1)
   call setline(a:lnum, l:before . a:item . l:after)
 endfun
 
