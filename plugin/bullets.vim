@@ -558,7 +558,6 @@ endfun
 fun! s:set_checkbox(lnum, marker)
   let l:initpos = getpos('.')
   let l:pos = s:find_checkbox_position(a:lnum)
-  " select inside checkbox
   call s:replace_char_in_line(a:lnum, l:pos, a:marker)
   call setpos('.', l:initpos)
 endfun
@@ -1242,14 +1241,11 @@ fun! s:sibling_checkbox_status(lnum)
   return l:checkbox_markers[l:completion]
 endfun
 
-fun! s:replace_char_in_line(lnum, col, item)
-    call s:replace_in_line(a:lnum, a:col - 1, a:col + 1, a:item)
-endfun
-
-fun! s:replace_in_line(lnum, col_start, col_end, item)
+fun! s:replace_char_in_line(lnum, chari, item)
   let l:curline = getline(a:lnum)
-  let l:newline = l:curline[0: a:col_start] . a:item . l:curline[a:col_end: -1]
-  call setline(a:lnum, l:newline)
+  let l:before = strgetchar(l:curline, chari - 1)
+  let l:after = strgetchar(l:curline, chari + 1)
+  call setline(a:lnum, l:before . a:item . l:after)
 endfun
 
 " ------------------------------------------------------- }}}
