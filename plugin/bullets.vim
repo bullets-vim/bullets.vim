@@ -558,10 +558,7 @@ endfun
 fun! s:set_checkbox(lnum, marker)
   let l:initpos = getpos('.')
   let l:pos = s:find_checkbox_position(a:lnum)
-  let l:checkbox_content = getline(a:lnum)[l:pos]
-  " select inside checkbox
-  call setpos('.', [0, a:lnum, l:pos])
-  execute 'normal! ci[' . a:marker
+  call s:replace_char_in_line(a:lnum, l:pos, a:marker)
   call setpos('.', l:initpos)
 endfun
 
@@ -1242,6 +1239,13 @@ fun! s:sibling_checkbox_status(lnum)
   let l:divisions = len(l:checkbox_markers) - 1.0
   let l:completion = float2nr(ceil(l:divisions * l:checked / l:num_siblings))
   return l:checkbox_markers[l:completion]
+endfun
+
+fun! s:replace_char_in_line(lnum, chari, item)
+  let l:curline = getline(a:lnum)
+  let l:before = strcharpart(l:curline, 0, a:chari)
+  let l:after = strcharpart(l:curline, a:chari + 1)
+  call setline(a:lnum, l:before . a:item . l:after)
 endfun
 
 " ------------------------------------------------------- }}}
