@@ -35,9 +35,12 @@ RSpec.describe 'checkboxes' do
       - [.] fourth bullet
       - [o] fifth bullet
       - [O] sixth bullet
+      - not a checkbox
     TEXT
 
     vim.edit filename
+    vim.normal 'j'
+    vim.command 'ToggleCheckbox'
     vim.normal 'j'
     vim.command 'ToggleCheckbox'
     vim.normal 'j'
@@ -62,6 +65,7 @@ RSpec.describe 'checkboxes' do
       - [X] fourth bullet
       - [X] fifth bullet
       - [X] sixth bullet
+      - not a checkbox
 
     TEXT
   end
