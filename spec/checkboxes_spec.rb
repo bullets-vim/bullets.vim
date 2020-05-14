@@ -76,7 +76,9 @@ RSpec.describe 'checkboxes' do
       # Hello there
       - [ ] first bullet
         - [ ] second bullet
+        - non-checkbox child
           - [ ] third bullet
+          - non-checkbox child
     TEXT
 
     vim.edit filename
@@ -90,7 +92,9 @@ RSpec.describe 'checkboxes' do
       # Hello there
       - [X] first bullet
         - [X] second bullet
+        - non-checkbox child
           - [X] third bullet
+          - non-checkbox child
 
     TEXT
   end
