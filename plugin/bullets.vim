@@ -559,8 +559,8 @@ fun! s:set_checkbox(lnum, marker)
   let l:initpos = getpos('.')
   let l:pos = s:find_checkbox_position(a:lnum)
   if l:pos >= 0
-      call s:replace_char_in_line(a:lnum, l:pos, a:marker)
-      call setpos('.', l:initpos)
+    call s:replace_char_in_line(a:lnum, l:pos, a:marker)
+    call setpos('.', l:initpos)
   endif
 endfun
 
