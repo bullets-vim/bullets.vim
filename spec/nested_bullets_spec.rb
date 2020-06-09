@@ -176,6 +176,7 @@ RSpec.describe 'Bullets.vim' do
       vim.feedkeys '\<cr>'
       vim.type 'A. first bullet'
       vim.feedkeys '\<cr>'
+      vim.feedkeys '\<cr>'
       vim.feedkeys '\<C-t>'
       vim.type 'second bullet'
       vim.write
@@ -266,6 +267,7 @@ RSpec.describe 'Bullets.vim' do
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<C-t>'
       vim.type 'third bullet'
+      vim.feedkeys '\<cr>'
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<cr>'
       vim.type '+ fourth bullet'

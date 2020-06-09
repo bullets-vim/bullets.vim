@@ -114,6 +114,7 @@ RSpec.describe 'Bullets.vim' do
       vim.type 'third bullet'
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<cr>'
+      vim.feedkeys '\<cr>'
       vim.type 'AY. fourth bullet'
       vim.feedkeys '\<cr>'
       vim.type 'fifth bullet'
