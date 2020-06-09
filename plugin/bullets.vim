@@ -482,14 +482,16 @@ fun! s:insert_new_bullet()
     endif
   endif
 
-  if (l:send_return || l:normal_mode) && !l:deleted_empty_bullet
+  if l:send_return || l:normal_mode
     " start a new line
     if l:normal_mode
       startinsert!
     endif
 
-    let l:keys = l:send_return ? "\<CR>" : ''
-    call feedkeys(l:keys, 'n')
+    if !l:deleted_empty_bullet
+      let l:keys = l:send_return ? "\<CR>" : ''
+      call feedkeys(l:keys, 'n')
+    endif
   endif
 
   " need to return a string since we are in insert mode calling with <C-R>=
