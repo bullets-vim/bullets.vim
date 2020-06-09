@@ -488,9 +488,8 @@ fun! s:insert_new_bullet()
       startinsert!
     endif
 
-    if !l:deleted_empty_bullet
-      let l:keys = l:send_return ? "\<CR>" : ''
-      call feedkeys(l:keys, 'n')
+    if l:send_return && !l:deleted_empty_bullet
+      call feedkeys("\<CR>", 'n')
     endif
   endif
 
