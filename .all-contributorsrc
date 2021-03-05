@@ -119,6 +119,16 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "samgriesemer",
+      "name": "Sam Griesemer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19940657?v=4",
+      "profile": "https://samgriesemer.com",
+      "contributions": [
+        "code",
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
