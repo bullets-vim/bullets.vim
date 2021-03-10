@@ -119,6 +119,10 @@ fun! s:match_all_items(line_text)
   return l:kinds
 endfun
 
+fun! bullets#is_part_of_a_bullet_list()
+  return s:match_all_items(getline('.')) != []
+endfun
+
 fun! s:match_numeric_list_item(input_text)
   let l:num_bullet_regex  = '\v^((\s*)(\d+)(\.|\))(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:num_bullet_regex)
