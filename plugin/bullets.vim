@@ -509,6 +509,7 @@ endfun
 command! InsertNewBullet call <SID>insert_new_bullet()
 
 inoremap <silent> <Plug>(bullets-insert-new-bullet) <C-]><C-R>=<SID>insert_new_bullet()<cr>
+nnoremap <silent> <Plug>(bullets-insert-new-bullet-normal) :call <SID>insert_new_bullet()<cr>
 
 " --------------------------------------------------------- }}}
 
@@ -1006,7 +1007,7 @@ augroup TextBulletsMappings
     call s:add_local_mapping('imap', '<cr>', '<Plug>(bullets-insert-new-bullet)')
     call s:add_local_mapping('inoremap', '<C-cr>', '<cr>')
 
-    call s:add_local_mapping('nnoremap', 'o', ':call <SID>insert_new_bullet()<cr>')
+    call s:add_local_mapping('nmap', 'o', '<Plug>(bullets-insert-new-bullet-normal)')
 
     " Renumber bullet list
     call s:add_local_mapping('vnoremap', 'gN', ':RenumberSelection<cr>')
