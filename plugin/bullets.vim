@@ -100,6 +100,11 @@ endif
 
 " Parse Bullet Type -------------------------------------------  {{{
 fun! s:parse_bullet(line_num, line_text)
+  let l:kinds = s:match_all_items(a:line_text)
+  return s:map(l:kinds, 'extend(v:val, { "starting_at_line_num": ' . a:line_num . ' })')
+endfun
+
+fun! s:match_all_items(line_text)
   let l:kinds = s:filter(
         \ [
         \  s:match_bullet_list_item(a:line_text),
@@ -111,7 +116,7 @@ fun! s:parse_bullet(line_num, line_text)
         \ '!empty(v:val)'
         \ )
 
-  return s:map(l:kinds, 'extend(v:val, { "starting_at_line_num": ' . a:line_num . ' })')
+  return l:kinds
 endfun
 
 fun! s:match_numeric_list_item(input_text)
