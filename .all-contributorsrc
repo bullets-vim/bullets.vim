@@ -129,6 +129,15 @@
         "code",
         "bug"
       ]
+    },
+    {
+      "login": "cpence",
+      "name": "Charles Pence",
+      "avatar_url": "https://avatars.githubusercontent.com/u/297075?v=4",
+      "profile": "https://codeberg.org/cpence",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
