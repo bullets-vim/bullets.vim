@@ -129,7 +129,7 @@ let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-', 'std*
 " std[-/*/+] = standard bullets using a hyphen (-), asterisk (*), or plus (+) as the marker.
 " chk = checkbox (- [ ])
 
-let g:bullets_outline_levels = ['num', 'abc', 'std*']
+let g:bullets_outline_levels = ['num', 'abc', 'std-']
 " Example [keys pressed to get this bullet]:
 " 1. first parent
 "   a. child bullet [ <cr><C-t> ]
