@@ -1,6 +1,6 @@
 scriptencoding utf-8
 " Vim plugin for automated bulleted lists
-" Last Change: April 5, 2020
+" Last Change: Thu Mar  4 21:29:54 CST 2021
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -100,18 +100,50 @@ endif
 
 " Parse Bullet Type -------------------------------------------  {{{
 fun! s:parse_bullet(line_num, line_text)
-  let l:kinds = s:filter(
-        \ [
-        \  s:match_bullet_list_item(a:line_text),
-        \  s:match_checkbox_bullet_item(a:line_text),
-        \  s:match_numeric_list_item(a:line_text),
-        \  s:match_roman_list_item(a:line_text),
-        \  s:match_alphabetical_list_item(a:line_text),
-        \ ],
-        \ '!empty(v:val)'
-        \ )
 
-  return s:map(l:kinds, 'extend(v:val, { "starting_at_line_num": ' . a:line_num . ' })')
+  let kinds = []
+
+  let bullets = s:match_bullet_list_item(a:line_text)
+  if !empty(bullets)
+    call add(kinds, bullets)
+
+    " Cannot be a checkbox without being a bullet
+    let checkbox = s:match_checkbox_bullet_item(a:line_text)
+    if !empty(checkbox)
+      call add(kinds, checkbox)
+    endif
+
+  else
+
+    " Cannot be numeric if a bullet
+    let numeric = s:match_numeric_list_item(a:line_text)
+    if !empty(numeric)
+      call add(kinds, numeric)
+    else
+
+      " Canannot be alphabetical if numeric
+      let alpha = s:match_alphabetical_list_item(a:line_text)
+      if !empty(alpha)
+        call add(kinds, checkbox)
+
+        " Cannot be roman without being alphabetical
+        let roman = s:match_roman_list_item(a:line_text)
+        if !empty(roman)
+          call add(kinds, roman)
+        endif
+
+      endif
+
+    endif
+
+  endif
+
+  for data in kinds
+    let data.starting_at_line_num = a:line_num
+  endfor
+
+  return kinds
+
 endfun
 
 fun! s:match_numeric_list_item(input_text)
@@ -422,7 +454,7 @@ endfun
 
 fun! s:next_chk_bullet(bullet)
   let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
-  return '- [' . l:checkbox_markers[0] . ']'
+  return a:bullet.bullet[0].' [' . l:checkbox_markers[0] . ']'
 endfun
 " }}}
 
