@@ -1,6 +1,6 @@
 scriptencoding utf-8
 " Vim plugin for automated bulleted lists
-" Last Change: Thu Mar  4 21:29:54 CST 2021
+" Last Change: April 5, 2020
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -100,43 +100,18 @@ endif
 
 " Parse Bullet Type -------------------------------------------  {{{
 fun! s:parse_bullet(line_num, line_text)
+        
+  let l:bullet = s:match_bullet_list_item(a:line_text)
+  " Must be a bullet to be a checkbox
+  let l:check = !empty(l:bullet) ? s:match_checkbox_bullet_item(a:line_text) : {}
+  " Cannot be numeric if a bullet
+  let l:num = empty(l:bullet) ? s:match_numeric_list_item(a:line_text) : {}
+  " Cannot be alphabetic if numeric or a bullet
+  let l:alpha = empty(l:bullet) && empty(l:num) ? s:match_alphabetical_list_item(a:line_text) : {}
+  " Cannot be roman if numeric or a bullet
+  let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : {}
 
-  let kinds = []
-
-  let bullets = s:match_bullet_list_item(a:line_text)
-  if !empty(bullets)
-    call add(kinds, bullets)
-
-    " Cannot be a checkbox without being a bullet
-    let checkbox = s:match_checkbox_bullet_item(a:line_text)
-    if !empty(checkbox)
-      call add(kinds, checkbox)
-    endif
-
-  else
-
-    " Cannot be numeric if a bullet
-    let numeric = s:match_numeric_list_item(a:line_text)
-    if !empty(numeric)
-      call add(kinds, numeric)
-    else
-
-      " Canannot be alphabetical if numeric
-      let alpha = s:match_alphabetical_list_item(a:line_text)
-      if !empty(alpha)
-        call add(kinds, checkbox)
-
-        " Cannot be roman without being alphabetical
-        let roman = s:match_roman_list_item(a:line_text)
-        if !empty(roman)
-          call add(kinds, roman)
-        endif
-
-      endif
-
-    endif
-
-  endif
+  let kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], '!empty(v:val)')
 
   for data in kinds
     let data.starting_at_line_num = a:line_num
@@ -172,29 +147,24 @@ fun! s:match_numeric_list_item(input_text)
         \ }
 endfun
 
-
 fun! s:match_roman_list_item(input_text)
-  let l:rom_bullet_regex  = join([
-        \ '\v\C',
-        \ '^(',
-        \   '(\s*)',
-        \   '(',
-        \     'M{0,4}%(CM|CD|D?C{0,3})%(XC|XL|L?X{0,3})%(IX|IV|V?I{0,3})',
-        \     '|',
-        \     'm{0,4}%(cm|cd|d?c{0,3})%(xc|xl|l?x{0,3})%(ix|iv|v?i{0,3})',
-        \   ')',
-        \   '(\.|\))',
-        \   '(\s+)',
-        \ ')',
-        \ '(.*)'], '')
-  let l:matches           = matchlist(a:input_text, l:rom_bullet_regex)
+  let l:rom_bullet_regex = '\v\c^((\s*)(m{0,4}%(cm|cd|d?c{0,3})%(xc|xl|l?x{0,3})%(ix|iv|v?i{0,3})))(\.|\))(\s+)(.*)'
+  let l:matches = matchlist(a:input_text, l:rom_bullet_regex)
+
   if empty(l:matches)
+    return {}
+  endif
+
+  let l:rom = l:matches[3]
+
+  " Must be all one case
+  if matchstr(l:rom, '\v(\u+|\l+)') !=# l:rom
+    echo l:rom . " -> roman mixed case"
     return {}
   endif
 
   let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
-  let l:rom               = l:matches[3]
   let l:closure           = l:matches[4]
   let l:trailing_space    = l:matches[5]
   let l:text_after_bullet = l:matches[6]
@@ -215,23 +185,21 @@ fun! s:match_alphabetical_list_item(input_text)
     return {}
   endif
 
-  let l:max = string(g:bullets_max_alpha_characters)
-  let l:abc_bullet_regex = join([
-        \ '\v^((\s*)(\u{1,',
-        \ l:max,
-        \ '}|\l{1,',
-        \ l:max,
-        \ '})(\.|\))(\s+))(.*)'], '')
-
+  let l:abc_bullet_regex = '\v^((\s*)(\u+|\l+)(\.|\))(\s+))(.*)'
   let l:matches = matchlist(a:input_text, l:abc_bullet_regex)
 
   if empty(l:matches)
     return {}
   endif
+  
+  let l:abc = l:matches[3]
+
+  if len(l:abc) > g:bullets_max_alpha_characters
+    return {}
+  endif
 
   let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
-  let l:abc               = l:matches[3]
   let l:closure           = l:matches[4]
   let l:trailing_space    = l:matches[5]
   let l:text_after_bullet = l:matches[6]
@@ -250,6 +218,7 @@ endfun
 fun! s:match_checkbox_bullet_item(input_text)
   " match any symbols listed in g:bullets_checkbox_markers as well as the
   " default ' ', 'x', and 'X'
+  " FOOBARBAZ
   let l:checkbox_bullet_regex =
         \ '\v(^(\s*)([-\*] \[(['
         \ . g:bullets_checkbox_markers
