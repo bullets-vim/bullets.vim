@@ -119,6 +119,34 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "samgriesemer",
+      "name": "Sam Griesemer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19940657?v=4",
+      "profile": "https://samgriesemer.com",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "cpence",
+      "name": "Charles Pence",
+      "avatar_url": "https://avatars.githubusercontent.com/u/297075?v=4",
+      "profile": "https://codeberg.org/cpence",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mstojanovic",
+      "name": "Marko Stojanovic",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3449343?v=4",
+      "profile": "https://github.com/mstojanovic",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
