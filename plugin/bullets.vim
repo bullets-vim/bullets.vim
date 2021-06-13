@@ -111,13 +111,13 @@ fun! s:parse_bullet(line_num, line_text)
   " Cannot be roman if numeric or a bullet
   let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : {}
 
-  let kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], '!empty(v:val)')
+  let l:kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], '!empty(v:val)')
 
-  for data in kinds
-    let data.starting_at_line_num = a:line_num
+  for l:data in l:kinds
+    let l:data.starting_at_line_num = a:line_num
   endfor
 
-  return kinds
+  return l:kinds
 
 endfun
 
@@ -147,24 +147,29 @@ fun! s:match_numeric_list_item(input_text)
         \ }
 endfun
 
+
 fun! s:match_roman_list_item(input_text)
-  let l:rom_bullet_regex = '\v\c^((\s*)(m{0,4}%(cm|cd|d?c{0,3})%(xc|xl|l?x{0,3})%(ix|iv|v?i{0,3})))(\.|\))(\s+)(.*)'
-  let l:matches = matchlist(a:input_text, l:rom_bullet_regex)
-
+  let l:rom_bullet_regex  = join([
+        \ '\v\C',
+        \ '^(',
+        \   '(\s*)',
+        \   '(',
+        \     'M{0,4}%(CM|CD|D?C{0,3})%(XC|XL|L?X{0,3})%(IX|IV|V?I{0,3})',
+        \     '|',
+        \     'm{0,4}%(cm|cd|d?c{0,3})%(xc|xl|l?x{0,3})%(ix|iv|v?i{0,3})',
+        \   ')',
+        \   '(\.|\))',
+        \   '(\s+)',
+        \ ')',
+        \ '(.*)'], '')
+  let l:matches           = matchlist(a:input_text, l:rom_bullet_regex)
   if empty(l:matches)
-    return {}
-  endif
-
-  let l:rom = l:matches[3]
-
-  " Must be all one case
-  if matchstr(l:rom, '\v(\u+|\l+)') !=# l:rom
-    echo l:rom . " -> roman mixed case"
     return {}
   endif
 
   let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
+  let l:rom               = l:matches[3]
   let l:closure           = l:matches[4]
   let l:trailing_space    = l:matches[5]
   let l:text_after_bullet = l:matches[6]
@@ -185,21 +190,23 @@ fun! s:match_alphabetical_list_item(input_text)
     return {}
   endif
 
-  let l:abc_bullet_regex = '\v^((\s*)(\u+|\l+)(\.|\))(\s+))(.*)'
+  let l:max = string(g:bullets_max_alpha_characters)
+  let l:abc_bullet_regex = join([
+        \ '\v^((\s*)(\u{1,',
+        \ l:max,
+        \ '}|\l{1,',
+        \ l:max,
+        \ '})(\.|\))(\s+))(.*)'], '')
+
   let l:matches = matchlist(a:input_text, l:abc_bullet_regex)
 
   if empty(l:matches)
     return {}
   endif
-  
-  let l:abc = l:matches[3]
-
-  if len(l:abc) > g:bullets_max_alpha_characters
-    return {}
-  endif
 
   let l:bullet_length     = strlen(l:matches[1])
   let l:leading_space     = l:matches[2]
+  let l:abc               = l:matches[3]
   let l:closure           = l:matches[4]
   let l:trailing_space    = l:matches[5]
   let l:text_after_bullet = l:matches[6]
@@ -218,7 +225,6 @@ endfun
 fun! s:match_checkbox_bullet_item(input_text)
   " match any symbols listed in g:bullets_checkbox_markers as well as the
   " default ' ', 'x', and 'X'
-  " FOOBARBAZ
   let l:checkbox_bullet_regex =
         \ '\v(^(\s*)([-\*] \[(['
         \ . g:bullets_checkbox_markers
