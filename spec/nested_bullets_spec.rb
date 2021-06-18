@@ -186,7 +186,6 @@ RSpec.describe 'Bullets.vim' do
           # Hello there
           I. this is the first bullet
           \tA. second bullet
-
           A. first bullet
           \t1. second bullet
 
@@ -288,10 +287,8 @@ RSpec.describe 'Bullets.vim' do
           1. this is the first bullet
           2. second bullet
           \ta. third bullet
-
           + fourth bullet
           \t+ fifth bullet
-
           * sixth bullet
           \t+ seventh bullet
 
