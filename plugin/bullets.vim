@@ -427,12 +427,6 @@ endfun
 " }}}
 
 " Generate bullets --------------------------------------  {{{
-fun! s:delete_empty_bullet(line_num)
-  if g:bullets_delete_last_bullet_if_empty
-    call setline(a:line_num, '')
-  endif
-endfun
-
 fun! s:insert_new_bullet()
   let l:curr_line_num = line('.')
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
@@ -451,7 +445,10 @@ fun! s:insert_new_bullet()
     if l:bullet.text_after_bullet ==# ''
       " We don't want to create a new bullet if the previous one was not used,
       " instead we want to delete the empty bullet - like word processors do
-      call s:delete_empty_bullet(l:curr_line_num)
+      if g:bullets_delete_last_bullet_if_empty
+        call setline(l:curr_line_num, '')
+        let l:send_return = 0
+      endif
     elseif !(l:bullet.bullet_type ==# 'abc' && s:abc2dec(l:bullet.bullet) + 1 > s:abc_max)
 
       let l:next_bullet = s:next_bullet_str(l:bullet)
