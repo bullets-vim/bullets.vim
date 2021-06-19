@@ -174,6 +174,7 @@ RSpec.describe 'Bullets.vim' do
       vim.normal 'GA'
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<cr>'
+      vim.feedkeys '\<cr>'
       vim.type 'A. first bullet'
       vim.feedkeys '\<cr>'
       vim.feedkeys '\<C-t>'
@@ -288,10 +289,8 @@ RSpec.describe 'Bullets.vim' do
           1. this is the first bullet
           2. second bullet
           \ta. third bullet
-
           + fourth bullet
           \t+ fifth bullet
-
           * sixth bullet
           \t+ seventh bullet
 
