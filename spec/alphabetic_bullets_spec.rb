@@ -128,7 +128,6 @@ RSpec.describe 'Bullets.vim' do
           y. this is the first bullet
           z. second bullet
           aa. third bullet
-
           AY. fourth bullet
           AZ. fifth bullet
           BA. sixth bullet\n
