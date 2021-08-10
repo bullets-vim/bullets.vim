@@ -223,6 +223,15 @@ You can always manually renumber the current list or visual selection using
 `gN` in NORMAL or VISUAL mode.
 
 
+Change Bullet style on Level Change
+-----------------------------------
+By default, when promoting/demoting a bullet its bullet point is changed to
+the next style defined in g:bullets_outline_level.  This can be disabled by
+setting the following:
+
+  `let g:bullets_change_style_on_level_change = 0`
+
+
 Toggle Parent and Child Checkboxes
 ----------------------------------
 If a checkbox has child checkboxes, checking the checkbox will check all

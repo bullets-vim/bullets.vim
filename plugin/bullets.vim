@@ -67,6 +67,10 @@ if !exists('g:bullets_renumber_on_change')
   let g:bullets_renumber_on_change = 1
 endif
 
+if !exists('g:bullets_change_style_on_level_change')
+  let g:bullets_change_style_on_level_change = 1
+endif
+
 if !exists('g:bullets_nested_checkboxes')
   " Enable nested checkboxes that toggle parents and children when the current
   " checkbox status changes
@@ -831,6 +835,10 @@ fun! s:change_bullet_level(direction)
 
   if l:curr_line == []
     " If the current line is not a bullet then don't do anything else.
+    return
+  endif
+
+  if !g:bullets_change_style_on_level_change
     return
   endif
 
