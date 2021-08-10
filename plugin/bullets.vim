@@ -57,6 +57,12 @@ while s:power >= 0
   let s:power -= 1
 endwhile
 
+if !exists('g:bullets_list_item_styles')
+  " A list of regex patterns that are recognized as bullet points for
+  " bullet items.
+  let g:bullets_list_item_styles = ['-', '\*+', '\.+', '#\.', '\+', '\\item']
+endif
+
 if !exists('g:bullets_outline_levels')
   " Capitalization matters: all caps will make the symbol caps, lower = lower
   " Standard bullets should include the marker symbol after 'std'
@@ -248,7 +254,9 @@ fun! s:match_checkbox_bullet_item(input_text)
 endfun
 
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^(\s*)(-|\*+|\.+|#\.|\+|\\item)(\s+))(.*)'
+  let l:std_bullet_regex  = '\v(^(\s*)('
+        \ . join(g:bullets_list_item_styles, '|')
+        \ . ')(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
 
   if empty(l:matches)
