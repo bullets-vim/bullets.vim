@@ -219,7 +219,7 @@ fun! s:match_checkbox_bullet_item(input_text)
   " match any symbols listed in g:bullets_checkbox_markers as well as the
   " default ' ', 'x', and 'X'
   let l:checkbox_bullet_regex =
-        \ '\v(^(\s*)([-\*\+] \[(['
+        \ '\v(^(\s*)(%([-\*\+]|\d+\.) \[(['
         \ . g:bullets_checkbox_markers
         \ . ' xX])?\])(\s+))(.*)'
   let l:matches = matchlist(a:input_text, l:checkbox_bullet_regex)
