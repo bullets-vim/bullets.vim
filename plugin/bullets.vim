@@ -1,6 +1,6 @@
 scriptencoding utf-8
 " Vim plugin for automated bulleted lists
-" Last Change: Thu Mar  4 21:29:54 CST 2021
+" Last Change: April 5, 2020
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -100,18 +100,25 @@ endif
 
 " Parse Bullet Type -------------------------------------------  {{{
 fun! s:parse_bullet(line_num, line_text)
-  let l:kinds = s:filter(
-        \ [
-        \  s:match_bullet_list_item(a:line_text),
-        \  s:match_checkbox_bullet_item(a:line_text),
-        \  s:match_numeric_list_item(a:line_text),
-        \  s:match_roman_list_item(a:line_text),
-        \  s:match_alphabetical_list_item(a:line_text),
-        \ ],
-        \ '!empty(v:val)'
-        \ )
+        
+  let l:bullet = s:match_bullet_list_item(a:line_text)
+  " Must be a bullet to be a checkbox
+  let l:check = !empty(l:bullet) ? s:match_checkbox_bullet_item(a:line_text) : {}
+  " Cannot be numeric if a bullet
+  let l:num = empty(l:bullet) ? s:match_numeric_list_item(a:line_text) : {}
+  " Cannot be alphabetic if numeric or a bullet
+  let l:alpha = empty(l:bullet) && empty(l:num) ? s:match_alphabetical_list_item(a:line_text) : {}
+  " Cannot be roman if numeric or a bullet
+  let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : {}
 
-  return s:map(l:kinds, 'extend(v:val, { "starting_at_line_num": ' . a:line_num . ' })')
+  let l:kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], '!empty(v:val)')
+
+  for l:data in l:kinds
+    let l:data.starting_at_line_num = a:line_num
+  endfor
+
+  return l:kinds
+
 endfun
 
 fun! s:match_numeric_list_item(input_text)
