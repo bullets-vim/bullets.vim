@@ -96,6 +96,13 @@ if !exists('g:bullets_checkbox_partials_toggle')
   let g:bullets_checkbox_partials_toggle = 1
 endif
 
+if !exists('g:bullets_use_cr_with_coc_complete')
+  " Use <CR> to complete in coc and auto bullets in bullets.vim at the same time
+  " default set it to off(0),if you want it on set it to (1)
+  let g:bullets_use_cr_with_coc_complete = 0
+endif
+
+
 " ------------------------------------------------------   }}}
 
 " Parse Bullet Type -------------------------------------------  {{{
@@ -968,15 +975,29 @@ command! -range=% BulletPromoteVisual call <SID>visual_change_bullet_level(1)
 " Keyboard mappings --------------------------------------- {{{
 fun! s:add_local_mapping(mapping_type, mapping, action)
   let l:file_types = join(g:bullets_enabled_file_types, ',')
-  execute 'autocmd FileType ' .
-        \ l:file_types .
-        \ ' ' .
-        \ a:mapping_type .
-        \ ' <silent> <buffer> ' .
-        \ g:bullets_mapping_leader .
-        \ a:mapping .
-        \ ' ' .
-        \ a:action
+  if g:bullets_use_cr_with_coc_complete && a:mapping == '<cr>'
+    execute 'autocmd FileType ' .
+          \ l:file_types .
+          \ ' ' .
+          \ a:mapping_type .
+          \ ' <silent> <buffer> <expr>' .
+          \ g:bullets_mapping_leader .
+          \ a:mapping .
+          \ ' ' .
+          \ 'pumvisible() ? coc#_select_confirm() : "' . 
+          \ a:action .
+          \ '"'
+  else 
+    execute 'autocmd FileType ' .
+          \ l:file_types .
+          \ ' ' .
+          \ a:mapping_type .
+          \ ' <silent> <buffer> ' .
+          \ g:bullets_mapping_leader .
+          \ a:mapping .
+          \ ' ' .
+          \ a:action
+  endif
 
   if g:bullets_enable_in_empty_buffers
     execute 'autocmd BufEnter * if bufname("") == "" | ' .
