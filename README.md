@@ -22,7 +22,14 @@ Renumbering lines:
 
 # Installation
 
-With VimPlug:
+### With Vim 8.1+ native package manager:
+Clone into
+
+`.vim/pack/plugins/start`
+
+Make sure to include `packloadall` in your `vimrc`.
+
+### With VimPlug:
 
 ```vim
 Plug 'dkarter/bullets.vim'
