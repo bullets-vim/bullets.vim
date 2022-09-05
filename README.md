@@ -6,6 +6,8 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
+> :information_source: Looking for help/maintainers https://github.com/dkarter/bullets.vim/issues/126
+
 # Description
 
 Bullets.vim is a Vim plugin for automated bullet lists.
