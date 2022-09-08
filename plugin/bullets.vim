@@ -100,7 +100,7 @@ endif
 
 " Parse Bullet Type -------------------------------------------  {{{
 fun! s:parse_bullet(line_num, line_text)
-        
+
   let l:bullet = s:match_bullet_list_item(a:line_text)
   " Must be a bullet to be a checkbox
   let l:check = !empty(l:bullet) ? s:match_checkbox_bullet_item(a:line_text) : {}
@@ -966,6 +966,26 @@ command! -range=% BulletPromoteVisual call <SID>visual_change_bullet_level(1)
 " --------------------------------------------------------- }}}
 
 " Keyboard mappings --------------------------------------- {{{
+
+" Automatic bullets
+inoremap <silent> <Plug>(bullets-newline) <C-]><C-R>=<SID>insert_new_bullet()<cr>
+nnoremap <silent> <Plug>(bullets-newline) :call <SID>insert_new_bullet()<cr>
+
+" Renumber bullet list
+vnoremap <silent> <Plug>(bullets-renumber) :RenumberSelection<cr>
+nnoremap <silent> <Plug>(bullets-renumber) :RenumberList<cr>
+
+" Toggle checkbox
+nnoremap <silent> <Plug>(bullets-toggle-checkbox) :ToggleCheckbox<cr>
+
+" Promote and Demote outline level
+inoremap <silent> <Plug>(bullets-demote) <C-o>:BulletDemote<cr>
+nnoremap <silent> <Plug>(bullets-demote) :BulletDemote<cr>
+vnoremap <silent> <Plug>(bullets-demote) :BulletDemoteVisual<cr>
+inoremap <silent> <Plug>(bullets-promote) <C-o>:BulletPromote<cr>
+nnoremap <silent> <Plug>(bullets-promote) :BulletPromote<cr>
+vnoremap <silent> <Plug>(bullets-promote) :BulletPromoteVisual<cr>
+
 fun! s:add_local_mapping(mapping_type, mapping, action)
   let l:file_types = join(g:bullets_enabled_file_types, ',')
   execute 'autocmd FileType ' .
@@ -994,26 +1014,26 @@ augroup TextBulletsMappings
   autocmd!
 
   if g:bullets_set_mappings
-    " automatic bullets
-    call s:add_local_mapping('inoremap', '<cr>', '<C-]><C-R>=<SID>insert_new_bullet()<cr>')
+    " Automatic bullets
+    call s:add_local_mapping('imap', '<cr>', '<Plug>(bullets-newline)')
     call s:add_local_mapping('inoremap', '<C-cr>', '<cr>')
 
-    call s:add_local_mapping('nnoremap', 'o', ':call <SID>insert_new_bullet()<cr>')
+    call s:add_local_mapping('nmap', 'o', '<Plug>(bullets-newline)')
 
     " Renumber bullet list
-    call s:add_local_mapping('vnoremap', 'gN', ':RenumberSelection<cr>')
-    call s:add_local_mapping('nnoremap', 'gN', ':RenumberList<cr>')
+    call s:add_local_mapping('vmap', 'gN', '<Plug>(bullets-renumber)')
+    call s:add_local_mapping('nmap', 'gN', '<Plug>(bullets-renumber)')
 
     " Toggle checkbox
-    call s:add_local_mapping('nnoremap', '<leader>x', ':ToggleCheckbox<cr>')
+    call s:add_local_mapping('nmap', '<leader>x', '<Plug>(bullets-toggle-checkbox)')
 
     " Promote and Demote outline level
-    call s:add_local_mapping('inoremap', '<C-t>', '<C-o>:BulletDemote<cr>')
-    call s:add_local_mapping('nnoremap', '>>', ':BulletDemote<cr>')
-    call s:add_local_mapping('inoremap', '<C-d>', '<C-o>:BulletPromote<cr>')
-    call s:add_local_mapping('nnoremap', '<<', ':BulletPromote<cr>')
-    call s:add_local_mapping('vnoremap', '>', ':BulletDemoteVisual<cr>')
-    call s:add_local_mapping('vnoremap', '<', ':BulletPromoteVisual<cr>')
+    call s:add_local_mapping('imap', '<C-t>', '<Plug>(bullets-demote)')
+    call s:add_local_mapping('nmap', '>>', '<Plug>(bullets-demote)')
+    call s:add_local_mapping('vmap', '>', '<Plug>(bullets-demote)')
+    call s:add_local_mapping('imap', '<C-d>', '<Plug>(bullets-promote)')
+    call s:add_local_mapping('nmap', '<<', '<Plug>(bullets-promote)')
+    call s:add_local_mapping('vmap', '<', '<Plug>(bullets-promote)')
   end
 augroup END
 " --------------------------------------------------------- }}}
