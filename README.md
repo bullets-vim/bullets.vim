@@ -1,6 +1,6 @@
 ![Bullets.vim](img/bullets-vim-logo.svg)
 
-[![Build Status](https://travis-ci.org/dkarter/bullets.vim.svg?branch=master)](https://travis-ci.org/dkarter/bullets.vim) 
+[![Build Status](https://travis-ci.org/dkarter/bullets.vim.svg?branch=master)](https://travis-ci.org/dkarter/bullets.vim)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors-)
@@ -77,6 +77,32 @@ Add a leader key before default mappings:
 
 ```vim
 let g:bullets_mapping_leader = '<M-b>' " default = ''
+```
+
+Customize key mappings:
+
+```vim
+let g:bullets_set_mappings = 0 " disable adding default key mappings, default = 1
+
+" default = []
+let g:bullets_custom_mappings = [
+  \ ['imap', '<cr>', '<Plug>(bullets-newline)'],
+  \ ['inoremap', '<C-cr>', '<cr>'],
+  \
+  \ ['nmap', 'o', '<Plug>(bullets-newline)'],
+  \
+  \ ['vmap', 'gN', '<Plug>(bullets-renumber)'],
+  \ ['nmap', 'gN', '<Plug>(bullets-renumber)'],
+  \
+  \ ['nmap', '<leader>x', '<Plug>(bullets-toggle-checkbox)'],
+  \
+  \ ['imap', '<C-t>', '<Plug>(bullets-demote)'],
+  \ ['nmap', '>>', '<Plug>(bullets-demote)'],
+  \ ['vmap', '>', '<Plug>(bullets-demote)'],
+  \ ['imap', '<C-d>', '<Plug>(bullets-promote)'],
+  \ ['nmap', '<<', '<Plug>(bullets-promote)'],
+  \ ['vmap', '<', '<Plug>(bullets-promote)'],
+  \ ]
 ```
 
 Enable/disable deleting the last empty bullet when hitting `<cr>` (insert mode) or `o` (normal mode):
@@ -184,7 +210,7 @@ let g:bullets_nested_checkboxes = 1 " default = 1
 "   - [ ] child bullet  [ type <leader>x ]
 "     - [ ] sub-child
 "   - [ ] child bullet
-" 
+"
 " Result:
 " - [o] first bullet   [ <- indicates partial completion of sub-tasks ]
 "   - [X] child bullet
@@ -225,18 +251,18 @@ let g:bullets_checkbox_partials_toggle = 1 " default = 1
 " - [o] partially checked  [ type <leader>x ]
 "   - [x] sub bullet
 "   - [ ] sub bullet
-" 
+"
 " Result:
 " - [x] checked
 "   - [x] sub bullet
 "   - [x] sub bullet
-" 
+"
 " Example 2:
 let g:bullets_checkbox_partials_toggle = 0
 " - [o] partially checked  [ type <leader>x ]
 "   - [x] sub bullet
 "   - [ ] sub bullet
-" 
+"
 " Result:
 " - [ ] checked
 "   - [ ] sub bullet
@@ -269,7 +295,7 @@ let g:bullets_set_mappings = 0
 Add a leader key before default mappings:
 
 ```vim
-let g:bullets_mapping_leader = '<M-b>' 
+let g:bullets_mapping_leader = '<M-b>'
 " Set <M-b> to the leader before all default mappings:
 " Example: renumbering becomes `<M-b>gN` instead of just `gN`
 ```
