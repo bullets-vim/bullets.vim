@@ -147,6 +147,24 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "clarkshaeffer",
+      "name": "Clark",
+      "avatar_url": "https://avatars.githubusercontent.com/u/58539767?v=4",
+      "profile": "https://github.com/clarkshaeffer",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "wenzel-hoffman",
+      "name": "Wenzel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/111205756?v=4",
+      "profile": "https://github.com/wenzel-hoffman",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

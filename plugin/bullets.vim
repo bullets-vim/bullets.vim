@@ -1,6 +1,6 @@
 scriptencoding utf-8
 " Vim plugin for automated bulleted lists
-" Last Change: Thu Mar  4 21:29:54 CST 2021
+" Last Change: Sat Jan 29 06:56:14 PM CST 2022
 " Maintainer: Dorian Karter
 " License: MIT
 " FileTypes: markdown, text, gitcommit
@@ -33,6 +33,18 @@ end
 if !exists('g:bullets_mapping_leader')
   let g:bullets_mapping_leader = ''
 end
+
+" Extra key mappings in addition to default ones.
+" If you don’t need default mappings set 'g:bullets_set_mappings' to '0'.
+" N.B. 'g:bullets_mapping_leader' has no effect on these mappings.
+"
+" Example:
+"   let g:bullets_custom_mappings = [
+"     \ ['imap', '<cr>', '<Plug>(bullets-newline)'],
+"     \ ]
+if !exists('g:bullets_custom_mappings')
+  let g:bullets_custom_mappings = []
+endif
 
 if !exists('g:bullets_delete_last_bullet_if_empty')
   let g:bullets_delete_last_bullet_if_empty = 1
@@ -100,18 +112,25 @@ endif
 
 " Parse Bullet Type -------------------------------------------  {{{
 fun! s:parse_bullet(line_num, line_text)
-  let l:kinds = s:filter(
-        \ [
-        \  s:match_bullet_list_item(a:line_text),
-        \  s:match_checkbox_bullet_item(a:line_text),
-        \  s:match_numeric_list_item(a:line_text),
-        \  s:match_roman_list_item(a:line_text),
-        \  s:match_alphabetical_list_item(a:line_text),
-        \ ],
-        \ '!empty(v:val)'
-        \ )
 
-  return s:map(l:kinds, 'extend(v:val, { "starting_at_line_num": ' . a:line_num . ' })')
+  let l:bullet = s:match_bullet_list_item(a:line_text)
+  " Must be a bullet to be a checkbox
+  let l:check = !empty(l:bullet) ? s:match_checkbox_bullet_item(a:line_text) : {}
+  " Cannot be numeric if a bullet
+  let l:num = empty(l:bullet) ? s:match_numeric_list_item(a:line_text) : {}
+  " Cannot be alphabetic if numeric or a bullet
+  let l:alpha = empty(l:bullet) && empty(l:num) ? s:match_alphabetical_list_item(a:line_text) : {}
+  " Cannot be roman if numeric or a bullet
+  let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : {}
+
+  let l:kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], '!empty(v:val)')
+
+  for l:data in l:kinds
+    let l:data.starting_at_line_num = a:line_num
+  endfor
+
+  return l:kinds
+
 endfun
 
 fun! s:match_numeric_list_item(input_text)
@@ -959,14 +978,34 @@ command! -range=% BulletPromoteVisual call <SID>visual_change_bullet_level(1)
 " --------------------------------------------------------- }}}
 
 " Keyboard mappings --------------------------------------- {{{
-fun! s:add_local_mapping(mapping_type, mapping, action)
+
+" Automatic bullets
+inoremap <silent> <Plug>(bullets-newline) <C-]><C-R>=<SID>insert_new_bullet()<cr>
+nnoremap <silent> <Plug>(bullets-newline) :call <SID>insert_new_bullet()<cr>
+
+" Renumber bullet list
+vnoremap <silent> <Plug>(bullets-renumber) :RenumberSelection<cr>
+nnoremap <silent> <Plug>(bullets-renumber) :RenumberList<cr>
+
+" Toggle checkbox
+nnoremap <silent> <Plug>(bullets-toggle-checkbox) :ToggleCheckbox<cr>
+
+" Promote and Demote outline level
+inoremap <silent> <Plug>(bullets-demote) <C-o>:BulletDemote<cr>
+nnoremap <silent> <Plug>(bullets-demote) :BulletDemote<cr>
+vnoremap <silent> <Plug>(bullets-demote) :BulletDemoteVisual<cr>
+inoremap <silent> <Plug>(bullets-promote) <C-o>:BulletPromote<cr>
+nnoremap <silent> <Plug>(bullets-promote) :BulletPromote<cr>
+vnoremap <silent> <Plug>(bullets-promote) :BulletPromoteVisual<cr>
+
+fun! s:add_local_mapping(with_leader, mapping_type, mapping, action)
   let l:file_types = join(g:bullets_enabled_file_types, ',')
   execute 'autocmd FileType ' .
         \ l:file_types .
         \ ' ' .
         \ a:mapping_type .
         \ ' <silent> <buffer> ' .
-        \ g:bullets_mapping_leader .
+        \ (a:with_leader ? g:bullets_mapping_leader : '') .
         \ a:mapping .
         \ ' ' .
         \ a:action
@@ -975,7 +1014,7 @@ fun! s:add_local_mapping(mapping_type, mapping, action)
     execute 'autocmd BufEnter * if bufname("") == "" | ' .
           \ a:mapping_type .
           \ ' <silent> <buffer> ' .
-          \ g:bullets_mapping_leader .
+          \ (a:with_leader ? g:bullets_mapping_leader : '') .
           \ a:mapping .
           \ ' ' .
           \ a:action .
@@ -987,27 +1026,31 @@ augroup TextBulletsMappings
   autocmd!
 
   if g:bullets_set_mappings
-    " automatic bullets
-    call s:add_local_mapping('inoremap', '<cr>', '<C-]><C-R>=<SID>insert_new_bullet()<cr>')
-    call s:add_local_mapping('inoremap', '<C-cr>', '<cr>')
+    " Automatic bullets
+    call s:add_local_mapping(1, 'imap', '<cr>', '<Plug>(bullets-newline)')
+    call s:add_local_mapping(1, 'inoremap', '<C-cr>', '<cr>')
 
-    call s:add_local_mapping('nnoremap', 'o', ':call <SID>insert_new_bullet()<cr>')
+    call s:add_local_mapping(1, 'nmap', 'o', '<Plug>(bullets-newline)')
 
     " Renumber bullet list
-    call s:add_local_mapping('vnoremap', 'gN', ':RenumberSelection<cr>')
-    call s:add_local_mapping('nnoremap', 'gN', ':RenumberList<cr>')
+    call s:add_local_mapping(1, 'vmap', 'gN', '<Plug>(bullets-renumber)')
+    call s:add_local_mapping(1, 'nmap', 'gN', '<Plug>(bullets-renumber)')
 
     " Toggle checkbox
-    call s:add_local_mapping('nnoremap', '<leader>x', ':ToggleCheckbox<cr>')
+    call s:add_local_mapping(1, 'nmap', '<leader>x', '<Plug>(bullets-toggle-checkbox)')
 
     " Promote and Demote outline level
-    call s:add_local_mapping('inoremap', '<C-t>', '<C-o>:BulletDemote<cr>')
-    call s:add_local_mapping('nnoremap', '>>', ':BulletDemote<cr>')
-    call s:add_local_mapping('inoremap', '<C-d>', '<C-o>:BulletPromote<cr>')
-    call s:add_local_mapping('nnoremap', '<<', ':BulletPromote<cr>')
-    call s:add_local_mapping('vnoremap', '>', ':BulletDemoteVisual<cr>')
-    call s:add_local_mapping('vnoremap', '<', ':BulletPromoteVisual<cr>')
+    call s:add_local_mapping(1, 'imap', '<C-t>', '<Plug>(bullets-demote)')
+    call s:add_local_mapping(1, 'nmap', '>>', '<Plug>(bullets-demote)')
+    call s:add_local_mapping(1, 'vmap', '>', '<Plug>(bullets-demote)')
+    call s:add_local_mapping(1, 'imap', '<C-d>', '<Plug>(bullets-promote)')
+    call s:add_local_mapping(1, 'nmap', '<<', '<Plug>(bullets-promote)')
+    call s:add_local_mapping(1, 'vmap', '<', '<Plug>(bullets-promote)')
   end
+
+  for s:custom_key_mapping in g:bullets_custom_mappings
+    call call('<SID>add_local_mapping', [0] + s:custom_key_mapping)
+  endfor
 augroup END
 " --------------------------------------------------------- }}}
 
