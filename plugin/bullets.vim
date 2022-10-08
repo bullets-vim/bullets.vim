@@ -108,6 +108,11 @@ if !exists('g:bullets_checkbox_partials_toggle')
   let g:bullets_checkbox_partials_toggle = 1
 endif
 
+if !exists('g:bullets_auto_indent_after_colon')
+  " Should a line ending in a colon result in the next line being indented (1)?
+  let g:bullets_auto_indent_after_colon = 1
+endif
+
 " ------------------------------------------------------   }}}
 
 " Parse Bullet Type -------------------------------------------  {{{
@@ -456,6 +461,7 @@ fun! s:insert_new_bullet()
   " searching up from there
   let l:send_return = 1
   let l:normal_mode = mode() ==# 'n'
+  let l:indent_next = s:line_ends_in_colon(l:curr_line_num) && g:bullets_auto_indent_after_colon
 
   " check if current line is a bullet and we are at the end of the line (for
   " insert mode only)
@@ -485,12 +491,23 @@ fun! s:insert_new_bullet()
 
       " insert next bullet
       call append(l:curr_line_num, l:next_bullet_list)
-      " got to next line after the new bullet
+
+
+      " go to next line after the new bullet
       let l:col = strlen(getline(l:next_line_num)) + 1
-      if g:bullets_renumber_on_change
+      call setpos('.', [0, l:next_line_num, l:col])
+
+      " indent if previous line ended in a colon
+      if l:indent_next
+        " demote the new bullet
+        call s:change_bullet_level_and_renumber(-1)
+        " reset cursor position after indenting
+        let l:col = strlen(getline(l:next_line_num)) + 1
+        call setpos('.', [0, l:next_line_num, l:col])
+      elseif g:bullets_renumber_on_change
         call s:renumber_whole_list()
       endif
-      call setpos('.', [0, l:next_line_num, l:col])
+
       let l:send_return = 0
     endif
   endif
@@ -514,6 +531,14 @@ fun! s:is_at_eol()
 endfun
 
 command! InsertNewBullet call <SID>insert_new_bullet()
+
+" Helper for Colon Indent
+"   returns 1 if current line ends in a colon, else 0
+fun! s:line_ends_in_colon(lnum)
+  return getline(a:lnum)[strlen(getline(a:lnum))-1:] ==# ':'
+endfun
+" --------------------------------------------------------- }}}
+
 " --------------------------------------------------------- }}}
 
 " Checkboxes ---------------------------------------------- {{{
@@ -952,11 +977,11 @@ fun! s:change_bullet_level(direction)
 endfun
 
 fun! s:change_bullet_level_and_renumber(direction)
-    " Calls change_bullet_level and then renumber_whole_list if required
-    call s:change_bullet_level(a:direction)
-    if g:bullets_renumber_on_change
-        call s:renumber_whole_list()
-    endif
+  " Calls change_bullet_level and then renumber_whole_list if required
+  call s:change_bullet_level(a:direction)
+  if g:bullets_renumber_on_change
+      call s:renumber_whole_list()
+  endif
 endfun
 
 fun! s:visual_change_bullet_level(direction)

@@ -3,6 +3,7 @@
 require 'vimrunner'
 require 'vimrunner/rspec'
 require 'securerandom'
+require 'rspec/retry'
 
 Vimrunner::RSpec.configure do |config|
   # Use a single Vim instance for the test suite. Set to false to use an
@@ -27,6 +28,21 @@ Vimrunner::RSpec.configure do |config|
 end
 
 RSpec.configure do |config|
+
+  # RSpec Retry
+  # ===========
+  # show retry status in spec process
+  config.verbose_retry = true
+
+  # show exception that triggers a retry if verbose_retry is set to true
+  config.display_try_failure_messages = true
+
+  # retry each spec 3 times
+  config.around :each do |ex|
+    ex.run_with_retry retry: 3
+  end
+  # ============
+
   config.around do |example|
     Dir.mktmpdir do |dir|
       Dir.chdir(dir) do
