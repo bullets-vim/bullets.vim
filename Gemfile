@@ -7,5 +7,6 @@ group :test do
   gem 'pry-byebug'
   gem 'rake', '~> 12.3.3'
   gem 'rspec'
+  gem 'rspec-retry'
   gem 'vimrunner'
 end

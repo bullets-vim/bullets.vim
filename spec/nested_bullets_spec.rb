@@ -565,5 +565,34 @@ RSpec.describe 'Bullets.vim' do
 
       TEXT
     end
+    
+    it 'indents after a line ending in a colon' do
+      filename = "#{SecureRandom.hex(6)}.txt"
+      write_file(filename, <<-TEXT)
+          # Hello there
+          a. this is the first bullet
+      TEXT
+
+      vim.command 'let g:bullets_auto_indent_after_colon = 1'
+      vim.edit filename
+      vim.type 'GA'
+      vim.feedkeys '\<cr>'
+      vim.type 'this is the second bullet:'
+      vim.feedkeys '\<cr>'
+      vim.type 'this bullet is indented'
+      vim.feedkeys '\<cr>'
+      vim.type 'this bullet is also indented'
+      vim.write
+
+      file_contents = IO.read(filename)
+
+      expect(file_contents.strip).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          a. this is the first bullet
+          b. this is the second bullet:
+          \ti. this bullet is indented
+          \tii. this bullet is also indented
+      TEXT
+    end
   end
 end

@@ -24,6 +24,8 @@ GEM
     rspec-mocks (3.8.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.8.0)
+    rspec-retry (0.6.2)
+      rspec-core (> 3.3)
     rspec-support (3.8.0)
     vimrunner (0.3.4)
 
@@ -35,6 +37,7 @@ DEPENDENCIES
   pry-byebug
   rake (~> 12.3.3)
   rspec
+  rspec-retry
   vimrunner
 
 BUNDLED WITH
