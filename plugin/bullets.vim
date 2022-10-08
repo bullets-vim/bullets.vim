@@ -1290,6 +1290,28 @@ fun! s:replace_char_in_line(lnum, chari, item)
   call setline(a:lnum, l:before . a:item . l:after)
 endfun
 
+fun! s:select_bullet_text(lnum)
+  let l:curr_line = s:parse_bullet(a:lnum, getline(a:lnum))
+  if l:curr_line != []
+    let l:startpos = l:curr_line[0].bullet_length + 1
+    call setpos('.',[0,a:lnum,l:startpos])
+    normal! v
+    call setpos('.',[0,a:lnum,len(getline(a:lnum))])
+  endif
+endfun
+
+fun! s:select_bullet_item(lnum)
+  let l:curr_line = s:parse_bullet(a:lnum, getline(a:lnum))
+  if l:curr_line != []
+    let l:startpos = len(l:curr_line[0].leading_space) + 1
+    call setpos('.',[0,a:lnum,l:startpos])
+    normal! v
+    call setpos('.',[0,a:lnum,len(getline(a:lnum))])
+  endif
+endfun
+
+command! SelectBullet call <SID>select_bullet_item(line('.'))
+command! SelectBulletText call <SID>select_bullet_text(line('.'))
 " ------------------------------------------------------- }}}
 
 " Restore previous external compatibility options --------- {{{
