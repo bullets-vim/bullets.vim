@@ -580,11 +580,10 @@ fun! s:set_checkbox(lnum, marker)
   endif
 endfun
 
-fun! s:toggle_checkboxes_nested()
+fun! s:toggle_checkboxes_nested(lnum)
   " toggle checkbox on the current line, as well as its parents and children
-  let l:lnum = line('.')
-  let l:indent = indent(l:lnum)
-  let l:bullet = s:closest_bullet_types(l:lnum, l:indent)
+  let l:indent = indent(a:lnum)
+  let l:bullet = s:closest_bullet_types(a:lnum, l:indent)
   let l:bullet = s:resolve_bullet_type(l:bullet)
 
   " Is this a checkbox? Do nothing if it's not, otherwise toggle the checkbox
@@ -592,16 +591,16 @@ fun! s:toggle_checkboxes_nested()
     return
   endif
 
-  let l:checked = s:toggle_checkbox(l:lnum)
+  let l:checked = s:toggle_checkbox(a:lnum)
 
   if g:bullets_nested_checkboxes
     " Toggle children and parents
-    let l:completion_marker = s:sibling_checkbox_status(l:lnum)
-    call s:set_parent_checkboxes(l:lnum, l:completion_marker)
+    let l:completion_marker = s:sibling_checkbox_status(a:lnum)
+    call s:set_parent_checkboxes(a:lnum, l:completion_marker)
 
     " Toggle children
     if l:checked >= 0
-      call s:set_child_checkboxes(l:lnum, l:checked)
+      call s:set_child_checkboxes(a:lnum, l:checked)
     endif
   endif
 endfun
@@ -642,9 +641,17 @@ fun! s:set_child_checkboxes(lnum, checked)
   endif
 endfun
 
+fun! s:visual_toggle_checkboxes()
+  let l:selection_lines = s:get_visual_selection_lines()
+  for l:line in l:selection_lines
+    call s:toggle_checkboxes_nested(l:line.nr)
+  endfor
+endfun
+
 command! SelectCheckboxInside call <SID>select_checkbox(1)
 command! SelectCheckbox call <SID>select_checkbox(0)
-command! ToggleCheckbox call <SID>toggle_checkboxes_nested()
+command! ToggleCheckbox call <SID>toggle_checkboxes_nested(line('.'))
+command! -range=% ToggleCheckboxVisual call <SID>visual_toggle_checkboxes()
 " Checkboxes ---------------------------------------------- }}}
 
 " Roman numerals --------------------------------------------- {{{
@@ -989,6 +996,7 @@ nnoremap <silent> <Plug>(bullets-renumber) :RenumberList<cr>
 
 " Toggle checkbox
 nnoremap <silent> <Plug>(bullets-toggle-checkbox) :ToggleCheckbox<cr>
+vnoremap <silent> <Plug>(bullets-toggle-checkbox) :ToggleCheckboxVisual<cr>
 
 " Promote and Demote outline level
 inoremap <silent> <Plug>(bullets-demote) <C-o>:BulletDemote<cr>
@@ -1038,6 +1046,7 @@ augroup TextBulletsMappings
 
     " Toggle checkbox
     call s:add_local_mapping(1, 'nmap', '<leader>x', '<Plug>(bullets-toggle-checkbox)')
+    call s:add_local_mapping(1, 'vmap', '<leader>x', '<Plug>(bullets-toggle-checkbox)')
 
     " Promote and Demote outline level
     call s:add_local_mapping(1, 'imap', '<C-t>', '<Plug>(bullets-demote)')
