@@ -259,8 +259,7 @@ RSpec.describe 'checkboxes' do
     TEXT
 
     vim.edit filename
-    vim.normal 'j'
-    vim.normal 'jv2j'
+    vim.normal 'jV2j'
     vim.command 'ToggleCheckboxVisual'
     vim.write
 

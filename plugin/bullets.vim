@@ -669,7 +669,15 @@ endfun
 fun! s:visual_toggle_checkboxes()
   let l:selection_lines = s:get_visual_selection_lines()
   for l:line in l:selection_lines
-    call s:toggle_checkboxes_nested(l:line.nr)
+    " call s:toggle_checkboxes_nested(l:line.nr)
+    let l:checked = s:toggle_checkbox(l:line.nr)
+
+    if g:bullets_nested_checkboxes
+      " Toggle children and parents
+      let l:completion_marker = s:sibling_checkbox_status(l:line.nr)
+      call s:set_parent_checkboxes(l:line.nr, l:completion_marker)
+    endif
+
   endfor
 endfun
 
