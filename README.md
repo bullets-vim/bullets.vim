@@ -140,6 +140,15 @@ let g:bullets_pad_right = 0
 "    ^ no extra space between bullet and text
 ```
 
+Indent new bullets when the previous bullet ends with a colon:
+
+```vim
+let g:bullets_auto_indent_after_colon = 1 " default = 1
+" a. text
+" b. text:
+"   i. text
+```
+
 Maximum number of alphabetic characters to use for bullets:
 
 ```vim
