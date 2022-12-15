@@ -40,6 +40,23 @@ RSpec.describe 'Bullets.vim' do
         EXPECTED
       end
 
+      it 'adds a new Sagemath bullet' do
+        test_bullet_inserted('Second item', <<-INIT, <<-EXPECTED)
+        \\documentclass{article}
+          \\begin{document}
+
+          \\begin{sagecommandline}
+          sage: item
+        INIT
+        \\documentclass{article}
+          \\begin{document}
+
+          \\begin{sagecommandline}
+          sage: item
+          sage: Second item
+        EXPECTED
+      end
+
       it 'adds a new latex bullet' do
         test_bullet_inserted('Second item', <<-INIT, <<-EXPECTED)
         \\documentclass{article}

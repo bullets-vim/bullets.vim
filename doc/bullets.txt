@@ -36,6 +36,7 @@ B) or this style of alphabetic
 i. Roman numeral lists
 II. or capitalized Roman numeral lists
 \item latex item lists
+sage: Sagemath command line items
 **** Org mode headers
 
 It supports nested (heirarchical) ordered lists/outlines using different types
@@ -85,13 +86,13 @@ GENERAL COMMANDS                            *bullets-commands*
 
                                             *bullets-:BulletDemote*
 :BulletDemote          Demotes the current bullet by indenting it and changing
-                       its bullet type to the next level defined in 
+                       its bullet type to the next level defined in
                        g:bullets_outline_levels. Mapped to <C-t> in INSERT
                        mode and `>>` in NORMAL mode.
 
                                             *bullets-:BulletPromote*
-:BulletPromote         Promotes the current bullet by unindenting it and 
-                       changing its bullet type to the next level defined in 
+:BulletPromote         Promotes the current bullet by unindenting it and
+                       changing its bullet type to the next level defined in
                        g:bullets_outline_levels. Mapped to <C-d> in INSERT
                        mode and `<<` in NORMAL mode by default.
 

@@ -272,7 +272,7 @@ fun! s:match_checkbox_bullet_item(input_text)
 endfun
 
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^(\s*)(-|\*+|\.+|#\.|\+|\\item)(\s+))(.*)'
+  let l:std_bullet_regex  = '\v(^(\s*)(-|\*+|\.+|#\.|\+|sage:|\\item)(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
 
   if empty(l:matches)
