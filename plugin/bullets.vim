@@ -1078,7 +1078,6 @@ fun! s:get_visual_selection_lines()
     call add(l:lines_with_index, {'text': l:line, 'nr': l:index})
     let l:index += 1
   endfor
-  echom l:lines_with_index
   return l:lines_with_index
 endfun
 
