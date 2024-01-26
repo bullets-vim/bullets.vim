@@ -749,13 +749,18 @@ endfun
 
 " Renumbering --------------------------------------------- {{{
 fun! s:renumber_selection()
-  let l:selection_lines = s:get_visual_selection_lines()
+    let l:start = getpos("'<")[1]
+    let l:end = getpos("'>")[1]
+    call s:renumber_lines(l:start, l:end)
+endfun
+
+fun! s:renumber_lines(start, end)
   let l:prev_indent = -1
   let l:levels = {} " stores all the info about the current outline/list
 
-  for l:line in l:selection_lines
-    let l:indent = indent(l:line.nr)
-    let l:bullet = s:closest_bullet_types(l:line.nr, l:indent)
+  for l:nr in range(a:start, a:end)
+    let l:indent = indent(l:nr)
+    let l:bullet = s:closest_bullet_types(l:nr, l:indent)
     let l:bullet = s:resolve_bullet_type(l:bullet)
     let l:curr_level = s:get_level(l:bullet)
     if l:curr_level > 1
@@ -763,7 +768,7 @@ fun! s:renumber_selection()
       break
     endif
 
-    if !empty(l:bullet) && l:bullet.starting_at_line_num == l:line.nr
+    if !empty(l:bullet) && l:bullet.starting_at_line_num == l:nr
       " skip wrapped lines and lines that aren't bullets
       if (l:indent > l:prev_indent || !has_key(l:levels, l:indent))
           \ && l:bullet.bullet_type !=# 'chk' && l:bullet.bullet_type !=# 'std'
@@ -818,36 +823,23 @@ fun! s:renumber_selection()
         let l:renumbered_line = l:bullet.leading_space
               \ . l:new_bullet
               \ . l:bullet.text_after_bullet
-        call setline(l:line.nr, l:renumbered_line)
+        call setline(l:nr, l:renumbered_line)
       elseif l:bullet.bullet_type ==# 'chk'
         " Reset the checkbox marker if it already exists, or blank otherwise
         let l:marker = has_key(l:bullet, 'checkbox_marker') ?
               \ l:bullet.checkbox_marker : ' '
-        call s:set_checkbox(l:line.nr, l:marker)
+        call s:set_checkbox(l:nr, l:marker)
       endif
     endif
   endfor
 endfun
 
-fun! s:renumber_whole_list(...)
-  " Renumbers the whole list containing the cursor.
-  " Does not renumber across blank lines.
-  " Takes 2 optional arguments containing starting and ending cursor positions
-  " so that we can reset the existing visual selection after renumbering.
+" Renumbers the whole list containing the cursor.
+fun! s:renumber_whole_list()
   let l:first_line = s:first_bullet_line(line('.'))
   let l:last_line = s:last_bullet_line(line('.'))
   if l:first_line > 0 && l:last_line > 0
-    " Create a visual selection around the current list so that we can call
-    " s:renumber_selection() to do the renumbering.
-    call setpos("'<", [0, l:first_line, 1, 0])
-    call setpos("'>", [0, l:last_line, 1, 0])
-    call s:renumber_selection()
-    if a:0 == 2
-      " Reset the starting visual selection
-      call setpos("'<", [0, a:1[0], a:1[1], 0])
-      call setpos("'>", [0, a:2[0], a:2[1], 0])
-      execute 'normal! gv'
-    endif
+    call s:renumber_lines(l:first_line, l:last_line)
   endif
 endfun
 
@@ -856,14 +848,13 @@ command! RenumberList call <SID>renumber_whole_list()
 " --------------------------------------------------------- }}}
 
 " Changing outline level ---------------------------------- {{{
-fun! s:change_bullet_level(direction)
-  let l:lnum = line('.')
-  let l:curr_line = s:parse_bullet(l:lnum, getline(l:lnum))
+fun! s:change_bullet_level(direction, lnum)
+  let l:curr_line = s:parse_bullet(a:lnum, getline(a:lnum))
 
   if a:direction == 1
-    if l:curr_line != [] && indent(l:lnum) == 0
+    if l:curr_line != [] && indent(a:lnum) == 0
       " Promoting a bullet at the highest level will delete the bullet
-      call setline(l:lnum, l:curr_line[0].text_after_bullet)
+      call setline(a:lnum, l:curr_line[0].text_after_bullet)
       execute 'normal! $'
       return
     else
@@ -878,8 +869,8 @@ fun! s:change_bullet_level(direction)
     return
   endif
 
-  let l:curr_indent = indent(l:lnum)
-  let l:curr_bullet= s:closest_bullet_types(l:lnum, l:curr_indent)
+  let l:curr_indent = indent(a:lnum)
+  let l:curr_bullet= s:closest_bullet_types(a:lnum, l:curr_indent)
   let l:curr_bullet = s:resolve_bullet_type(l:curr_bullet)
 
   let l:curr_line = l:curr_bullet.starting_at_line_num
@@ -963,7 +954,7 @@ fun! s:change_bullet_level(direction)
   endif
 
   " Apply the new bullet
-  call setline(l:lnum, l:next_bullet_str)
+  call setline(a:lnum, l:next_bullet_str)
 
   execute 'normal! $'
   return
@@ -971,7 +962,7 @@ endfun
 
 fun! s:change_bullet_level_and_renumber(direction)
   " Calls change_bullet_level and then renumber_whole_list if required
-  call s:change_bullet_level(a:direction)
+  call s:change_bullet_level(a:direction, line(','))
   if g:bullets_renumber_on_change
       call s:renumber_whole_list()
   endif
@@ -979,19 +970,14 @@ endfun
 
 fun! s:visual_change_bullet_level(direction)
   " Changes the bullet level for each of the selected lines
-  let l:start = getpos("'<")[1:2]
-  let l:end = getpos("'>")[1:2]
-  let l:selected_lines = range(l:start[0], l:end[0])
-  for l:lnum in l:selected_lines
-    " Iterate the cursor position over each line and then call
-    " s:change_bullet_level for that cursor position.
-    call setpos('.', [0, l:lnum, 1, 0])
-    call s:change_bullet_level(a:direction)
+  let l:start = getpos("'<")[1]
+  let l:end = getpos("'>")[1]
+  for l:lnum in range(l:start, l:end)
+    call s:change_bullet_level(a:direction, l:lnum)
   endfor
+
   if g:bullets_renumber_on_change
-    " Pass the current visual selection so that it gets reset after
-    " renumbering the list.
-    call s:renumber_whole_list(l:start, l:end)
+    call s:renumber_whole_list()
   endif
 endfun
 
@@ -1089,9 +1075,10 @@ fun! s:get_visual_selection_lines()
   let l:index = l:lnum1
   let l:lines_with_index = []
   for l:line in l:lines
-    let l:lines_with_index += [{'text': l:line, 'nr': l:index}]
+    call add(l:lines_with_index, {'text': l:line, 'nr': l:index})
     let l:index += 1
   endfor
+  echom l:lines_with_index
   return l:lines_with_index
 endfun
 
