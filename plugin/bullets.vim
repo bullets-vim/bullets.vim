@@ -321,6 +321,10 @@ fun! s:get_selection()
 endfun
 
 fun! s:set_selection(sel)
+  if a:se1 == s:get_selection()
+      return
+  endif
+
   let l:start_col = strlen(getline(a:sel.start_line)) - a:sel.start_offset
   let l:end_col = strlen(getline(a:sel.end_line)) - a:sel.end_offset
 
