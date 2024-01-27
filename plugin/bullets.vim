@@ -452,6 +452,7 @@ endfun
 
 " Generate bullets --------------------------------------  {{{
 fun! s:insert_new_bullet()
+  " TODO - fix
   let l:curr_line_num = line('.')
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
   let l:curr_indent = indent(l:curr_line_num)
@@ -495,6 +496,7 @@ fun! s:insert_new_bullet()
 
       " go to next line after the new bullet
       let l:col = strlen(getline(l:next_line_num)) + 1
+      " TODO - fix
       call setpos('.', [0, l:next_line_num, l:col])
 
       " indent if previous line ended in a colon
@@ -503,6 +505,7 @@ fun! s:insert_new_bullet()
         call s:change_bullet_level_and_renumber(-1)
         " reset cursor position after indenting
         let l:col = strlen(getline(l:next_line_num)) + 1
+        " TODO - fix
         call setpos('.', [0, l:next_line_num, l:col])
       elseif g:bullets_renumber_on_change
         call s:renumber_whole_list()
@@ -538,6 +541,42 @@ fun! s:line_ends_in_colon(lnum)
   return getline(a:lnum)[strlen(getline(a:lnum))-1:] ==# ':'
 endfun
 " --------------------------------------------------------- }}}
+
+" --------------------------------------------------------- }}}
+
+
+" Selection management ------------------------------------ {{{
+
+fun! s:get_current_selection()
+    let l:mode = call mode()
+    if l:mode ==# 'v' || l:mode ==# 'V' || l:mode ==# "\<C-v>"
+        let [l:line_start, l:col_start] = getpos("'<")[1:2]
+        let [l:line_end, l:col_end] = getpos("'>")[1:2]
+        let col_start_offset = strlen(getline(line_start)) - l:col_start + 1
+        let col_end_offset = strlen(getline(line_end)) - l:col_end + 1
+        return [l:line_start, l:col_start_offset, l:line_end, l:col_end_offset]
+    else
+        let line = line('.')
+        let col = col('.')
+        let col_offset = strlen(getline(line)) - col + 1
+        return [l:line, l:col_offset, l:line, l:col_offset]
+    endif
+endfun
+
+fun! s:set_selection(sel)
+    let [l:line_start, l:col_start_offset, l:line_end, l:col_end_offset] = a:sel
+
+    let col_start = strlen(getline(line_start)) - l:col_start_offset + 1
+    let col_end = strlen(getline(line_end)) - l:col_end_offset + 1
+
+    if line_start == l:line_end && l:col_start == l:col_end
+        call cursor(line_start, col_start)
+    else
+        call cursor(line_start, col_start)
+        execute "normal! v"
+        call cursor(line_end, col_end)
+    endif
+endfun
 
 " --------------------------------------------------------- }}}
 
@@ -855,13 +894,12 @@ fun! s:change_bullet_level(direction, lnum)
     if l:curr_line != [] && indent(a:lnum) == 0
       " Promoting a bullet at the highest level will delete the bullet
       call setline(a:lnum, l:curr_line[0].text_after_bullet)
-      execute 'normal! $'
       return
     else
-      execute 'normal! <<$'
+      execute a:lnum . 'normal! <<$'
     endif
   else
-    execute 'normal! >>$'
+    execute a:lnum . 'normal! >>$'
   endif
 
   if l:curr_line == []
@@ -972,6 +1010,7 @@ fun! s:visual_change_bullet_level(direction)
   " Changes the bullet level for each of the selected lines
   let l:start = getpos("'<")[1]
   let l:end = getpos("'>")[1]
+
   for l:lnum in range(l:start, l:end)
     call s:change_bullet_level(a:direction, l:lnum)
   endfor
