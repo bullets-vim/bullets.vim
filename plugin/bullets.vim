@@ -305,14 +305,14 @@ fun! s:get_selection()
   if l:mode ==# 'v' || l:mode ==# 'V' || l:mode ==# "\<C-v>"
     let [l:start_line, l:start_col] = getpos("'<")[1:2]
     let l:sel.start_line = l:start_line
-    let l:sel.start_offset = strlen(getline(sel.start_line)) - l:start_col + 1
+    let l:sel.start_offset = strlen(getline(sel.start_line)) - l:start_col
     let [l:end_line, l:end_col] = getpos("'>")[1:2]
     let l:sel.end_line = l:end_line
-    let l:sel.end_offset = strlen(getline(sel.end_line)) - l:end_col[2] + 1
+    let l:sel.end_offset = strlen(getline(sel.end_line)) - l:end_col
     let l:sel.visual_mode = l:mode
   else
     let l:sel.start_line = line('.')
-    let l:sel.start_offset = strlen(getline(sel.start_line)) - col('.') + 1
+    let l:sel.start_offset = strlen(getline(sel.start_line)) - col('.')
     let l:sel.end_line = l:sel.start_line
     let l:sel.end_offset = l:sel.start_offset
     let l:sel.visual_mode = ''
@@ -321,17 +321,11 @@ fun! s:get_selection()
 endfun
 
 fun! s:set_selection(sel)
-  if a:sel == s:get_selection()
-    return
-  endif
+  let l:start_col = strlen(getline(a:sel.start_line)) - a:sel.start_offset
+  let l:end_col = strlen(getline(a:sel.end_line)) - a:sel.end_offset
 
-  let l:start_col = strlen(getline(a:sel.start_line)) - a:sel.start_offset + 1
-  let l:end_col = strlen(getline(a:sel.end_line)) - a:sel.end_offset + 1
-
-  if a:sel.start_line == a:sel.end_line && l:start_col == l:end_col
-    call cursor(a:sel.start_line, l:start_col)
-  else
-    call cursor(a:sel.start_line, l:start_col)
+  call cursor(a:sel.start_line, l:start_col)
+  if a:sel.start_line != a:sel.end_line || l:start_col != l:end_col
     if a:sel.visual_mode == "\<C-v>"
       execute "normal! \<C-v>"
     elseif a:sel.visual_mode == 'V' || a:sel.visual_mode == 'v'
@@ -795,7 +789,6 @@ endfun
 fun! s:renumber_selection()
     let l:sel = s:get_selection()
     call s:renumber_lines(l:sel.start_line, l:sel.end_line)
-    call s:set_selection(l:sel)
 endfun
 
 fun! s:renumber_lines(start, end)
@@ -880,13 +873,11 @@ endfun
 
 " Renumbers the whole list containing the cursor.
 fun! s:renumber_whole_list()
-  let l:sel = s:get_selection()
   let l:first_line = s:first_bullet_line(line('.'))
   let l:last_line = s:last_bullet_line(line('.'))
   if l:first_line > 0 && l:last_line > 0
     call s:renumber_lines(l:first_line, l:last_line)
   endif
-  call s:set_selection(l:sel)
 endfun
 
 command! -range=% RenumberSelection call <SID>renumber_selection()
