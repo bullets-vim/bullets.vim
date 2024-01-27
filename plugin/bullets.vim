@@ -532,18 +532,11 @@ fun! s:insert_new_bullet()
       " insert next bullet
       call append(l:curr_line_num, l:next_bullet_list)
 
-
-      " go to next line after the new bullet
-      let l:col = strlen(getline(l:next_line_num)) + 1
-      call setpos('.', [0, l:next_line_num, l:col])
-
       " indent if previous line ended in a colon
       if l:indent_next
         " demote the new bullet
-        call s:change_bullet_level_and_renumber(-1)
+        call s:change_line_bullet_level(-1, l:next_line_num)
         " reset cursor position after indenting
-        let l:col = strlen(getline(l:next_line_num)) + 1
-        call setpos('.', [0, l:next_line_num, l:col])
       elseif g:bullets_renumber_on_change
         call s:renumber_whole_list()
       endif
