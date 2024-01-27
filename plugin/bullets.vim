@@ -895,7 +895,7 @@ command! RenumberList call <SID>renumber_whole_list()
 " --------------------------------------------------------- }}}
 
 " Changing outline level ---------------------------------- {{{
-fun! s:change_bullet_level(direction, lnum)
+fun! s:change_line_bullet_level(direction, lnum)
   let l:curr_line = s:parse_bullet(a:lnum, getline(a:lnum))
 
   if a:direction == 1
@@ -1007,7 +1007,7 @@ fun! s:change_bullet_level(direction)
   " Changes the bullet level for each of the selected lines
   let l:sel = s:get_selection()
   for l:lnum in range(l:sel.start_line, l:sel.end_line)
-    call s:change_bullet_level(a:direction, l:lnum)
+    call s:change_line_bullet_level(a:direction, l:lnum)
   endfor
 
   if g:bullets_renumber_on_change
