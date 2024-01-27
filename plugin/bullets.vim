@@ -297,6 +297,52 @@ fun! s:match_bullet_list_item(input_text)
 endfun
 " -------------------------------------------------------  }}}
 
+" Selection management ------------------------------------ {{{
+
+fun! s:get_selection()
+  let l:sel = {}
+  let l:mode = visualmode()
+  if l:mode ==# 'v' || l:mode ==# 'V' || l:mode ==# "\<C-v>"
+    let [l:start_line, l:start_col] = getpos("'<")[1:2]
+    let l:sel.start_line = l:start_line
+    let l:sel.start_offset = strlen(getline(sel.start_line)) - l:start_col + 1
+    let [l:end_line, l:end_col] = getpos("'>")[1:2]
+    let l:sel.end_line = l:end_line
+    let l:sel.end_offset = strlen(getline(sel.end_line)) - l:end_col[2] + 1
+    let l:sel.visual_mode = l:mode
+  else
+    let l:sel.start_line = line('.')
+    let l:sel.start_offset = strlen(getline(sel.start_line)) - col('.') + 1
+    let l:sel.end_line = l:sel.start_line
+    let l:sel.end_offset = l:sel.start_offset
+    let l:sel.visual_mode = ''
+  endif
+  return l:sel
+endfun
+
+fun! s:set_selection(sel)
+  if a:sel == s:get_selection()
+    return
+  endif
+
+  let l:start_col = strlen(getline(a:sel.start_line)) - a:sel.start_offset + 1
+  let l:end_col = strlen(getline(a:sel.end_line)) - a:sel.end_offset + 1
+
+  if a:sel.start_line == a:sel.end_line && l:start_col == l:end_col
+    call cursor(a:sel.start_line, l:start_col)
+  else
+    call cursor(a:sel.start_line, l:start_col)
+    if a:sel.visual_mode == "\<C-v>"
+      execute "normal! \<C-v>"
+    elseif a:sel.visual_mode == 'V' || a:sel.visual_mode == 'v'
+      execute "normal! v"
+    endif
+    call cursor(a:sel.end_line, l:end_col)
+  endif
+endfun
+
+" --------------------------------------------------------- }}}
+
 " Resolve Bullet Type ----------------------------------- {{{
 fun! s:closest_bullet_types(from_line_num, max_indent)
   let l:lnum = a:from_line_num
@@ -347,7 +393,9 @@ fun! s:find_by_type(bullet_types, type)
   return s:find(a:bullet_types, 'v:val.bullet_type ==# "' . a:type . '"')
 endfun
 
-" Roman Numeral vs Alphabetic Bullets ---------------------------------- {{{
+" --------------------------------------------------------- }}}
+
+" Roman Numeral vs Alphabetic Bullets --------------------- {{{
 fun! s:resolve_rom_or_abc(bullet_types)
     let l:first_type = a:bullet_types[0]
     let l:prev_search_starting_line = l:first_type.starting_at_line_num - g:bullets_line_spacing
@@ -396,7 +444,7 @@ fun! s:has_rom_and_abc(bullet_types)
 endfun
 " ------------------------------------------------------- }}}
 
-" Checkbox vs Standard Bullets ----------------------------------------- {{{
+" Checkbox vs Standard Bullets -------------------------- {{{
 fun! s:resolve_chk_or_std(bullet_types)
   " if it matches both regular and checkbox it is most likely a checkbox
   return s:find_by_type(a:bullet_types, 'chk')
@@ -407,8 +455,6 @@ fun! s:has_chk_and_std(bullet_types)
   let l:has_std = s:contains_type(a:bullet_types, 'std')
   return l:has_chk && l:has_std
 endfun
-" ------------------------------------------------------- }}}
-
 " ------------------------------------------------------- }}}
 
 " Build Next Bullet -------------------------------------- {{{
@@ -452,7 +498,6 @@ endfun
 
 " Generate bullets --------------------------------------  {{{
 fun! s:insert_new_bullet()
-  " TODO - fix
   let l:curr_line_num = line('.')
   let l:next_line_num = l:curr_line_num + g:bullets_line_spacing
   let l:curr_indent = indent(l:curr_line_num)
@@ -496,7 +541,6 @@ fun! s:insert_new_bullet()
 
       " go to next line after the new bullet
       let l:col = strlen(getline(l:next_line_num)) + 1
-      " TODO - fix
       call setpos('.', [0, l:next_line_num, l:col])
 
       " indent if previous line ended in a colon
@@ -505,7 +549,6 @@ fun! s:insert_new_bullet()
         call s:change_bullet_level_and_renumber(-1)
         " reset cursor position after indenting
         let l:col = strlen(getline(l:next_line_num)) + 1
-        " TODO - fix
         call setpos('.', [0, l:next_line_num, l:col])
       elseif g:bullets_renumber_on_change
         call s:renumber_whole_list()
@@ -540,44 +583,6 @@ command! InsertNewBullet call <SID>insert_new_bullet()
 fun! s:line_ends_in_colon(lnum)
   return getline(a:lnum)[strlen(getline(a:lnum))-1:] ==# ':'
 endfun
-" --------------------------------------------------------- }}}
-
-" --------------------------------------------------------- }}}
-
-
-" Selection management ------------------------------------ {{{
-
-fun! s:get_current_selection()
-    let l:mode = call mode()
-    if l:mode ==# 'v' || l:mode ==# 'V' || l:mode ==# "\<C-v>"
-        let [l:line_start, l:col_start] = getpos("'<")[1:2]
-        let [l:line_end, l:col_end] = getpos("'>")[1:2]
-        let col_start_offset = strlen(getline(line_start)) - l:col_start + 1
-        let col_end_offset = strlen(getline(line_end)) - l:col_end + 1
-        return [l:line_start, l:col_start_offset, l:line_end, l:col_end_offset]
-    else
-        let line = line('.')
-        let col = col('.')
-        let col_offset = strlen(getline(line)) - col + 1
-        return [l:line, l:col_offset, l:line, l:col_offset]
-    endif
-endfun
-
-fun! s:set_selection(sel)
-    let [l:line_start, l:col_start_offset, l:line_end, l:col_end_offset] = a:sel
-
-    let col_start = strlen(getline(line_start)) - l:col_start_offset + 1
-    let col_end = strlen(getline(line_end)) - l:col_end_offset + 1
-
-    if line_start == l:line_end && l:col_start == l:col_end
-        call cursor(line_start, col_start)
-    else
-        call cursor(line_start, col_start)
-        execute "normal! v"
-        call cursor(line_end, col_end)
-    endif
-endfun
-
 " --------------------------------------------------------- }}}
 
 " Checkboxes ---------------------------------------------- {{{
@@ -788,9 +793,9 @@ endfun
 
 " Renumbering --------------------------------------------- {{{
 fun! s:renumber_selection()
-    let l:start = getpos("'<")[1]
-    let l:end = getpos("'>")[1]
-    call s:renumber_lines(l:start, l:end)
+    let l:sel = s:get_selection()
+    call s:renumber_lines(l:sel.start_line, l:sel.end_line)
+    call s:set_selection(l:sel)
 endfun
 
 fun! s:renumber_lines(start, end)
@@ -875,15 +880,18 @@ endfun
 
 " Renumbers the whole list containing the cursor.
 fun! s:renumber_whole_list()
+  let l:sel = s:get_selection()
   let l:first_line = s:first_bullet_line(line('.'))
   let l:last_line = s:last_bullet_line(line('.'))
   if l:first_line > 0 && l:last_line > 0
     call s:renumber_lines(l:first_line, l:last_line)
   endif
+  call s:set_selection(l:sel)
 endfun
 
 command! -range=% RenumberSelection call <SID>renumber_selection()
 command! RenumberList call <SID>renumber_whole_list()
+
 " --------------------------------------------------------- }}}
 
 " Changing outline level ---------------------------------- {{{
@@ -896,10 +904,10 @@ fun! s:change_bullet_level(direction, lnum)
       call setline(a:lnum, l:curr_line[0].text_after_bullet)
       return
     else
-      execute a:lnum . 'normal! <<$'
+      execute a:lnum . 'normal! <<'
     endif
   else
-    execute a:lnum . 'normal! >>$'
+    execute a:lnum . 'normal! >>'
   endif
 
   if l:curr_line == []
@@ -993,37 +1001,25 @@ fun! s:change_bullet_level(direction, lnum)
 
   " Apply the new bullet
   call setline(a:lnum, l:next_bullet_str)
-
-  execute 'normal! $'
-  return
 endfun
 
-fun! s:change_bullet_level_and_renumber(direction)
-  " Calls change_bullet_level and then renumber_whole_list if required
-  call s:change_bullet_level(a:direction, line('.'))
-  if g:bullets_renumber_on_change
-      call s:renumber_whole_list()
-  endif
-endfun
-
-fun! s:visual_change_bullet_level(direction)
+fun! s:change_bullet_level(direction)
   " Changes the bullet level for each of the selected lines
-  let l:start = getpos("'<")[1]
-  let l:end = getpos("'>")[1]
-
-  for l:lnum in range(l:start, l:end)
+  let l:sel = s:get_selection()
+  for l:lnum in range(l:sel.start_line, l:sel.end_line)
     call s:change_bullet_level(a:direction, l:lnum)
   endfor
 
   if g:bullets_renumber_on_change
     call s:renumber_whole_list()
   endif
+  call s:set_selection(l:sel)
 endfun
 
-command! BulletDemote call <SID>change_bullet_level_and_renumber(-1)
-command! BulletPromote call <SID>change_bullet_level_and_renumber(1)
-command! -range=% BulletDemoteVisual call <SID>visual_change_bullet_level(-1)
-command! -range=% BulletPromoteVisual call <SID>visual_change_bullet_level(1)
+command! BulletDemote call <SID>change_bullet_level(-1)
+command! BulletPromote call <SID>change_bullet_level(1)
+command! -range=% BulletDemoteVisual call <SID>change_bullet_level(-1)
+command! -range=% BulletPromoteVisual call <SID>change_bullet_level(1)
 
 " --------------------------------------------------------- }}}
 
