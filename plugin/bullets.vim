@@ -870,7 +870,7 @@ fun! s:change_bullet_level(direction, lnum)
   endif
 
   let l:curr_indent = indent(a:lnum)
-  let l:curr_bullet= s:closest_bullet_types(a:lnum, l:curr_indent)
+  let l:curr_bullet = s:closest_bullet_types(a:lnum, l:curr_indent)
   let l:curr_bullet = s:resolve_bullet_type(l:curr_bullet)
 
   let l:curr_line = l:curr_bullet.starting_at_line_num
@@ -962,7 +962,7 @@ endfun
 
 fun! s:change_bullet_level_and_renumber(direction)
   " Calls change_bullet_level and then renumber_whole_list if required
-  call s:change_bullet_level(a:direction, line(','))
+  call s:change_bullet_level(a:direction, line('.'))
   if g:bullets_renumber_on_change
       call s:renumber_whole_list()
   endif
