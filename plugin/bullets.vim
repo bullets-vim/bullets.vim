@@ -297,11 +297,20 @@ fun! s:match_bullet_list_item(input_text)
 endfun
 " -------------------------------------------------------  }}}
 
-" Selection management ------------------------------------ {{{
+" Selection management ----------------------------------- {{{
 
-fun! s:get_selection()
+" These functions help us maintain the cursor or selection across operation
+"
+" When getting selection we record
+" 1. The start and end line of the selection
+" 2. Thd the offset of the start and end column the line end
+"
+" When setting the selection we set the start and end at the same _offset_
+" From the new line start and end. As we manipulate line prefixes, the
+" offset from the end represents the correct new cursor position
+fun! s:get_selection(is_visual)
   let l:sel = {}
-  let l:mode = visualmode()
+  let l:mode = a:is_visual ? visualmode() : ''
   if l:mode ==# 'v' || l:mode ==# 'V' || l:mode ==# "\<C-v>"
     let [l:start_line, l:start_col] = getpos("'<")[1:2]
     let l:sel.start_line = l:start_line
@@ -321,10 +330,6 @@ fun! s:get_selection()
 endfun
 
 fun! s:set_selection(sel)
-  if a:sel == s:get_selection()
-      return
-  endif
-
   let l:start_col = strlen(getline(a:sel.start_line)) - a:sel.start_offset
   let l:end_col = strlen(getline(a:sel.end_line)) - a:sel.end_offset
 
@@ -339,7 +344,7 @@ fun! s:set_selection(sel)
   endif
 endfun
 
-" --------------------------------------------------------- }}}
+" ------------------------------------------------------- }}}
 
 " Resolve Bullet Type ----------------------------------- {{{
 fun! s:closest_bullet_types(from_line_num, max_indent)
@@ -791,8 +796,9 @@ endfun
 
 " Renumbering --------------------------------------------- {{{
 fun! s:renumber_selection()
-    let l:sel = s:get_selection()
+    let l:sel = s:get_selection(1)
     call s:renumber_lines(l:sel.start_line, l:sel.end_line)
+    call s:set_selection(l:sel)
 endfun
 
 fun! s:renumber_lines(start, end)
@@ -998,9 +1004,10 @@ fun! s:change_line_bullet_level(direction, lnum)
   call setline(a:lnum, l:next_bullet_str)
 endfun
 
-fun! s:change_bullet_level(direction)
+
+fun! s:change_bullet_level(direction, is_visual)
   " Changes the bullet level for each of the selected lines
-  let l:sel = s:get_selection()
+  let l:sel = s:get_selection(a:is_visual)
   for l:lnum in range(l:sel.start_line, l:sel.end_line)
     call s:change_line_bullet_level(a:direction, l:lnum)
   endfor
@@ -1011,10 +1018,10 @@ fun! s:change_bullet_level(direction)
   call s:set_selection(l:sel)
 endfun
 
-command! BulletDemote call <SID>change_bullet_level(-1)
-command! BulletPromote call <SID>change_bullet_level(1)
-command! -range=% BulletDemoteVisual call <SID>change_bullet_level(-1)
-command! -range=% BulletPromoteVisual call <SID>change_bullet_level(1)
+command! BulletDemote call <SID>change_bullet_level(-1, 0)
+command! BulletPromote call <SID>change_bullet_level(1, 0)
+command! -range=% BulletDemoteVisual call <SID>change_bullet_level(-1, 1)
+command! -range=% BulletPromoteVisual call <SID>change_bullet_level(1, 1)
 
 " --------------------------------------------------------- }}}
 
