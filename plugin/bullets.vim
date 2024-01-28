@@ -321,7 +321,7 @@ fun! s:get_selection()
 endfun
 
 fun! s:set_selection(sel)
-  if a:se1 == s:get_selection()
+  if a:sel == s:get_selection()
       return
   endif
 
