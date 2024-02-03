@@ -157,7 +157,7 @@ endfun
 fun! s:parse_bullet_text(line_text)
 
   if s:bullet_cache isnot v:null
-    let l:cached = get(s:bullet_cache, l:line_text, v:null)
+    let l:cached = get(s:bullet_cache, a:line_text, v:null)
     if l:cached isnot v:null
       " Return a copy so as not to break the referene
       return copy(l:cached)
@@ -166,15 +166,15 @@ fun! s:parse_bullet_text(line_text)
 
   let l:bullet = s:match_bullet_list_item(a:line_text)
   " Must be a bullet to be a checkbox
-  let l:check = !empty(l:bullet) ? s:match_checkbox_bullet_item(a:line_text) : v:null
+  let l:check = !empty(l:bullet) ? s:match_checkbox_bullet_item(a:line_text) : {}
   " Cannot be numeric if a bullet
-  let l:num = empty(l:bullet) ? s:match_numeric_list_item(a:line_text) : v:null
+  let l:num = empty(l:bullet) ? s:match_numeric_list_item(a:line_text) : {}
   " Cannot be alphabetic if numeric or a bullet
-  let l:alpha = empty(l:bullet) && empty(l:num) ? s:match_alphabetical_list_item(a:line_text) : v:null
+  let l:alpha = empty(l:bullet) && empty(l:num) ? s:match_alphabetical_list_item(a:line_text) : {}
   " Cannot be roman if numeric or a bullet
-  let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : v:null
+  let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : {}
 
-  let l:kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], 'v:val isnot v:null')
+  let l:kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], '!empty(v:val)')
   
   if s:bullet_cache isnot v:null
     let s:bullet_cache[a:line_text] = l:kinds
