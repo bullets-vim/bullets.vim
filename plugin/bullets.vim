@@ -144,36 +144,40 @@ fun! s:disable_bullet_cache()
   endif
 endfun
 
-
 fun! s:parse_bullet(line_num, line_text)
+  let l:kinds = s:parse_bullet_text(a:line_text)
+
+  for l:data in l:kinds
+    let l:data.starting_at_line_num = a:line_num
+  endfor
+
+  return l:kinds
+endfun
+
+fun! s:parse_bullet_text(line_text)
 
   if s:bullet_cache isnot v:null
-    let l:key = a:line_text . a:line_num
-    let l:cached = get(s:bullet_cache, l:key, v:null)
+    let l:cached = get(s:bullet_cache, l:line_text, v:null)
     if l:cached isnot v:null
-      return l:cached
+      " Return a copy so as not to break the referene
+      return copy(l:cached)
     endif
   endif
 
   let l:bullet = s:match_bullet_list_item(a:line_text)
   " Must be a bullet to be a checkbox
-  let l:check = !empty(l:bullet) ? s:match_checkbox_bullet_item(a:line_text) : {}
+  let l:check = !empty(l:bullet) ? s:match_checkbox_bullet_item(a:line_text) : v:null
   " Cannot be numeric if a bullet
-  let l:num = empty(l:bullet) ? s:match_numeric_list_item(a:line_text) : {}
+  let l:num = empty(l:bullet) ? s:match_numeric_list_item(a:line_text) : v:null
   " Cannot be alphabetic if numeric or a bullet
-  let l:alpha = empty(l:bullet) && empty(l:num) ? s:match_alphabetical_list_item(a:line_text) : {}
+  let l:alpha = empty(l:bullet) && empty(l:num) ? s:match_alphabetical_list_item(a:line_text) : v:null
   " Cannot be roman if numeric or a bullet
-  let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : {}
+  let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : v:null
 
-  let l:kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], '!empty(v:val)')
-
-  for l:data in l:kinds
-    let l:data.starting_at_line_num = a:line_num
-  endfor
+  let l:kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], 'v:val isnot v:null')
   
   if s:bullet_cache isnot v:null
-    let l:key = a:line_text . a:line_num
-    let s:bullet_cache[l:key] = l:kinds
+    let s:bullet_cache[a:line_text] = l:kinds
   endif
     
   return l:kinds
