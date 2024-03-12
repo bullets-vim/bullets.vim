@@ -198,7 +198,7 @@ bullet types for each level of indentation. Define the type of bullet used for
 each level using the following ordered list:
 
    `let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-',`
-  `   \ 'std*', 'std+']`
+  `   \ 'std*', 'std+', 'std>', 'std#']`
 
 Demoting a bullet ([I]<C-t>, [N]`>>`, [V]`>`) will increase its indentation and use the
 next bullet level defined in this list. Similarly, promoting the bullet
