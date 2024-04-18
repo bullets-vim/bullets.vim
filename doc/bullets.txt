@@ -1,7 +1,7 @@
 *bullets.txt*  Automated Bullet Lists in Vim
 
 Author: Dorian Karter <https://doriankarter.com>
-License: MIT (see LICENSE.md in https://github.com/dkarter/bullets.vim)
+License: MIT (see LICENSE.md in https://github.com/bullets-vim/bullets.vim)
 
 TABLE OF CONTENTS                         *bullets-toc*
 

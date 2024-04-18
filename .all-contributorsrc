@@ -129,6 +129,42 @@
         "code",
         "bug"
       ]
+    },
+    {
+      "login": "cpence",
+      "name": "Charles Pence",
+      "avatar_url": "https://avatars.githubusercontent.com/u/297075?v=4",
+      "profile": "https://codeberg.org/cpence",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mstojanovic",
+      "name": "Marko Stojanovic",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3449343?v=4",
+      "profile": "https://github.com/mstojanovic",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "clarkshaeffer",
+      "name": "Clark",
+      "avatar_url": "https://avatars.githubusercontent.com/u/58539767?v=4",
+      "profile": "https://github.com/clarkshaeffer",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "wenzel-hoffman",
+      "name": "Wenzel",
+      "avatar_url": "https://avatars.githubusercontent.com/u/111205756?v=4",
+      "profile": "https://github.com/wenzel-hoffman",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
