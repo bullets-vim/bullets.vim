@@ -585,8 +585,14 @@ command! InsertNewBullet call <SID>insert_new_bullet()
 " Helper for Colon Indent
 "   returns 1 if current line ends in a colon, else 0
 fun! s:line_ends_in_colon(lnum)
-  let l:last_char_nr = strgetchar(getline(a:lnum), strcharlen(getline(a:lnum))-1)
-  return l:last_char_nr == 65306 || l:last_char_nr == 58
+  let l:line = getline(a:lnum)
+  if exists("*strcharlen") && exists("*strgetchar")
+    let l:last_char_nr = strgetchar(l:line, strcharlen(l:line)-1)
+    return l:last_char_nr == 65306 || l:last_char_nr == 58
+  else
+    " Older versions of vim do not support strchar*
+    return l:line[strlen(l:line)-1:] ==# ':'
+  endif
 endfun
 " --------------------------------------------------------- }}}
 
