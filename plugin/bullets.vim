@@ -61,6 +61,11 @@ end
 if !exists('g:bullets_max_alpha_characters')
   let g:bullets_max_alpha_characters = 2
 end
+
+if !exists('g:bullets_enable_roman_list')
+  let g:bullets_enable_roman_list = 1
+end
+
 " calculate the decimal equivalent to the last alphabetical list item
 let s:power = g:bullets_max_alpha_characters
 let s:abc_max = -1
@@ -166,6 +171,10 @@ endfun
 
 
 fun! s:match_roman_list_item(input_text)
+  if g:bullets_enable_roman_list == 0
+    return {}
+  endif
+
   let l:rom_bullet_regex  = join([
         \ '\v\C',
         \ '^(',
