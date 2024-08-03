@@ -62,6 +62,10 @@ if !exists('g:bullets_max_alpha_characters')
   let g:bullets_max_alpha_characters = 2
 end
 
+if !exists('g:bullets_enable_roman_list')
+  let g:bullets_enable_roman_list = 1
+end
+
 " calculate the decimal equivalent to the last alphabetical list item
 let s:power = g:bullets_max_alpha_characters
 let s:abc_max = -1
@@ -211,6 +215,10 @@ endfun
 
 
 fun! s:match_roman_list_item(input_text)
+  if g:bullets_enable_roman_list == 0
+    return {}
+  endif
+
   let l:rom_bullet_regex  = join([
         \ '\v\C',
         \ '^(',
@@ -632,8 +640,14 @@ command! InsertNewBullet call <SID>insert_new_bullet()
 " Helper for Colon Indent
 "   returns 1 if current line ends in a colon, else 0
 fun! s:line_ends_in_colon(lnum)
-  let l:last_char_nr = strgetchar(getline(a:lnum), strcharlen(getline(a:lnum))-1)
-  return l:last_char_nr == 65306 || l:last_char_nr == 58
+  let l:line = getline(a:lnum)
+  if exists("*strcharlen") && exists("*strgetchar")
+    let l:last_char_nr = strgetchar(l:line, strcharlen(l:line)-1)
+    return l:last_char_nr == 65306 || l:last_char_nr == 58
+  else
+    " Older versions of vim do not support strchar*
+    return l:line[strlen(l:line)-1:] ==# ':'
+  endif
 endfun
 " --------------------------------------------------------- }}}
 
