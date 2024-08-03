@@ -171,7 +171,7 @@ endfun
 
 
 fun! s:match_roman_list_item(input_text)
-  if !g:bullets_enable_roman_list
+  if g:bullets_enable_roman_list == 0
     return {}
   endif
 
