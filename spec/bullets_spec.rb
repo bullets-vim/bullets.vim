@@ -301,6 +301,8 @@ RSpec.describe 'Bullets.vim' do
           i. this is the first bullet
         TEXT
 
+        # Disable alpha lists to isolate test to roman numerals
+        vim.command 'let g:bullets_max_alpha_characters = 0'
         vim.command 'let g:bullets_enable_roman_list = 1'
         vim.edit filename
         vim.type 'GA'
