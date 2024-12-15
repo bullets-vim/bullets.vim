@@ -293,6 +293,41 @@ RSpec.describe 'Bullets.vim' do
           -
         TEXT
       end
+
+      it 'toggles roman numeral bullets with g:bullets_enable_roman_list' do
+        filename = "#{SecureRandom.hex(6)}.txt"
+        write_file(filename, <<-TEXT)
+          # Hello there
+          i. this is the first bullet
+        TEXT
+
+        # Disable alpha lists to isolate test to roman numerals
+        vim.command 'let g:bullets_max_alpha_characters = 0'
+        vim.command 'let g:bullets_enable_roman_list = 1'
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.type 'second bullet'
+        vim.feedkeys '\<cr>'
+        vim.type 'third bullet'
+        vim.command 'let g:bullets_enable_roman_list = 0'
+        vim.feedkeys '\<cr>'
+        vim.type 'fourth bullet'
+        vim.feedkeys '\<cr>'
+        vim.type 'fifth bullet'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          i. this is the first bullet
+          ii. second bullet
+          iii. third bullet
+          fourth bullet
+          fifth bullet\n
+        TEXT
+      end
     end
   end
 end
