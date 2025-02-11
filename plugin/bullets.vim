@@ -1124,7 +1124,7 @@ fun! s:add_local_mapping(with_leader, mapping_type, mapping, action)
         \ a:action
 
   if g:bullets_enable_in_empty_buffers
-    execute 'autocmd BufEnter * if bufname("") == "" | ' .
+    execute 'autocmd BufNew,BufRead * if empty(&filetype) | ' .
           \ a:mapping_type .
           \ ' <silent> <buffer> ' .
           \ (a:with_leader ? g:bullets_mapping_leader : '') .
