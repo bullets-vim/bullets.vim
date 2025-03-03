@@ -1,9 +1,7 @@
 scriptencoding utf-8
 " Vim plugin for automated bulleted lists
-" Last Change: Sat Jan 29 06:56:14 PM CST 2022
 " Maintainer: Dorian Karter
 " License: MIT
-" FileTypes: markdown, text, gitcommit
 
 " Preserve Vim compatibility settings -------------------  {{{
 let s:save_cpo = &cpoptions
@@ -23,7 +21,7 @@ if !exists('g:bullets_enabled_file_types')
 endif
 
 if !exists('g:bullets_enable_in_empty_buffers')
-  let g:bullets_enable_in_empty_buffers = 1
+  let g:bullets_enable_in_empty_buffers = 0
 end
 
 if !exists('g:bullets_set_mappings')
@@ -1148,7 +1146,7 @@ fun! s:add_local_mapping(with_leader, mapping_type, mapping, action)
         \ a:action
 
   if g:bullets_enable_in_empty_buffers
-    execute 'autocmd BufEnter * if bufname("") == "" | ' .
+    execute 'autocmd BufNew,BufRead * if empty(&filetype) | ' .
           \ a:mapping_type .
           \ ' <silent> <buffer> ' .
           \ (a:with_leader ? g:bullets_mapping_leader : '') .
