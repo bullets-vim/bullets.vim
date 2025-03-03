@@ -1,9 +1,7 @@
 scriptencoding utf-8
 " Vim plugin for automated bulleted lists
-" Last Change: Sat Jan 29 06:56:14 PM CST 2022
 " Maintainer: Dorian Karter
 " License: MIT
-" FileTypes: markdown, text, gitcommit
 
 " Preserve Vim compatibility settings -------------------  {{{
 let s:save_cpo = &cpoptions
@@ -23,7 +21,7 @@ if !exists('g:bullets_enabled_file_types')
 endif
 
 if !exists('g:bullets_enable_in_empty_buffers')
-  let g:bullets_enable_in_empty_buffers = 1
+  let g:bullets_enable_in_empty_buffers = 0
 end
 
 if !exists('g:bullets_set_mappings')
@@ -61,6 +59,11 @@ end
 if !exists('g:bullets_max_alpha_characters')
   let g:bullets_max_alpha_characters = 2
 end
+
+if !exists('g:bullets_enable_roman_list')
+  let g:bullets_enable_roman_list = 1
+end
+
 " calculate the decimal equivalent to the last alphabetical list item
 let s:power = g:bullets_max_alpha_characters
 let s:abc_max = -1
@@ -84,6 +87,10 @@ if !exists('g:bullets_nested_checkboxes')
   " checkbox status changes
   let g:bullets_nested_checkboxes = 1
 endif
+
+if !exists('g:bullets_enable_wrapped_lines')
+  let g:bullets_enable_wrapped_lines = 1
+end
 
 if !exists('g:bullets_checkbox_markers')
   " The ordered series of markers to use in checkboxes
@@ -116,7 +123,48 @@ endif
 " ------------------------------------------------------   }}}
 
 " Parse Bullet Type -------------------------------------------  {{{
+
+" A caching mechanism for bullet 
+" We add a crude 'reference count' for the cache so we can nest calls
+let s:bullet_cache = v:null
+let s:bullet_cache_depth = 0
+
+fun! s:enable_bullet_cache()
+  if s:bullet_cache_depth == 0
+    let s:bullet_cache = {}
+  endif
+  let s:bullet_cache_depth += 1
+endfun
+
+fun! s:disable_bullet_cache()
+  if s:bullet_cache_depth == 1
+    let s:bullet_cache = v:null
+  endif
+
+  if s:bullet_cache_depth > 0
+    let s:bullet_cache_depth -= 1
+  endif
+endfun
+
 fun! s:parse_bullet(line_num, line_text)
+  let l:kinds = s:parse_bullet_text(a:line_text)
+
+  for l:data in l:kinds
+    let l:data.starting_at_line_num = a:line_num
+  endfor
+
+  return l:kinds
+endfun
+
+fun! s:parse_bullet_text(line_text)
+
+  if s:bullet_cache isnot v:null
+    let l:cached = get(s:bullet_cache, a:line_text, v:null)
+    if l:cached isnot v:null
+      " Return a copy so as not to break the referene
+      return copy(l:cached)
+    endif
+  endif
 
   let l:bullet = s:match_bullet_list_item(a:line_text)
   " Must be a bullet to be a checkbox
@@ -129,13 +177,12 @@ fun! s:parse_bullet(line_num, line_text)
   let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : {}
 
   let l:kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], '!empty(v:val)')
-
-  for l:data in l:kinds
-    let l:data.starting_at_line_num = a:line_num
-  endfor
-
+  
+  if s:bullet_cache isnot v:null
+    let s:bullet_cache[a:line_text] = l:kinds
+  endif
+    
   return l:kinds
-
 endfun
 
 fun! s:match_numeric_list_item(input_text)
@@ -166,6 +213,10 @@ endfun
 
 
 fun! s:match_roman_list_item(input_text)
+  if g:bullets_enable_roman_list == 0
+    return {}
+  endif
+
   let l:rom_bullet_regex  = join([
         \ '\v\C',
         \ '^(',
@@ -362,17 +413,19 @@ fun! s:closest_bullet_types(from_line_num, max_indent)
   " Support for wrapped text bullets, even if the wrapped line is not indented
   " It considers a blank line as the end of a bullet
   " DEMO: https://raw.githubusercontent.com/dkarter/bullets.vim/master/img/wrapped-bullets.gif
-  while l:lnum > 1 && (l:curr_indent != 0 || l:bullet_kinds != [] || !(l:ltxt =~# '\v^(\s+$|$)'))
-        \ && (a:max_indent < l:curr_indent || l:bullet_kinds == [])
-    if l:bullet_kinds != []
-      let l:lnum = l:lnum - g:bullets_line_spacing
-    else
-      let l:lnum = l:lnum - 1
-    endif
-    let l:ltxt = getline(l:lnum)
-    let l:bullet_kinds = s:parse_bullet(l:lnum, l:ltxt)
-    let l:curr_indent = indent(l:lnum)
-  endwhile
+  if g:bullets_enable_wrapped_lines
+    while l:lnum > 1 && (l:curr_indent != 0 || l:bullet_kinds != [] || !(l:ltxt =~# '\v^(\s+$|$)'))
+          \ && (a:max_indent < l:curr_indent || l:bullet_kinds == [])
+      if l:bullet_kinds != []
+        let l:lnum = l:lnum - g:bullets_line_spacing
+      else
+        let l:lnum = l:lnum - 1
+      endif
+      let l:ltxt = getline(l:lnum)
+      let l:bullet_kinds = s:parse_bullet(l:lnum, l:ltxt)
+      let l:curr_indent = indent(l:lnum)
+    endwhile
+  endif
 
   return l:bullet_kinds
 endfun
@@ -810,6 +863,7 @@ fun! s:renumber_selection()
 endfun
 
 fun! s:renumber_lines(start, end)
+  call s:enable_bullet_cache()
   let l:prev_indent = -1
   let l:levels = {} " stores all the info about the current outline/list
 
@@ -887,15 +941,18 @@ fun! s:renumber_lines(start, end)
       endif
     endif
   endfor
+  call s:disable_bullet_cache()
 endfun
 
 " Renumbers the whole list containing the cursor.
 fun! s:renumber_whole_list()
+  call s:enable_bullet_cache()
   let l:first_line = s:first_bullet_line(line('.'))
   let l:last_line = s:last_bullet_line(line('.'))
   if l:first_line > 0 && l:last_line > 0
     call s:renumber_lines(l:first_line, l:last_line)
   endif
+  call s:disable_bullet_cache()
 endfun
 
 command! -range=% RenumberSelection call <SID>renumber_selection()
@@ -1067,7 +1124,7 @@ fun! s:add_local_mapping(with_leader, mapping_type, mapping, action)
         \ a:action
 
   if g:bullets_enable_in_empty_buffers
-    execute 'autocmd BufEnter * if bufname("") == "" | ' .
+    execute 'autocmd BufNew,BufRead * if empty(&filetype) | ' .
           \ a:mapping_type .
           \ ' <silent> <buffer> ' .
           \ (a:with_leader ? g:bullets_mapping_leader : '') .
