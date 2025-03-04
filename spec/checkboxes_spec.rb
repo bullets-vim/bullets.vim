@@ -248,4 +248,29 @@ RSpec.describe 'checkboxes' do
 
     TEXT
   end
+
+    it 'visual toggle a bullet' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      - [ ] first bullet
+        - [ ] second bullet
+      - [ ] third bullet
+    TEXT
+
+    vim.edit filename
+    vim.normal 'jV2j'
+    vim.command 'ToggleCheckboxVisual'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [X] first bullet
+        - [X] second bullet
+      - [X] third bullet
+
+    TEXT
+  end
 end
