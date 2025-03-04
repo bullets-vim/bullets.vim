@@ -16,7 +16,7 @@ RSpec.describe 'filetypes' do
     expect(buffer_content).to eq normalize_string_indent(<<-TEXT)
       # Hello there
       - this is the first bullet
-      - this is the second bullet
+      this is the second bullet
     TEXT
   end
 

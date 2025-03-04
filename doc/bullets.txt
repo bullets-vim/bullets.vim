@@ -121,8 +121,8 @@ line.
 
 Enable in empty buffers
 -----------------------
-bullets.vim is enabled in new empty buffers by default (buffers created with
-`:new` for example) to disable this feature add the following to your .vimrc:
+bullets.vim is disabled in new empty buffers by default (buffers created with
+`:new` for example) to enable this feature add the following to your .vimrc:
 
   `let g:bullets_enable_in_empty_buffers = 1`
 
