@@ -4,30 +4,6 @@ require 'spec_helper'
 
 RSpec.describe 'Bullets.vim' do
   describe 'inserting new bullets' do
-    context 'on return key when cursor is not at EOL' do
-      it 'splits the line and does not add a bullet' do
-        filename = "#{SecureRandom.hex(6)}.txt"
-        write_file(filename, <<-TEXT)
-          # Hello there
-          - this is the first bullet
-        TEXT
-
-        vim.edit filename
-        vim.type 'G$i'
-        vim.feedkeys '\<cr>'
-        vim.type 'second bullet'
-        vim.write
-
-        file_contents = IO.read(filename)
-
-        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
-          # Hello there
-          - this is the first bulle
-          second bullett\n
-        TEXT
-      end
-    end
-
     context 'on return key when cursor is at EOL' do
       it 'adds a new bullet if the previous line had a known bullet type' do
         test_bullet_inserted('do that', <<-INIT, <<-EXPECTED)
@@ -56,6 +32,30 @@ RSpec.describe 'Bullets.vim' do
             \\item Second item
         EXPECTED
       end
+
+    context 'on return key when cursor is not at EOL' do
+      it 'splits the line and adds a new bullet if the previous line had a known bullet type' do
+        filename = "#{SecureRandom.hex(6)}.txt"
+        write_file(filename, <<-TEXT)
+          # Hello there
+          - this is the first bullet
+        TEXT
+
+        vim.edit filename
+        vim.type 'G$i'
+        vim.feedkeys '\<cr>'
+        vim.type 'second bullet'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          - this is the first bulle
+          - second bullett\n
+        TEXT
+      end
+    end
 
       it 'adds a pandoc bullet if the prev line had one' do
         test_bullet_inserted('second bullet', <<-INIT, <<-EXPECTED)
