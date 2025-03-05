@@ -75,7 +75,7 @@ endwhile
 if !exists('g:bullets_outline_levels')
   " Capitalization matters: all caps will make the symbol caps, lower = lower
   " Standard bullets should include the marker symbol after 'std'
-  let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-', 'std*', 'std+']
+  let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-', 'std*', 'std+', 'std>', 'std#']
 endif
 
 if !exists('g:bullets_renumber_on_change')
@@ -324,7 +324,7 @@ fun! s:match_checkbox_bullet_item(input_text)
 endfun
 
 fun! s:match_bullet_list_item(input_text)
-  let l:std_bullet_regex  = '\v(^(\s*)(-|\*+|\.+|#\.|\+|\\item)(\s+))(.*)'
+  let l:std_bullet_regex  = '\v(^(\s*)(-|\*+|\.+|#\.|\+|\>|\#|\\item)(\s+))(.*)'
   let l:matches           = matchlist(a:input_text, l:std_bullet_regex)
 
   if empty(l:matches)
