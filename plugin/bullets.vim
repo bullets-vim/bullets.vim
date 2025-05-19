@@ -574,7 +574,11 @@ fun! s:insert_new_bullet()
       " We don't want to create a new bullet if the previous one was not used,
       " instead we want to delete the empty bullet - like word processors do
       if g:bullets_delete_last_bullet_if_empty
-        call setline(l:curr_line_num, '')
+        if g:bullets_delete_last_bullet_if_empty == 1
+          call setline(l:curr_line_num, '')
+        elseif g:bullets_delete_last_bullet_if_empty == 2
+          call <SID>change_bullet_level(1, 0)
+        endif
         let l:send_return = 0
       endif
     elseif !(l:bullet.bullet_type ==# 'abc' && s:abc2dec(l:bullet.bullet) + 1 > s:abc_max)
