@@ -191,7 +191,7 @@ let g:bullets_max_alpha_characters = 1
 Nested outline bullet levels:
 
 ```vim
-let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-', 'std*', 'std+'] " default
+let g:bullets_outline_levels = ['ROM', 'ABC', 'num', 'abc', 'rom', 'std-', 'std*', 'std+', 'std>', 'std#'] " default
 " Ordered list containing the heirarchical bullet levels, starting from the outer most level.
 " Available bullet level options (cannot use the same marker more than once)
 " ROM/rom = upper/lower case Roman numerals (e.g., I, II, III, IV)
