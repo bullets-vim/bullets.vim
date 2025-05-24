@@ -564,11 +564,21 @@ fun! s:insert_new_bullet()
   " searching up from there
   let l:send_return = 1
   let l:normal_mode = mode() ==# 'n'
+  let l:insert_mode = mode() ==# 'i'
   let l:indent_next = s:line_ends_in_colon(l:curr_line_num) && g:bullets_auto_indent_after_colon
+  let l:text_after_cursor = ''
 
-  " check if current line is a bullet and we are at the end of the line (for
-  " insert mode only)
-  if l:bullet != {} && (l:normal_mode || s:is_at_eol())
+  " check if current line is a bullet
+  if l:bullet != {}
+    " check whether we're in the middle of the line (for insert mode only)
+    if !s:is_at_eol() && !s:is_at_first_col() && l:insert_mode
+      let l:col = col('.')
+      let l:curr_line = getline('.')
+      let l:text_before_cursor = l:curr_line[:l:col-2]
+      let l:text_after_cursor = l:curr_line[l:col-1:]
+      call setline(l:curr_line_num, l:text_before_cursor)
+    endif
+
     " was any text entered after the bullet?
     if l:bullet.text_after_bullet ==# ''
       " We don't want to create a new bullet if the previous one was not used,
@@ -590,6 +600,10 @@ fun! s:insert_new_bullet()
         let l:next_bullet_list = [s:pad_to_length(l:next_bullet, l:bullet.bullet_length)]
       endif
 
+      if l:text_after_cursor !=# ''
+          let l:next_bullet_list[0] = l:next_bullet_list[0] . l:text_after_cursor
+      endif
+
       " prepend blank lines if desired
       if g:bullets_line_spacing > 1
         let l:next_bullet_list += map(range(g:bullets_line_spacing - 1), '""')
@@ -602,7 +616,11 @@ fun! s:insert_new_bullet()
 
       " go to next line after the new bullet
       let l:col = strlen(getline(l:next_line_num)) + 1
-      call setpos('.', [0, l:next_line_num, l:col])
+      if l:text_after_cursor ==# ''
+        call setpos('.', [0, l:next_line_num, l:col])
+      else
+        call setpos('.', [0, l:next_line_num, l:bullet.bullet_length + 1])
+      endif
 
       " indent if previous line ended in a colon
       if l:indent_next
@@ -635,6 +653,10 @@ endfun
 
 fun! s:is_at_eol()
   return strlen(getline('.')) + 1 ==# col('.')
+endfun
+
+fun! s:is_at_first_col()
+  return col('.') ==# 1
 endfun
 
 command! InsertNewBullet call <SID>insert_new_bullet()
