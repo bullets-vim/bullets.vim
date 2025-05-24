@@ -1395,9 +1395,22 @@ fun! s:sibling_checkbox_status(lnum)
       endif
     endif
   endfor
-  let l:divisions = len(l:checkbox_markers) - 1.0
-  let l:completion = float2nr(ceil(l:divisions * l:checked / l:num_siblings))
-  return l:checkbox_markers[l:completion]
+  " we are interested in the number of markings that can give us sets of
+  " percentage to group the markings
+  let l:divisions = len(l:checkbox_markers) - 2.0
+  " Border case no need to calculate and it fixex the problem of the
+  " calculation below never being able to get this last number.
+  if l:checked ==# l:num_siblings
+    return l:checkbox_markers[len(l:checkbox_markers) - 1]
+  else
+    " 1.0 multiplication is to have float calculations.
+    " The calculation looks for a multiple of a percentage class to define
+    " which marker to use.
+    let l:ratio_checked = 1.0 * l:checked / l:num_siblings
+    let l:persentage_class = 1.0 / l:divisions
+    let l:completion = float2nr(ceil(l:ratio_checked / l:persentage_class))
+    return l:checkbox_markers[l:completion]
+  endif
 endfun
 
 fun! s:replace_char_in_line(lnum, chari, item)
