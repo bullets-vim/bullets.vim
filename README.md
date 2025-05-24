@@ -107,10 +107,34 @@ let g:bullets_custom_mappings = [
   \ ]
 ```
 
-Enable/disable deleting the last empty bullet when hitting `<cr>` (insert mode) or `o` (normal mode):
+Enable/disable deleting or promoting the last empty bullet when hitting `<cr>` (insert mode) or `o` (normal mode):
 
 ```vim
-let g:bullets_delete_last_bullet_if_empty = 0 " default = 1
+" Example (| is cursor):
+" - text
+"   - text
+"   - |
+
+let g:bullets_delete_last_bullet_if_empty = 1 " default = 1
+" - text
+"   - text
+" |
+
+let g:bullets_delete_last_bullet_if_empty = 0
+" - text
+"   - text
+"   - 
+"   |
+
+let g:bullets_delete_last_bullet_if_empty = 2
+" - text
+"   - text
+" - |
+"
+" again:
+" - text
+"   - text
+" |
 ```
 
 Line spacing between bullets (1 = no blank lines, 2 = one blank line, etc.):
