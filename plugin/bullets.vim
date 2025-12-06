@@ -161,7 +161,7 @@ fun! s:parse_bullet_text(line_text)
   if s:bullet_cache isnot v:null
     let l:cached = get(s:bullet_cache, a:line_text, v:null)
     if l:cached isnot v:null
-      " Return a copy so as not to break the referene
+      " Return a copy so as not to break the reference
       return copy(l:cached)
     endif
   endif
@@ -177,11 +177,11 @@ fun! s:parse_bullet_text(line_text)
   let l:roman = empty(l:bullet) && empty(l:num) ? s:match_roman_list_item(a:line_text) : {}
 
   let l:kinds = s:filter([l:bullet, l:check, l:num, l:alpha, l:roman], '!empty(v:val)')
-  
+
   if s:bullet_cache isnot v:null
     let s:bullet_cache[a:line_text] = l:kinds
   endif
-    
+
   return l:kinds
 endfun
 
@@ -584,7 +584,11 @@ fun! s:insert_new_bullet()
       " We don't want to create a new bullet if the previous one was not used,
       " instead we want to delete the empty bullet - like word processors do
       if g:bullets_delete_last_bullet_if_empty
-        call setline(l:curr_line_num, '')
+        if g:bullets_delete_last_bullet_if_empty == 1
+          call setline(l:curr_line_num, '')
+        elseif g:bullets_delete_last_bullet_if_empty == 2
+          call <SID>change_bullet_level(1, 0)
+        endif
         let l:send_return = 0
       endif
     elseif !(l:bullet.bullet_type ==# 'abc' && s:abc2dec(l:bullet.bullet) + 1 > s:abc_max)
@@ -989,7 +993,7 @@ fun! s:change_line_bullet_level(direction, lnum)
   if a:direction == 1
     if l:curr_line != [] && indent(a:lnum) == 0
       " Promoting a bullet at the highest level will delete the bullet
-      call setline(a:lnum, l:curr_line[0].text_after_bullet)
+      call setline(a:lnum, l:curr_line[-1].text_after_bullet)
       return
     else
       execute a:lnum . 'normal! <<'

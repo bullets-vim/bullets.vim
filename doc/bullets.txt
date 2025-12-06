@@ -148,7 +148,7 @@ To add a leader key to all mappings set the following:
 This will set the <space> key as leader to all default mappings.
 
 
-Disabling empty bullet deletion
+Empty bullet deletion
 -------------------------------
 By default bullets.vim will delete trailing empty bullets when the return key
 is pressed, just like modern word processors.
@@ -156,6 +156,10 @@ is pressed, just like modern word processors.
 If you would like to turn this feature off add the following to your .vimrc
 
   `let g:bullets_delete_last_bullet_if_empty = 0`
+
+If you would like to promote bullet instead of deleting it, add the following to your .vimrc
+
+  `let g:bullets_delete_last_bullet_if_empty = 2`
 
 
 Maintain right padding on bullets
