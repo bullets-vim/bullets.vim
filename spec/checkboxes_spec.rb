@@ -248,4 +248,139 @@ RSpec.describe 'checkboxes' do
 
     TEXT
   end
+
+  it 'recomputes checkboxes recursively on RecomputeCheckboxes' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      - [ ] EXPECTED: ¼
+        - [X] checkbox leaf
+        - [ ] EXPECTED: CHECKED
+          - [ ] EXPECTED: CHECKED
+            - [ ] EXPECTED: CHECKED
+              - [X] checkbox leaf
+          - [X] checkbox leaf
+        - [X] EXPECTED: ¾
+          - [X] checkbox leaf
+          - [X] checkbox leaf
+          - [X] checkbox leaf
+          - [ ] checkbox leaf
+        - [X] EXPECTED: ½
+          - [ ] EXPECTED: CHECKED
+            - [ ] EXPECTED: CHECKED
+              - [X] checkbox leaf
+          - [½] checkbox leaf (EXPECTED: UNCHECKED)
+        - [½] EXPECTED: UNCHECKED
+          - [ ] checkbox leaf
+          - [½] checkbox leaf (EXPECTED: UNCHECKED)
+    TEXT
+
+    vim.edit filename
+    vim.command 'let g:bullets_checkbox_markers=" .¼½¾X"'
+    vim.type '9j'
+    vim.command 'RecomputeCheckboxes'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [¼] EXPECTED: ¼
+        - [X] checkbox leaf
+        - [X] EXPECTED: CHECKED
+          - [X] EXPECTED: CHECKED
+            - [X] EXPECTED: CHECKED
+              - [X] checkbox leaf
+          - [X] checkbox leaf
+        - [¾] EXPECTED: ¾
+          - [X] checkbox leaf
+          - [X] checkbox leaf
+          - [X] checkbox leaf
+          - [ ] checkbox leaf
+        - [½] EXPECTED: ½
+          - [X] EXPECTED: CHECKED
+            - [X] EXPECTED: CHECKED
+              - [X] checkbox leaf
+          - [ ] checkbox leaf (EXPECTED: UNCHECKED)
+        - [ ] EXPECTED: UNCHECKED
+          - [ ] checkbox leaf
+          - [ ] checkbox leaf (EXPECTED: UNCHECKED)
+
+    TEXT
+  end
+
+  it 'recomputes checkboxes correctly on reindents' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      - [X] parent bullet
+        - [X] first child bullet
+    TEXT
+
+    vim.edit filename
+    vim.command 'let g:bullets_checkbox_markers=" /X"'
+    vim.type 'GA'
+    vim.feedkeys '\<cr>'
+    vim.command 'RecomputeCheckboxes'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [/] parent bullet
+        - [X] first child bullet
+        - [ ] 
+
+    TEXT
+
+    vim.command 'let g:bullets_delete_last_bullet_if_empty = 2'
+    vim.feedkeys '\<cr>'
+    vim.command 'RecomputeCheckboxes'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [X] parent bullet
+        - [X] first child bullet
+      - [ ] 
+
+    TEXT
+  end
+
+  it 'handles skip-level checkbox trees' do
+    filename = "#{SecureRandom.hex(6)}.txt"
+    write_file(filename, <<-TEXT)
+      # Hello there
+      - [X] parent bullet (EXPECTED: /)
+        - skip: not checkbox content
+          - [ ] new root bullet (EXPECTED: /)
+            - [ ] first child bullet
+            - [X] first child bullet
+        - [X] first child bullet
+        - [ ] first child bullet
+    TEXT
+
+    vim.edit filename
+    vim.command 'let g:bullets_checkbox_markers=" /X"'
+    vim.type '2j'
+    vim.command 'RecomputeCheckboxes'
+    vim.write
+
+    file_contents = IO.read(filename)
+
+    expect(file_contents).to eq normalize_string_indent(<<-TEXT)
+      # Hello there
+      - [/] parent bullet (EXPECTED: /)
+        - skip: not checkbox content
+          - [/] new root bullet (EXPECTED: /)
+            - [ ] first child bullet
+            - [X] first child bullet
+        - [X] first child bullet
+        - [ ] first child bullet
+
+    TEXT
+  end
 end

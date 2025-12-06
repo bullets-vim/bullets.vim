@@ -271,6 +271,31 @@ RSpec.describe 'Bullets.vim' do
         TEXT
       end
 
+      it 'promote the last bullet when configured to' do
+        filename = "#{SecureRandom.hex(6)}.txt"
+        write_file(filename, <<-TEXT)
+          # Hello there
+          - this is the first bullet
+            - this is the second bullet
+        TEXT
+
+        vim.command 'let g:bullets_delete_last_bullet_if_empty = 2'
+        vim.edit filename
+        vim.type 'GA'
+        vim.feedkeys '\<cr>'
+        vim.feedkeys '\<cr>'
+        vim.write
+
+        file_contents = IO.read(filename)
+
+        expect(file_contents.strip).to eq normalize_string_indent(<<-TEXT)
+          # Hello there
+          - this is the first bullet
+            - this is the second bullet
+          -
+        TEXT
+      end
+
       it 'does not delete the last bullet when configured not to' do
         filename = "#{SecureRandom.hex(6)}.txt"
         write_file(filename, <<-TEXT)
