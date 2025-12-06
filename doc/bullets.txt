@@ -83,6 +83,11 @@ GENERAL COMMANDS                            *bullets-commands*
                        A blank line before/after the first/last bullet denotes
                        the end of the list.
 
+                                            *bullets-:RecomputeCheckboxes*
+:RecomputeCheckboxes   Recomputes all partial checkboxes in the current list.
+                       Preserves state for all checkboxes with no children and
+                       recomputes all checkboxes up to the top of the list.
+
                                             *bullets-:BulletDemote*
 :BulletDemote          Demotes the current bullet by indenting it and changing
                        its bullet type to the next level defined in 

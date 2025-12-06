@@ -801,6 +801,85 @@ fun! s:set_child_checkboxes(lnum, checked)
   endif
 endfun
 
+" Recompute partial checkboxes of a full checkbox tree given the root lnum
+fun! s:recompute_checkbox_tree(lnum)
+  if !g:bullets_nested_checkboxes
+    return
+  endif
+
+  let l:indent = indent(a:lnum)
+  let l:bullet = s:closest_bullet_types(a:lnum, l:indent)
+  let l:bullet = s:resolve_bullet_type(l:bullet)
+
+  if l:bullet.bullet_type !=# 'chk'
+    return
+  endif
+
+  " recursively recompute checkbox tree for all children, then finally self
+
+  let l:children = s:get_children_line_numbers(a:lnum)
+  for l:child_nr in l:children
+    " nb: this skips 'grandchildren' checkboxes (i.e., children who aren't
+    " checkboxes but have checkbox children themselves), but those grandkids
+    " will be targeted by s:recompute_checkboxes_in_range anyway
+    call s:recompute_checkbox_tree(l:child_nr)
+  endfor
+
+
+  if empty(l:children)
+    " if no children, preserve previous checked state
+    " partially completed checkboxes become unchecked
+    if empty(l:bullet) || !has_key(l:bullet, 'checkbox_marker')
+      return
+    endif
+
+    let l:checkbox_markers = split(g:bullets_checkbox_markers, '\zs')
+    let l:partial_markers = join(l:checkbox_markers[1:-2], '')
+
+    if l:bullet.checkbox_marker =~# '\v[' . l:partial_markers . ']'
+      call s:set_checkbox(a:lnum, l:checkbox_markers[0])
+    endif
+  else
+    " if children exist, recompute this checkbox status
+    let l:first_child = l:children[0]
+    let l:completion_marker = s:sibling_checkbox_status(l:first_child)
+    call s:set_checkbox(a:lnum, l:completion_marker)
+  endif
+endfun
+
+fun! s:recompute_checkboxes_in_range(start, end)
+  if !g:bullets_nested_checkboxes
+    return
+  endif
+
+  call s:enable_bullet_cache()
+  for l:nr in range(a:start, a:end)
+    " find all bullets who do not have a checkbox parent
+    let l:parent = s:get_parent(l:nr)
+    if !empty(l:parent) && l:parent.bullet_type ==# 'chk'
+      continue
+    end
+
+    call s:recompute_checkbox_tree(l:nr)
+  endfor
+  call s:disable_bullet_cache()
+endfun
+
+" Recomputes checkboxes for the whole list containing the cursor.
+fun! s:recompute_checkboxes()
+  if !g:bullets_nested_checkboxes
+    return
+  endif
+
+  call s:enable_bullet_cache()
+  let l:first_line = s:first_bullet_line(line('.'))
+  let l:last_line = s:last_bullet_line(line('.'))
+  if l:first_line > 0 && l:last_line > 0
+    call s:recompute_checkboxes_in_range(l:first_line, l:last_line)
+  endif
+  call s:disable_bullet_cache()
+endfun
+
 command! SelectCheckboxInside call <SID>select_checkbox(1)
 command! SelectCheckbox call <SID>select_checkbox(0)
 command! ToggleCheckbox call <SID>toggle_checkboxes_nested()
@@ -983,6 +1062,7 @@ endfun
 
 command! -range=% RenumberSelection call <SID>renumber_selection()
 command! RenumberList call <SID>renumber_whole_list()
+command! RecomputeCheckboxes call <SID>recompute_checkboxes()
 
 " --------------------------------------------------------- }}}
 
@@ -1128,6 +1208,9 @@ nnoremap <silent> <Plug>(bullets-renumber) :RenumberList<cr>
 
 " Toggle checkbox
 nnoremap <silent> <Plug>(bullets-toggle-checkbox) :ToggleCheckbox<cr>
+
+" Recompute checkbox list
+nnoremap <silent> <Plug>(bullets-recompute-checkboxes) :RecomputeCheckboxes<cr>
 
 " Promote and Demote outline level
 inoremap <silent> <Plug>(bullets-demote) <C-o>:BulletDemote<cr>
