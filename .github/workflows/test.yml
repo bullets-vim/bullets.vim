@@ -12,6 +12,7 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -38,6 +39,4 @@ jobs:
         bundler-cache: true # runs 'bundle install' and caches installed gems automatically
 
     - name: Run headless tests
-      uses: GabrielBB/xvfb-action@v1
-      with:
-        run: bundle exec rspec
+      run: xvfb-run -a bundle exec rspec
