@@ -347,10 +347,20 @@ Just add above to your .vimrc
 
 The test suite is written using vimrunner. It is known to run on macOS with MacVim installed, and on travis. Your vim must have `+clientserver` and either have its own GUI or in a virtual X11 window.
 
+## Local Development Setup
+
+This project uses [mise](https://mise.jdx.dev) to manage the Ruby version. Install it, then run:
+
+```sh
+mise install
+bundle install
+```
+
+## Running Tests
+
 On your mac run:
 
 ```sh
-bundle install
 bundle exec rspec
 ```
 
