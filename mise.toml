@@ -1,2 +1,19 @@
 [tools]
 ruby = "4"
+
+[tasks.test]
+description = "Run Neovim test suite via plenary"
+run = """
+PLENARY_PATH=/tmp/plenary.nvim
+if [ ! -d "$PLENARY_PATH" ]; then
+  git clone --depth=1 https://github.com/nvim-lua/plenary.nvim "$PLENARY_PATH"
+fi
+status=0
+for spec in test/*_spec.lua; do
+  nvim --headless \
+    -c "set rtp+=.,${PLENARY_PATH} | runtime plugin/plenary.vim | runtime plugin/bullets.vim" \
+    --noplugin \
+    -c "lua require('plenary.busted').run('${spec}')" || status=1
+done
+exit $status
+"""
