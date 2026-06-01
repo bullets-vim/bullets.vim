@@ -10,4 +10,6 @@ end
 vim.opt.rtp:prepend(plenary_path)
 vim.opt.rtp:prepend(repo_root)
 
+vim.cmd('filetype plugin on')
 vim.cmd('runtime plugin/bullets.vim')
+vim.cmd('set formatoptions=')
