@@ -2,22 +2,36 @@ name: Test
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
-  test:
-
+  fmt:
+    name: Check Formatting
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v6.0.2
+      - name: Checkout Code
+        uses: actions/checkout@v6.0.2
 
-    - name: Set up tools via mise
-      uses: jdx/mise-action@v4.0.1
+      - name: Set up tools via mise
+        uses: jdx/mise-action@v4.0.1
 
-    - name: Run Lua tests
-      run: mise run test
+      - name: Check formatting
+        run: mise run fmt:check
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6.0.2
+
+      - name: Set up tools via mise
+        uses: jdx/mise-action@v4.0.1
+
+      - name: Run Lua tests
+        run: mise run test
