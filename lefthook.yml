@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/evilmartians/lefthook/master/schema.json
+
+output:
+  - summary
+
+commit-msg:
+  jobs:
+    - name: conventional commits
+      run: mise exec -- committed --commit-file {1}
+
+pre-commit:
+  parallel: true
+  jobs:
+    - name: check formatting
+      run: mise run fmt:check
+
+    - name: check secrets
+      run: mise exec -- gitleaks git --staged --pre-commit --no-banner --redact

@@ -1,6 +1,12 @@
 [tools]
+"github:crate-ci/committed" = "latest"
 dprint = "latest"
+gitleaks = "latest"
+lefthook = "latest"
 neovim = "latest"
+
+[hooks]
+postinstall = "lefthook install"
 
 [tasks.fmt]
 description = "Format code with dprint"
