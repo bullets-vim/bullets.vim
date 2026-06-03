@@ -1,5 +1,14 @@
 [tools]
+dprint = "latest"
 neovim = "latest"
+
+[tasks.fmt]
+description = "Format code with dprint"
+run = "dprint fmt"
+
+[tasks."fmt:check"]
+description = "Check code formatting with dprint"
+run = "dprint check"
 
 [tasks.test]
 description = "Run Neovim test suite via plenary"
