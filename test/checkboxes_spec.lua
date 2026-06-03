@@ -95,7 +95,7 @@ describe("checkboxes", function()
 				"  - [ ] second bullet",
 				"    - [ ] third bullet",
 			})
-			helpers.feedkeys("j")
+			helpers.feedkeys("ggj")
 			vim.cmd("ToggleCheckbox")
 			assert.are.same({
 				"# Hello there",

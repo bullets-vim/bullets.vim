@@ -4,6 +4,7 @@ describe("Bullets.vim", function()
 	describe("inserting new bullets", function()
 		before_each(function()
 			helpers.reset_config()
+			vim.o.ignorecase = false
 		end)
 
 		describe("on return key when cursor is not at EOL", function()
