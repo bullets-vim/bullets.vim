@@ -1,7 +1,9 @@
 ![Bullets.vim](img/bullets-vim-logo.svg)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 > :information_source: Looking for help/maintainers https://github.com/dkarter/bullets.vim/issues/126
@@ -23,6 +25,7 @@ Renumbering lines:
 # Installation
 
 ### With Vim 8.1+ native package manager:
+
 Clone into
 
 `.vim/pack/plugins/start`
@@ -36,7 +39,6 @@ Plug 'bullets-vim/bullets.vim'
 ```
 
 Then source your Vim config and run `:PlugInstall`.
-
 
 # Usage
 
@@ -306,20 +308,20 @@ let g:bullets_checkbox_partials_toggle = 0
 
 # Mappings
 
-* Insert new bullet in INSERT mode: `<cr>` (Return key)
-* Same as <cr> in case you want to unmap <cr> in INSERT mode (compatibility depends on your terminal emulator): `<C-cr>`
-* Insert new bullet in NORMAL mode: `o`
-* Renumber current visual selection: `gN`
-* Renumber entire bullet list containing the cursor in NORMAL mode: gN
-* Toggle a checkbox in NORMAL mode: `<leader>x`
-* Demote a bullet (indent it, decrease bullet level, and make it a child of the previous bullet):
-  + NORMAL mode: `>>`
-  + INSERT mode: `<C-t>`
-  + VISUAL mode: `>`
-* Promote a bullet (unindent it and increase the bullet level):
-  + NORMAL mode: `<<`
-  + INSERT mode: `<C-d>`
-  + VISUAL mode: `<`
+- Insert new bullet in INSERT mode: `<cr>` (Return key)
+- Same as <cr> in case you want to unmap <cr> in INSERT mode (compatibility depends on your terminal emulator): `<C-cr>`
+- Insert new bullet in NORMAL mode: `o`
+- Renumber current visual selection: `gN`
+- Renumber entire bullet list containing the cursor in NORMAL mode: gN
+- Toggle a checkbox in NORMAL mode: `<leader>x`
+- Demote a bullet (indent it, decrease bullet level, and make it a child of the previous bullet):
+  - NORMAL mode: `>>`
+  - INSERT mode: `<C-t>`
+  - VISUAL mode: `>`
+- Promote a bullet (unindent it and increase the bullet level):
+  - NORMAL mode: `<<`
+  - INSERT mode: `<C-d>`
+  - VISUAL mode: `<`
 
 Disable default mappings:
 
@@ -376,11 +378,11 @@ The test task runs Neovim headlessly and downloads Plenary to `/tmp/plenary.nvim
 - [x] reset numbers (user selects numbered bullets 3-5 and copies to middle of document, then reselects and resets them to 1-3)
 - [x] check if plugin initialized and don't load if it did
 - [x] allow <C-cr> for return without creating a bullet (only possible in GuiVim
-  unfortunately)
+      unfortunately)
 - [x] check if user is at EOL before appending auto-bullet - they may just want to
 - [x] attempt to keep the same total bullet width even as number width varies (right padding)
 - [x] detect lists that have multiline bullets (should have no empty lines between
-  lines).
+      lines).
 - [x] add alphabetic list
 - [x] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
 - [x] change nested outline levels in visual mode
@@ -397,9 +399,7 @@ The test task runs Neovim headlessly and downloads Plenary to `/tmp/plenary.nvim
 [![Hashrocket logo](https://hashrocket.com/hashrocket_logo.svg)](https://hashrocket.com)
 
 Bullets.vim is kindly supported by [Hashrocket, a multidisciplinary design and
-development consultancy](https://hashrocket.com). If you'd like to [work with
-us](https://hashrocket.com/contact-us/hire-us) or [join our
-team](https://hashrocket.com/contact-us/jobs), don't hesitate to get in touch.
+development consultancy](https://hashrocket.com). If you'd like to [work with us](https://hashrocket.com/contact-us/hire-us) or [join our team](https://hashrocket.com/contact-us/jobs), don't hesitate to get in touch.
 
 ## Contributors ✨
 
