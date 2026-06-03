@@ -1,6 +1,5 @@
 [tools]
 neovim = "latest"
-ruby = "4"
 
 [tasks.test]
 description = "Run Neovim test suite via plenary"
