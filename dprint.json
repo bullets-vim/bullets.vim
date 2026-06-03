@@ -13,7 +13,10 @@
   "includes": [
     "**/*.lua",
     "**/*.yml",
-    "**/*.yaml"
+    "**/*.yaml",
+    "**/*.md",
+    "**/*.json",
+    "**/*.toml"
   ],
   "plugins": [
     "https://plugins.dprint.dev/RubixDev/stylua-v0.2.1.wasm",
