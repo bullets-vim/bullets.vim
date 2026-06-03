@@ -227,7 +227,7 @@ describe("Bullets.vim", function()
 				-- First CR creates "- " empty bullet, second CR on empty bullet deletes it
 				helpers.feedkeys("A<CR><CR>")
 				local lines = helpers.get_lines()
-				-- strip trailing empty lines (mirrors Ruby .strip behaviour)
+				-- Strip trailing empty lines before comparison.
 				while #lines > 0 and lines[#lines] == "" do
 					table.remove(lines)
 				end

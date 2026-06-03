@@ -35,7 +35,7 @@ Make sure to include `packloadall` in your `vimrc`.
 Plug 'bullets-vim/bullets.vim'
 ```
 
-Then source your bundle file and run `:PlugInstall`.
+Then source your Vim config and run `:PlugInstall`.
 
 
 # Usage
@@ -345,34 +345,25 @@ Just add above to your .vimrc
 
 # Testing
 
-The test suite is written using vimrunner. It is known to run on macOS with MacVim installed, and on travis. Your vim must have `+clientserver` and either have its own GUI or in a virtual X11 window.
+The test suite is written in Lua and runs under Neovim with [Plenary](https://github.com/nvim-lua/plenary.nvim).
 
 ## Local Development Setup
 
-This project uses [mise](https://mise.jdx.dev) to manage the Ruby version. Install it, then run:
+This project uses [mise](https://mise.jdx.dev) to install Neovim. Install mise, then run:
 
 ```sh
 mise install
-bundle install
 ```
 
 ## Running Tests
 
-On your mac run:
+Run the full test suite with:
 
 ```sh
-bundle exec rspec
+mise run test
 ```
 
-On linux:
-
-```sh
-bundle install
-xvfb-run bundle exec rspec
-```
-
-You should see a Vim window open which will run each test, same general idea as
-Capybara integration testing. ❤️
+The test task runs Neovim headlessly and downloads Plenary to `/tmp/plenary.nvim` on first run.
 
 # TODO
 

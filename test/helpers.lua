@@ -25,8 +25,7 @@ function M.get_lines()
   return vim.api.nvim_buf_get_lines(0, 0, -1, false)
 end
 
--- Mirrors the Ruby test_bullet_inserted helper:
--- sets up a buffer with initial_lines, appends second_bullet via <CR>,
+-- Sets up a buffer with initial_lines, appends second_bullet via <CR>,
 -- then asserts the buffer matches expected_lines.
 function M.test_bullet_inserted(second_bullet, initial_lines, expected_lines)
   M.new_buffer(initial_lines)

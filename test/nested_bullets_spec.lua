@@ -215,8 +215,7 @@ describe("Bullets.vim", function()
 			helpers.feedkeys("i* sixth bullet<Esc>")
 			-- CR on * bullet line creates * seventh bullet, type it
 			helpers.feedkeys("A<CR>seventh bullet<Esc>")
-			-- In Ruby: vim.type 'seventh bullet' then vim.feedkeys '\<C-t>' (still in insert)
-			-- In Lua: re-enter insert at end, demote with <C-t>
+			-- Re-enter insert at end and demote with <C-t>.
 			helpers.feedkeys("A<C-t><Esc>")
 			assert.are.same({
 				"# Hello there",
@@ -312,12 +311,8 @@ describe("Bullets.vim", function()
 				"I. this is the first bullet",
 				"\tA. second bullet",
 			})
-			-- In Ruby:
-			-- GA -> CR -> type 'third bullet' -> C-t -> CR -> type 'fourth bullet' -> C-t -> ...
-			-- All CRs are on bullet lines so no deferred CR issue
-			-- After C-t we're still in insert mode
-			-- GA<CR> puts us on a new bullet line in insert mode
-			-- Then type 'third bullet', then C-t demotes, then CR for next line etc.
+			-- All CRs are on bullet lines. After <C-t>, insert mode remains active
+			-- so the sequence can continue by typing text and pressing <CR> for the next line.
 			helpers.feedkeys("GA<CR>third bullet<C-t><CR>fourth bullet<C-t><CR>fifth bullet<C-t><CR>sixth bullet<C-t><CR>seventh bullet<Esc>")
 			helpers.feedkeys("A<CR>eighth bullet<C-d><CR>ninth bullet<C-d><CR>tenth bullet<C-d><CR>eleventh bullet<C-d><CR>twelfth bullet<C-d><Esc>")
 			assert.are.same({
@@ -359,23 +354,16 @@ describe("Bullets.vim", function()
 				"4. sixteenth bullet",
 			})
 			-- After each visual < or > operation, the plugin re-enters visual mode (via s:set_selection).
-			-- Ruby's vim.normal always starts from normal mode (executes :normal which cancels visual),
-			-- so each Ruby vim.normal call needs <Esc> prefix in Lua to exit visual mode first.
-			-- Ruby: vim.normal '3jv' then feedkeys '<'
+			-- Exit visual mode before starting each fresh visual selection.
 			helpers.feedkeys("gg3jv<")
-			-- Ruby: vim.normal 'jv2j' then feedkeys '<' (normal escapes visual first)
 			helpers.feedkeys("<Esc>jv2j<")
-			-- Ruby: vim.normal 'jvj' then feedkeys '>'
 			helpers.feedkeys("<Esc>jvj>")
-			-- Ruby: vim.normal 'jvj' then feedkeys '<'
 			helpers.feedkeys("<Esc>jvj<")
-			-- Ruby: feedkeys '<' again (plugin left us in visual mode with same selection)
+			-- The plugin leaves us in visual mode with the same selection.
 			helpers.feedkeys("<")
-			-- Ruby: vim.normal 'jv' then feedkeys '>'
 			helpers.feedkeys("<Esc>jv>")
-			-- Ruby: vim.normal '3jv2j' then feedkeys '>'
 			helpers.feedkeys("<Esc>3jv2j>")
-			-- Ruby: feedkeys '>' again (plugin left us in visual mode with same selection)
+			-- Repeat the operation on the same visual selection.
 			helpers.feedkeys(">")
 			assert.are.same({
 				"# Hello there",
@@ -408,9 +396,8 @@ describe("Bullets.vim", function()
 			-- Then type 'second bullet', then CR again, demote, type 'third bullet'
 			helpers.feedkeys("GA<CR>second bullet<Esc>")
 			helpers.feedkeys("A<CR><C-t>third bullet<Esc>")
-			-- In Ruby: vim.feedkeys '\<cr>' then vim.normal 'dd' then vim.insert '\twrapped bullet'
 			-- After CR on bullet line with line_spacing=2, cursor is on the new empty line after the bullet
-			-- dd deletes that line, then insert '\twrapped bullet'
+			-- dd deletes that line, then inserts '\twrapped bullet'.
 			helpers.feedkeys("A<CR>")
 			helpers.feedkeys("dd")
 			helpers.feedkeys("i\twrapped bullet<Esc>")
@@ -442,7 +429,7 @@ describe("Bullets.vim", function()
 			helpers.feedkeys("A<CR>this bullet is also indented<Esc>")
 			-- Check first phase
 			local lines1 = helpers.get_lines()
-			-- Remove trailing empty lines for comparison (Ruby uses .strip)
+			-- Remove trailing empty lines before comparison.
 			while #lines1 > 0 and lines1[#lines1] == "" do
 				table.remove(lines1)
 			end
@@ -459,8 +446,7 @@ describe("Bullets.vim", function()
 				"# Hello there",
 				"a. this is the first bullet",
 			})
-			-- The Ruby test does vim.feedkeys '\<ESC>' then vim.type 'GA' (enters insert)
-			-- In Lua, just use GA to enter insert at end of last line
+			-- Use GA to enter insert at end of the last line.
 			helpers.feedkeys("GA<CR>this is the second bullet that ends with fullwidth colon：<Esc>")
 			helpers.feedkeys("A<CR>this bullet is indented<Esc>")
 			helpers.feedkeys("A<CR>this bullet is also indented<Esc>")
