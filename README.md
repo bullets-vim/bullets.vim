@@ -1,7 +1,9 @@
 ![Bullets.vim](img/bullets-vim-logo.svg)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 > :information_source: Looking for help/maintainers https://github.com/dkarter/bullets.vim/issues/126
@@ -23,6 +25,7 @@ Renumbering lines:
 # Installation
 
 ### With Vim 8.1+ native package manager:
+
 Clone into
 
 `.vim/pack/plugins/start`
@@ -35,8 +38,7 @@ Make sure to include `packloadall` in your `vimrc`.
 Plug 'bullets-vim/bullets.vim'
 ```
 
-Then source your bundle file and run `:PlugInstall`.
-
+Then source your Vim config and run `:PlugInstall`.
 
 # Usage
 
@@ -306,20 +308,20 @@ let g:bullets_checkbox_partials_toggle = 0
 
 # Mappings
 
-* Insert new bullet in INSERT mode: `<cr>` (Return key)
-* Same as <cr> in case you want to unmap <cr> in INSERT mode (compatibility depends on your terminal emulator): `<C-cr>`
-* Insert new bullet in NORMAL mode: `o`
-* Renumber current visual selection: `gN`
-* Renumber entire bullet list containing the cursor in NORMAL mode: gN
-* Toggle a checkbox in NORMAL mode: `<leader>x`
-* Demote a bullet (indent it, decrease bullet level, and make it a child of the previous bullet):
-  + NORMAL mode: `>>`
-  + INSERT mode: `<C-t>`
-  + VISUAL mode: `>`
-* Promote a bullet (unindent it and increase the bullet level):
-  + NORMAL mode: `<<`
-  + INSERT mode: `<C-d>`
-  + VISUAL mode: `<`
+- Insert new bullet in INSERT mode: `<cr>` (Return key)
+- Same as <cr> in case you want to unmap <cr> in INSERT mode (compatibility depends on your terminal emulator): `<C-cr>`
+- Insert new bullet in NORMAL mode: `o`
+- Renumber current visual selection: `gN`
+- Renumber entire bullet list containing the cursor in NORMAL mode: gN
+- Toggle a checkbox in NORMAL mode: `<leader>x`
+- Demote a bullet (indent it, decrease bullet level, and make it a child of the previous bullet):
+  - NORMAL mode: `>>`
+  - INSERT mode: `<C-t>`
+  - VISUAL mode: `>`
+- Promote a bullet (unindent it and increase the bullet level):
+  - NORMAL mode: `<<`
+  - INSERT mode: `<C-d>`
+  - VISUAL mode: `<`
 
 Disable default mappings:
 
@@ -345,34 +347,25 @@ Just add above to your .vimrc
 
 # Testing
 
-The test suite is written using vimrunner. It is known to run on macOS with MacVim installed, and on travis. Your vim must have `+clientserver` and either have its own GUI or in a virtual X11 window.
+The test suite is written in Lua and runs under Neovim with [Plenary](https://github.com/nvim-lua/plenary.nvim).
 
 ## Local Development Setup
 
-This project uses [mise](https://mise.jdx.dev) to manage the Ruby version. Install it, then run:
+This project uses [mise](https://mise.jdx.dev) to install Neovim. Install mise, then run:
 
 ```sh
 mise install
-bundle install
 ```
 
 ## Running Tests
 
-On your mac run:
+Run the full test suite with:
 
 ```sh
-bundle exec rspec
+mise run test
 ```
 
-On linux:
-
-```sh
-bundle install
-xvfb-run bundle exec rspec
-```
-
-You should see a Vim window open which will run each test, same general idea as
-Capybara integration testing. ❤️
+The test task runs Neovim headlessly and downloads Plenary to `/tmp/plenary.nvim` on first run.
 
 # TODO
 
@@ -385,11 +378,11 @@ Capybara integration testing. ❤️
 - [x] reset numbers (user selects numbered bullets 3-5 and copies to middle of document, then reselects and resets them to 1-3)
 - [x] check if plugin initialized and don't load if it did
 - [x] allow <C-cr> for return without creating a bullet (only possible in GuiVim
-  unfortunately)
+      unfortunately)
 - [x] check if user is at EOL before appending auto-bullet - they may just want to
 - [x] attempt to keep the same total bullet width even as number width varies (right padding)
 - [x] detect lists that have multiline bullets (should have no empty lines between
-  lines).
+      lines).
 - [x] add alphabetic list
 - [x] support for intelligent alphanumeric indented bullets e.g. 1. \t a. \t 1.
 - [x] change nested outline levels in visual mode
@@ -406,9 +399,7 @@ Capybara integration testing. ❤️
 [![Hashrocket logo](https://hashrocket.com/hashrocket_logo.svg)](https://hashrocket.com)
 
 Bullets.vim is kindly supported by [Hashrocket, a multidisciplinary design and
-development consultancy](https://hashrocket.com). If you'd like to [work with
-us](https://hashrocket.com/contact-us/hire-us) or [join our
-team](https://hashrocket.com/contact-us/jobs), don't hesitate to get in touch.
+development consultancy](https://hashrocket.com). If you'd like to [work with us](https://hashrocket.com/contact-us/hire-us) or [join our team](https://hashrocket.com/contact-us/jobs), don't hesitate to get in touch.
 
 ## Contributors ✨
 
