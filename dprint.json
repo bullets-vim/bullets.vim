@@ -11,7 +11,9 @@
     "**/*-lock.json"
   ],
   "includes": [
-    "**/*.lua"
+    "**/*.lua",
+    "**/*.yml",
+    "**/*.yaml"
   ],
   "plugins": [
     "https://plugins.dprint.dev/RubixDev/stylua-v0.2.1.wasm",
