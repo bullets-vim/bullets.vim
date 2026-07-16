@@ -6,7 +6,9 @@
 
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-> :information_source: Looking for help/maintainers https://github.com/dkarter/bullets.vim/issues/126
+> ⭐ Using Neovim?
+> 
+> Checkout the Neovim Lua port here - https://github.com/bullets-vim/bullets.nvim 😄
 
 # Description
 
